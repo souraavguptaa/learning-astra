@@ -32,6 +32,13 @@ async function renderCertificatePdf(input: {
   page.drawText("Learning Astra", { x: 40, y: height - 60, size: 16, font, color: astraBlue });
   page.drawText("SastaSundar Learning Dashboard", { x: 40, y: height - 80, size: 10, font: regularFont, color: rgb(0.4, 0.4, 0.4) });
 
+  // ponytail: no SastaSundar logo image on hand — text wordmark badge; swap for doc.embedPng(logoBytes) once a file is supplied.
+  const sastaSundarGreen = rgb(0.02, 0.55, 0.28);
+  const wordmark = "SastaSundar";
+  const wordmarkWidth = font.widthOfTextAtSize(wordmark, 16);
+  page.drawRectangle({ x: width - 60 - wordmarkWidth - 16, y: height - 70, width: wordmarkWidth + 32, height: 26, color: sastaSundarGreen });
+  page.drawText(wordmark, { x: width - 60 - wordmarkWidth, y: height - 63, size: 16, font, color: rgb(1, 1, 1) });
+
   page.drawText("Certificate of Completion", {
     x: width / 2 - font.widthOfTextAtSize("Certificate of Completion", 28) / 2,
     y: height - 180,

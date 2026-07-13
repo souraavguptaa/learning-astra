@@ -15,6 +15,7 @@ export const trainings = pgTable("trainings", {
   description: text("description").notNull(),
   status: trainingStatusEnum("status").default("draft").notNull(),
   isMandatory: boolean("is_mandatory").default(false).notNull(),
+  isStandaloneAssessment: boolean("is_standalone_assessment").default(false).notNull(),
   versionMajor: integer("version_major").default(1).notNull(),
   versionMinor: integer("version_minor").default(0).notNull(),
   npsEnabled: boolean("nps_enabled").default(false).notNull(),
@@ -59,6 +60,8 @@ export const trainingAssignments = pgTable("training_assignments", {
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
   role: userRoleEnum("role"),
   franchiseId: uuid("franchise_id").references(() => franchises.id, { onDelete: "cascade" }),
+  dueAt: timestamp("due_at", { withTimezone: true }),
+  isMandatory: boolean("is_mandatory").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

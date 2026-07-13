@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../lib/api.js";
+import { api, uploadToR2 } from "../lib/api.js";
 import type { UserRole } from "../lib/authContext.js";
 
 export interface Announcement {
@@ -34,7 +34,7 @@ export async function uploadAnnouncementAttachment(file: File): Promise<string> 
     filename: file.name,
     contentType: file.type || "application/octet-stream",
   });
-  await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+  await uploadToR2(data.uploadUrl, file);
   return data.fileKey;
 }
 

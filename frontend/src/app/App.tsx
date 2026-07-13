@@ -69,7 +69,15 @@ export function App() {
             path="trainings"
             element={
               <ProtectedRoute roles={["super_admin", "admin", "trainer"]}>
-                <TrainingBuilderPage />
+                <TrainingBuilderPage kind="course" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="assessments"
+            element={
+              <ProtectedRoute roles={["super_admin", "admin", "trainer"]}>
+                <TrainingBuilderPage kind="assessment" />
               </ProtectedRoute>
             }
           />
@@ -124,7 +132,7 @@ export function App() {
           <Route
             path="leaderboard"
             element={
-              <ProtectedRoute roles={["franchise_owner", "operator", "employee"]}>
+              <ProtectedRoute roles={["operator", "employee"]}>
                 <LeaderboardPage />
               </ProtectedRoute>
             }

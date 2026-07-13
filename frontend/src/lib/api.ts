@@ -18,6 +18,16 @@ export const tokenStore = {
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "/api"; // dev: Vite proxy; prod: set VITE_API_URL to the deployed backend
 
+/** PUT a file to a presigned R2 URL, throwing on failure instead of silently pretending it worked. */
+export async function uploadToR2(uploadUrl: string, file: File): Promise<void> {
+  const res = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  });
+  if (!res.ok) throw new Error(`File upload to storage failed (${res.status}). Check your connection and try again.`);
+}
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
 });

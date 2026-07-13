@@ -23,8 +23,9 @@ import type { UserRole } from "../../lib/authContext.js";
 
 type AssigneeType = "role" | "franchise" | "users";
 
-export function TrainingBuilderPage() {
-  const { data: trainings } = useTrainings();
+export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "assessment" }) {
+  const noun = kind === "assessment" ? "Assessment" : "Training";
+  const { data: trainings } = useTrainings(kind);
   const { data: contentList } = useContentList();
   const { data: franchises } = useFranchises();
   const { data: allUsers } = useUsers();
@@ -34,9 +35,15 @@ export function TrainingBuilderPage() {
   const [form, setForm] = useState({ title: "", description: "", isMandatory: false });
   const [pickedContentId, setPickedContentId] = useState("");
   const [showAssessmentForm, setShowAssessmentForm] = useState(false);
-  const [assignForm, setAssignForm] = useState<{ assigneeType: AssigneeType; role: UserRole; franchiseId: string; userIds: string[] }>(
-    { assigneeType: "role", role: "employee", franchiseId: "", userIds: [] },
-  );
+  const [assignForm, setAssignForm] = useState<{
+    assigneeType: AssigneeType;
+    role: UserRole;
+    franchiseId: string;
+    userIds: string[];
+    dueDate: string;
+    dueTime: string;
+    mandatory: boolean;
+  }>({ assigneeType: "role", role: "employee", franchiseId: "", userIds: [], dueDate: "", dueTime: "", mandatory: true });
   const [assigning, setAssigning] = useState(false);
   const [editForm, setEditForm] = useState({ title: "", description: "" });
   const [justSaved, setJustSaved] = useState<string | null>(null);
@@ -65,7 +72,7 @@ export function TrainingBuilderPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const training = await createTraining.mutateAsync(form);
+    const training = await createTraining.mutateAsync({ ...form, isStandaloneAssessment: kind === "assessment" });
     setForm({ title: "", description: "", isMandatory: false });
     setSelectedId(training.id);
   }
@@ -109,13 +116,17 @@ export function TrainingBuilderPage() {
     e.preventDefault();
     setAssigning(true);
     try {
+      const dueAt = assignForm.dueDate
+        ? new Date(`${assignForm.dueDate}T${assignForm.dueTime || "23:59"}`).toISOString()
+        : undefined;
+      const common = { dueAt, isMandatory: assignForm.mandatory };
       if (assignForm.assigneeType === "role") {
-        await assign.mutateAsync({ assigneeType: "role", role: assignForm.role });
+        await assign.mutateAsync({ assigneeType: "role", role: assignForm.role, ...common });
       } else if (assignForm.assigneeType === "franchise") {
-        await assign.mutateAsync({ assigneeType: "franchise", franchiseId: assignForm.franchiseId });
+        await assign.mutateAsync({ assigneeType: "franchise", franchiseId: assignForm.franchiseId, ...common });
       } else {
         for (const userId of assignForm.userIds) {
-          await assign.mutateAsync({ assigneeType: "user", userId });
+          await assign.mutateAsync({ assigneeType: "user", userId, ...common });
         }
       }
       setAssignForm((f) => ({ ...f, userIds: [] }));
@@ -141,7 +152,7 @@ export function TrainingBuilderPage() {
   return (
     <div className="grid grid-cols-3 gap-6">
       <div className="col-span-1 space-y-4">
-        <h1 className="text-xl font-bold text-slate-800">Trainings</h1>
+        <h1 className="text-xl font-bold text-slate-800">{kind === "assessment" ? "Assessments" : "Trainings"}</h1>
         <form onSubmit={handleCreate} className="bg-white rounded-lg border border-slate-200 p-4 space-y-2">
           <input
             placeholder="Title"
@@ -151,7 +162,7 @@ export function TrainingBuilderPage() {
             className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
           />
           <textarea
-            placeholder="Description / notes for this training"
+            placeholder={`Description / notes for this ${noun.toLowerCase()}`}
             required
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -167,7 +178,7 @@ export function TrainingBuilderPage() {
             Mandatory for everyone it's assigned to
           </label>
           <button className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium">
-            Create training
+            Create {noun.toLowerCase()}
           </button>
         </form>
         <div className="space-y-1">
@@ -189,7 +200,7 @@ export function TrainingBuilderPage() {
       </div>
 
       <div className="col-span-2">
-        {!detail && <p className="text-slate-400">Select or create a training to edit it.</p>}
+        {!detail && <p className="text-slate-400">Select or create {kind === "assessment" ? "an assessment" : "a training"} to edit it.</p>}
         {detail && (
           <div className="space-y-6">
             {justSaved && (
@@ -294,23 +305,27 @@ export function TrainingBuilderPage() {
                 </SortableContext>
               </DndContext>
               <div className="flex gap-2 mt-3">
-                <select
-                  value={pickedContentId}
-                  onChange={(e) => setPickedContentId(e.target.value)}
-                  className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
-                >
-                  <option value="">Select content to add…</option>
-                  {contentList
-                    ?.filter((c) => c.status === "ready")
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>
-                        [{c.type}] {c.title}
-                      </option>
-                    ))}
-                </select>
-                <button onClick={handleAddItem} className="rounded-md bg-astra text-white px-3 py-1.5 text-sm">
-                  Add content
-                </button>
+                {kind !== "assessment" && (
+                  <>
+                    <select
+                      value={pickedContentId}
+                      onChange={(e) => setPickedContentId(e.target.value)}
+                      className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    >
+                      <option value="">Select content to add…</option>
+                      {contentList
+                        ?.filter((c) => c.status === "ready")
+                        .map((c) => (
+                          <option key={c.id} value={c.id}>
+                            [{c.type}] {c.title}
+                          </option>
+                        ))}
+                    </select>
+                    <button onClick={handleAddItem} className="rounded-md bg-astra text-white px-3 py-1.5 text-sm">
+                      Add content
+                    </button>
+                  </>
+                )}
                 {!showAssessmentForm && (
                   <button
                     onClick={() => setShowAssessmentForm(true)}
@@ -394,12 +409,44 @@ export function TrainingBuilderPage() {
                     ))}
                   </div>
                 )}
+                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                  <span>Due by (optional):</span>
+                  <input
+                    type="date"
+                    value={assignForm.dueDate}
+                    onChange={(e) => setAssignForm((f) => ({ ...f, dueDate: e.target.value }))}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                  />
+                  <input
+                    type="time"
+                    value={assignForm.dueTime}
+                    onChange={(e) => setAssignForm((f) => ({ ...f, dueTime: e.target.value }))}
+                    disabled={!assignForm.dueDate}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs disabled:opacity-50"
+                  />
+                  <label className="flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={assignForm.mandatory}
+                      onChange={(e) => setAssignForm((f) => ({ ...f, mandatory: e.target.checked }))}
+                    />
+                    Mandatory for these people
+                  </label>
+                </div>
               </form>
               <ul className="mt-3 text-sm space-y-1">
                 {detail.assignments.length === 0 && <li className="text-slate-400">Not assigned to anyone yet.</li>}
                 {detail.assignments.map((a) => (
                   <li key={a.id} className="flex items-center justify-between bg-slate-50 rounded px-2 py-1">
-                    <span>{describeAssignment(a)}</span>
+                    <span>
+                      {describeAssignment(a)}
+                      {a.isMandatory && <span className="ml-2 text-[10px] text-red-500">mandatory</span>}
+                      {a.dueAt && (
+                        <span className="ml-2 text-[10px] text-slate-400">
+                          due {new Date(a.dueAt).toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </span>
                     <button
                       onClick={() => removeAssignment.mutate(a.id)}
                       className="text-red-500 text-xs hover:underline"

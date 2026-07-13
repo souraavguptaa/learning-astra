@@ -18,6 +18,7 @@ const createTrainingSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   isMandatory: z.boolean().default(false),
+  isStandaloneAssessment: z.boolean().default(false),
 });
 
 trainingRouter.post(
@@ -32,8 +33,9 @@ trainingRouter.post(
 trainingRouter.get(
   "/",
   authorize(...MANAGERS),
-  asyncHandler(async (_req, res) => {
-    res.json(await trainingService.listTrainings());
+  asyncHandler(async (req, res) => {
+    const kind = req.query.kind as "course" | "assessment" | undefined;
+    res.json(await trainingService.listTrainings(kind));
   }),
 );
 
@@ -47,6 +49,14 @@ trainingRouter.get(
         franchiseId: req.user!.franchiseId,
       }),
     );
+  }),
+);
+
+trainingRouter.get(
+  "/overdue",
+  authorize(...MANAGERS),
+  asyncHandler(async (req, res) => {
+    res.json(await trainingService.getOverdueAssignments({ id: req.user!.sub, role: req.user!.role }));
   }),
 );
 
@@ -136,6 +146,8 @@ const assignSchema = z.object({
   userId: z.string().uuid().optional(),
   role: z.enum(roleValues).optional(),
   franchiseId: z.string().uuid().optional(),
+  dueAt: z.string().datetime().optional(),
+  isMandatory: z.boolean().default(true),
 });
 
 trainingRouter.post(

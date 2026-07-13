@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   franchiseId: string | null;
+  mustChangePassword: boolean;
 }
 
 interface AuthContextValue {

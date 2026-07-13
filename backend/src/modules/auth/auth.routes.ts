@@ -52,3 +52,18 @@ authRouter.get(
     res.json({ user: req.user });
   }),
 );
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8, "New password must be at least 8 characters"),
+});
+
+authRouter.put(
+  "/change-password",
+  authenticate,
+  validateBody(changePasswordSchema),
+  asyncHandler(async (req, res) => {
+    await authService.changePassword(req.user!.sub, req.body.currentPassword, req.body.newPassword);
+    res.json({ success: true });
+  }),
+);

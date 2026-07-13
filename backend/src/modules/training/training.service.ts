@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, max } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, lt, max } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import {
   assessmentResults,
@@ -19,17 +19,28 @@ import type { UserRole } from "../../utils/jwt.js";
 
 export async function createTraining(
   trainerId: string,
-  input: { title: string; description: string; isMandatory: boolean },
+  input: { title: string; description: string; isMandatory: boolean; isStandaloneAssessment?: boolean },
 ) {
   const [training] = await db
     .insert(trainings)
-    .values({ title: input.title, description: input.description, isMandatory: input.isMandatory, trainerId })
+    .values({
+      title: input.title,
+      description: input.description,
+      isMandatory: input.isMandatory,
+      isStandaloneAssessment: input.isStandaloneAssessment ?? false,
+      trainerId,
+    })
     .returning();
   return training;
 }
 
-export async function listTrainings() {
-  return db.select().from(trainings).orderBy(asc(trainings.createdAt));
+export async function listTrainings(kind?: "course" | "assessment") {
+  if (!kind) return db.select().from(trainings).orderBy(asc(trainings.createdAt));
+  return db
+    .select()
+    .from(trainings)
+    .where(eq(trainings.isStandaloneAssessment, kind === "assessment"))
+    .orderBy(asc(trainings.createdAt));
 }
 
 export async function getTrainingDetail(trainingId: string) {
@@ -158,7 +169,14 @@ export async function bumpVersion(trainingId: string, changedBy: string, changeT
 
 export async function assignTraining(
   trainingId: string,
-  input: { assigneeType: "user" | "role" | "franchise"; userId?: string; role?: UserRole; franchiseId?: string },
+  input: {
+    assigneeType: "user" | "role" | "franchise";
+    userId?: string;
+    role?: UserRole;
+    franchiseId?: string;
+    dueAt?: string;
+    isMandatory?: boolean;
+  },
 ) {
   const [assignment] = await db
     .insert(trainingAssignments)
@@ -168,12 +186,16 @@ export async function assignTraining(
       userId: input.userId ?? null,
       role: input.role ?? null,
       franchiseId: input.franchiseId ?? null,
+      dueAt: input.dueAt ? new Date(input.dueAt) : null,
+      isMandatory: input.isMandatory ?? true,
     })
     .returning();
 
   const [training] = await db.select().from(trainings).where(eq(trainings.id, trainingId)).limit(1);
   const title = "New Training Assigned";
-  const message = `"${training?.title ?? "A training"}" has been assigned to you.`;
+  const message = input.dueAt
+    ? `"${training?.title ?? "A training"}" has been assigned to you — complete by ${new Date(input.dueAt).toLocaleString("en-IN")}.`
+    : `"${training?.title ?? "A training"}" has been assigned to you.`;
   const deepLink = `/learning/${trainingId}`;
 
   let recipients: { id: string }[] = [];
@@ -189,6 +211,48 @@ export async function assignTraining(
   }
 
   return assignment;
+}
+
+/**
+ * Overdue = a specific person (assigneeType "user") was assigned a mandatory training with a
+ * due date that has passed and hasn't completed it yet.
+ * ponytail: role/franchise-wide assignments aren't tracked per-person here (a deadline against a
+ * whole role is a fuzzier commitment); add if a report is requested for those too.
+ */
+export async function getOverdueAssignments(requester: { id: string; role: UserRole }) {
+  const rows = await db
+    .select({
+      assignment: trainingAssignments,
+      training: trainings,
+      assigneeName: users.name,
+      progress: trainingProgress,
+    })
+    .from(trainingAssignments)
+    .innerJoin(trainings, eq(trainingAssignments.trainingId, trainings.id))
+    .innerJoin(users, eq(trainingAssignments.userId, users.id))
+    .leftJoin(
+      trainingProgress,
+      and(eq(trainingProgress.userId, trainingAssignments.userId), eq(trainingProgress.trainingId, trainingAssignments.trainingId)),
+    )
+    .where(
+      and(
+        eq(trainingAssignments.assigneeType, "user"),
+        eq(trainingAssignments.isMandatory, true),
+        isNotNull(trainingAssignments.dueAt),
+        lt(trainingAssignments.dueAt, new Date()),
+        requester.role === "trainer" ? eq(trainings.trainerId, requester.id) : undefined,
+      ),
+    );
+
+  return rows
+    .filter((r) => !r.progress?.completed)
+    .map((r) => ({
+      userId: r.assignment.userId as string,
+      userName: r.assigneeName,
+      trainingId: r.training.id,
+      trainingTitle: r.training.title,
+      dueAt: r.assignment.dueAt,
+    }));
 }
 
 export async function removeAssignment(trainingId: string, assignmentId: string) {

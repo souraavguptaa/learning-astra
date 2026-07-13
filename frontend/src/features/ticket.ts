@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../lib/api.js";
+import { api, uploadToR2 } from "../lib/api.js";
 
 export interface Attachment {
   fileKey: string;
@@ -69,7 +69,7 @@ export async function uploadTicketAttachment(file: File): Promise<Attachment> {
     filename: file.name,
     contentType: file.type || "application/octet-stream",
   });
-  await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+  await uploadToR2(data.uploadUrl, file);
   return { fileKey: data.fileKey, fileName: file.name };
 }
 

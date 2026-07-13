@@ -9,6 +9,7 @@ export interface Training {
   description: string;
   status: "draft" | "published";
   isMandatory: boolean;
+  isStandaloneAssessment: boolean;
   versionMajor: number;
   versionMinor: number;
   npsEnabled: boolean;
@@ -40,6 +41,8 @@ export interface TrainingAssignment {
   userId: string | null;
   role: UserRole | null;
   franchiseId: string | null;
+  dueAt: string | null;
+  isMandatory: boolean;
 }
 
 export interface TrainingProgress {
@@ -71,10 +74,25 @@ export interface AssessmentResultSummary {
   passed: boolean;
 }
 
-export function useTrainings() {
+export function useTrainings(kind?: "course" | "assessment") {
   return useQuery({
-    queryKey: ["trainings"],
-    queryFn: async () => (await api.get<Training[]>("/trainings")).data,
+    queryKey: ["trainings", kind ?? "all"],
+    queryFn: async () => (await api.get<Training[]>("/trainings", { params: kind ? { kind } : {} })).data,
+  });
+}
+
+export interface OverdueAssignment {
+  userId: string;
+  userName: string;
+  trainingId: string;
+  trainingTitle: string;
+  dueAt: string;
+}
+
+export function useOverdueAssignments() {
+  return useQuery({
+    queryKey: ["overdue-assignments"],
+    queryFn: async () => (await api.get<OverdueAssignment[]>("/trainings/overdue")).data,
   });
 }
 
@@ -129,7 +147,7 @@ export function useUpdateTraining(trainingId: string) {
 export function useCreateTraining() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { title: string; description: string; isMandatory: boolean }) =>
+    mutationFn: async (input: { title: string; description: string; isMandatory: boolean; isStandaloneAssessment?: boolean }) =>
       (await api.post<Training>("/trainings", input)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["trainings"] }),
   });
@@ -189,6 +207,8 @@ export function useAssignTraining(trainingId: string) {
       userId?: string;
       role?: UserRole;
       franchiseId?: string;
+      dueAt?: string;
+      isMandatory?: boolean;
     }) => (await api.post<TrainingAssignment>(`/trainings/${trainingId}/assign`, input)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["training", trainingId] }),
   });

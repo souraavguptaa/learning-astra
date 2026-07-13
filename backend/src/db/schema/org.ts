@@ -39,6 +39,7 @@ export const users = pgTable("users", {
   location: text("location"),
   createdBy: uuid("created_by").references((): any => users.id, { onDelete: "set null" }),
   isActive: boolean("is_active").default(true).notNull(),
+  mustChangePassword: boolean("must_change_password").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

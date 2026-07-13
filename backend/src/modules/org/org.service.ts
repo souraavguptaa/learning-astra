@@ -59,6 +59,7 @@ export async function createUser(
       franchiseId: input.franchiseId ?? null,
       location: input.location,
       passwordHash: await hashPassword(tempPassword),
+      mustChangePassword: true,
       createdBy: creator.id,
     })
     .returning();
@@ -78,7 +79,7 @@ export async function resetPassword(userId: string) {
   const tempPassword = generateTempPassword();
   const [user] = await db
     .update(users)
-    .set({ passwordHash: await hashPassword(tempPassword) })
+    .set({ passwordHash: await hashPassword(tempPassword), mustChangePassword: true })
     .where(eq(users.id, userId))
     .returning();
   if (!user) throw new ApiError(404, "User not found");

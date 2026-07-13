@@ -39,7 +39,14 @@ export async function login(email: string, password: string) {
   const tokens = await issueTokens(user);
   return {
     ...tokens,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, franchiseId: user.franchiseId },
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      franchiseId: user.franchiseId,
+      mustChangePassword: user.mustChangePassword,
+    },
   };
 }
 
@@ -84,4 +91,19 @@ export async function logout(userId: string) {
     .update(refreshTokens)
     .set({ revokedAt: new Date() })
     .where(eq(refreshTokens.userId, userId));
+}
+
+export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  if (!user) throw new ApiError(404, "User not found");
+
+  const ok = await verifyPassword(currentPassword, user.passwordHash);
+  if (!ok) throw new ApiError(401, "Current password is incorrect");
+
+  await db
+    .update(users)
+    .set({ passwordHash: await hashPassword(newPassword), mustChangePassword: false })
+    .where(eq(users.id, userId));
+  // Revoke existing sessions so a stolen/shared login can't keep using the old credentials elsewhere.
+  await logout(userId);
 }

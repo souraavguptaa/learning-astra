@@ -9,10 +9,12 @@ export function MyTicketsPage() {
   const [form, setForm] = useState({ subject: "", description: "" });
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setUploading(true);
+    setError(null);
     try {
       let attachments: Attachment[] | undefined;
       if (file) attachments = [await uploadTicketAttachment(file)];
@@ -20,6 +22,8 @@ export function MyTicketsPage() {
       setForm({ subject: "", description: "" });
       setFile(null);
       setSelectedId(ticket.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create ticket. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -46,6 +50,7 @@ export function MyTicketsPage() {
             rows={3}
           />
           <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-xs" />
+          {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             disabled={uploading}
             className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium disabled:opacity-60"

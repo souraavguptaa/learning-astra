@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
 import { AnnouncementBanner } from "./AnnouncementBanner.js";
+import { ChangePasswordModal } from "./ChangePasswordModal.js";
 import { NotificationBell } from "./NotificationBell.js";
 
 const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
@@ -16,12 +18,14 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "Users & Org", path: "/users" },
     { label: "Content", path: "/content" },
     { label: "Trainings", path: "/trainings" },
+    { label: "Assessments", path: "/assessments" },
     { label: "Announcements", path: "/announcements" },
   ],
   trainer: [
     { label: "Overview", path: "/" },
     { label: "Content", path: "/content" },
     { label: "Trainings", path: "/trainings" },
+    { label: "Assessments", path: "/assessments" },
     { label: "Tickets", path: "/tickets" },
     { label: "Announcements", path: "/announcements" },
   ],
@@ -30,7 +34,6 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "AI Support", path: "/support" },
     { label: "My Tickets", path: "/my-tickets" },
     { label: "Certificates", path: "/certificates" },
-    { label: "Leaderboard", path: "/leaderboard" },
     { label: "Announcements", path: "/announcements" },
   ],
   operator: [
@@ -56,6 +59,8 @@ export function AppLayout() {
   const nav = user ? NAV_BY_ROLE[user.role] ?? [] : [];
   const location = useLocation();
   const currentLabel = nav.find((item) => (item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)))?.label;
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const mustChangePassword = !!user?.mustChangePassword;
 
   return (
     <div className="min-h-screen flex bg-slate-50">
@@ -85,12 +90,20 @@ export function AppLayout() {
         <div className="px-5 py-4 border-t border-slate-200 text-sm">
           <div className="font-medium text-slate-700">{user?.name}</div>
           <div className="text-xs text-slate-400 mb-2 capitalize">{user?.role.replace("_", " ")}</div>
-          <button onClick={() => logout()} className="text-xs text-red-500 hover:underline">
-            Sign out
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShowChangePassword(true)} className="text-xs text-astra hover:underline">
+              Change password
+            </button>
+            <button onClick={() => logout()} className="text-xs text-red-500 hover:underline">
+              Sign out
+            </button>
+          </div>
         </div>
         <div className="px-5 py-3 text-[10px] text-slate-300">Created by Sourav Gupta</div>
       </aside>
+      {(showChangePassword || mustChangePassword) && (
+        <ChangePasswordModal onClose={() => setShowChangePassword(false)} forced={mustChangePassword} />
+      )}
       <div className="flex-1 flex flex-col min-w-0">
         <AnnouncementBanner />
         <header className="flex justify-between items-center px-8 py-3 border-b border-slate-200 bg-white">
