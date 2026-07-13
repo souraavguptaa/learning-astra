@@ -3,7 +3,7 @@ services:
     name: learning-astra-backend
     env: node
     plan: free
-    buildCommand: npm install && npm run build --workspace=backend
+    buildCommand: npm install --include=dev && npm run build --workspace=backend
     startCommand: npm run start --workspace=backend
     envVars:
       - key: NODE_ENV
