@@ -14,13 +14,15 @@ export function AdPopup() {
 
   useEffect(() => {
     if (!ads || ads.length === 0) return;
-    const timer = setInterval(() => {
-      const ad = ads[indexRef.current % ads.length];
+    function showNext() {
+      const ad = ads![indexRef.current % ads!.length];
       indexRef.current += 1;
       setCurrent(ad);
       setVisible(true);
       api.get<{ url: string }>("/files/download-url", { params: { key: ad.imageFileKey } }).then(({ data }) => setImageUrl(data.url));
-    }, CYCLE_MS);
+    }
+    showNext(); // don't make them wait a full cycle to see the first one
+    const timer = setInterval(showNext, CYCLE_MS);
     return () => clearInterval(timer);
   }, [ads]);
 
