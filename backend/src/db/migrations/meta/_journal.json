@@ -71,6 +71,13 @@
       "when": 1783952415072,
       "tag": "0009_real_siren",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783970924087,
+      "tag": "0010_mean_cable",
+      "breakpoints": true
     }
   ]
 }

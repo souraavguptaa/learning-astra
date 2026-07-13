@@ -1,21 +1,25 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { franchises, userRoleEnum, users } from "./org.js";
 
 export const announcementTargetTypeEnum = pgEnum("announcement_target_type", ["all", "role", "franchise"]);
 
-export const notifications = pgTable("notifications", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  type: text("type").notNull(),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  deepLink: text("deep_link"),
-  isRead: boolean("is_read").default(false).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    deepLink: text("deep_link"),
+    isRead: boolean("is_read").default(false).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("notifications_user_id_idx").on(table.userId)],
+);
 
 export const announcements = pgTable("announcements", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -44,7 +48,10 @@ export const announcementReads = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     readAt: timestamp("read_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [unique("announcement_reads_announcement_user").on(table.announcementId, table.userId)],
+  (table) => [
+    unique("announcement_reads_announcement_user").on(table.announcementId, table.userId),
+    index("announcement_reads_user_id_idx").on(table.userId),
+  ],
 );
 
 export const announcementsRelations = relations(announcements, ({ many }) => ({

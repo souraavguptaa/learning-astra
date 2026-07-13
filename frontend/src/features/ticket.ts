@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, uploadToR2 } from "../lib/api.js";
+import { useAuth } from "../lib/authContext.js";
 
 export interface Attachment {
   fileKey: string;
@@ -44,6 +45,7 @@ export function useMyTickets() {
   return useQuery({
     queryKey: ["my-tickets"],
     queryFn: async () => (await api.get<Ticket[]>("/tickets/mine")).data,
+    refetchInterval: 15000,
   });
 }
 
@@ -51,6 +53,7 @@ export function useTicketQueue(status?: string) {
   return useQuery({
     queryKey: ["ticket-queue", status],
     queryFn: async () => (await api.get<Ticket[]>("/tickets", { params: status ? { status } : {} })).data,
+    refetchInterval: 15000,
   });
 }
 
@@ -60,7 +63,7 @@ export function useTicketDetail(ticketId: string | null) {
     queryFn: async () =>
       (await api.get<{ ticket: Ticket; messages: TicketMessage[]; kbSubmissions: KbSubmission[] }>(`/tickets/${ticketId}`)).data,
     enabled: !!ticketId,
-    refetchInterval: ticketId ? 8000 : false, // poll so replies show up without a manual reload
+    refetchInterval: ticketId ? 5000 : false, // poll so replies show up without a manual reload
   });
 }
 
@@ -82,12 +85,40 @@ export function useCreateTicket() {
   });
 }
 
+type TicketDetail = { ticket: Ticket; messages: TicketMessage[]; kbSubmissions: KbSubmission[] };
+
 export function useAddTicketMessage(ticketId: string) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: async (input: { message: string; attachments?: Attachment[] }) =>
       (await api.post(`/tickets/${ticketId}/messages`, input)).data,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ticket", ticketId] }),
+    // Optimistic: show the sender's own message immediately instead of waiting on a poll cycle.
+    onMutate: async (input) => {
+      await qc.cancelQueries({ queryKey: ["ticket", ticketId] });
+      const previous = qc.getQueryData<TicketDetail>(["ticket", ticketId]);
+      if (previous && user) {
+        const optimisticMessage: TicketMessage = {
+          id: `optimistic-${Date.now()}`,
+          ticketId,
+          senderId: user.id,
+          senderName: user.name,
+          senderRole: user.role,
+          message: input.message,
+          attachments: input.attachments ?? [],
+          createdAt: new Date().toISOString(),
+        };
+        qc.setQueryData<TicketDetail>(["ticket", ticketId], {
+          ...previous,
+          messages: [...previous.messages, optimisticMessage],
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      if (context?.previous) qc.setQueryData(["ticket", ticketId], context.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["ticket", ticketId] }),
   });
 }
 

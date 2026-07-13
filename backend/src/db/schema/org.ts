@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", [
   "super_admin",
@@ -29,31 +29,39 @@ export const franchises = pgTable("franchises", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const users = pgTable("users", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  role: userRoleEnum("role").notNull(),
-  franchiseId: uuid("franchise_id").references((): any => franchises.id, { onDelete: "set null" }),
-  location: text("location"),
-  createdBy: uuid("created_by").references((): any => users.id, { onDelete: "set null" }),
-  isActive: boolean("is_active").default(true).notNull(),
-  mustChangePassword: boolean("must_change_password").default(false).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-});
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    passwordHash: text("password_hash").notNull(),
+    role: userRoleEnum("role").notNull(),
+    franchiseId: uuid("franchise_id").references((): any => franchises.id, { onDelete: "set null" }),
+    location: text("location"),
+    createdBy: uuid("created_by").references((): any => users.id, { onDelete: "set null" }),
+    isActive: boolean("is_active").default(true).notNull(),
+    mustChangePassword: boolean("must_change_password").default(false).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("users_role_idx").on(table.role), index("users_franchise_id_idx").on(table.franchiseId)],
+);
 
-export const refreshTokens = pgTable("refresh_tokens", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  tokenHash: text("token_hash").notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  revokedAt: timestamp("revoked_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+export const refreshTokens = pgTable(
+  "refresh_tokens",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("refresh_tokens_user_id_idx").on(table.userId)],
+);
 
 export const companiesRelations = relations(companies, ({ many }) => ({
   franchises: many(franchises),

@@ -13,7 +13,7 @@ import { notify } from "../notification/notification.service.js";
 import type { UserRole } from "../../utils/jwt.js";
 
 const EMPLOYEE_ROLES: UserRole[] = ["employee"];
-const FRANCHISE_ROLES: UserRole[] = ["franchise_owner", "operator"];
+const FRANCHISE_ROLES: UserRole[] = ["operator"]; // franchise_owner excluded from leaderboards entirely, not just from viewing them
 
 export async function awardPoints(
   userId: string,

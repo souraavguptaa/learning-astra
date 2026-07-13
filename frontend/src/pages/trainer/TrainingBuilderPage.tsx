@@ -45,6 +45,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
     mandatory: boolean;
   }>({ assigneeType: "role", role: "employee", franchiseId: "", userIds: [], dueDate: "", dueTime: "", mandatory: true });
   const [assigning, setAssigning] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
   const [editForm, setEditForm] = useState({ title: "", description: "" });
   const [justSaved, setJustSaved] = useState<string | null>(null);
 
@@ -60,6 +61,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
   const { data: npsReport } = useNpsReport(detail?.training.npsEnabled ? selectedId : null);
 
   const endUsers = allUsers?.filter((u) => ["franchise_owner", "operator", "employee"].includes(u.role)) ?? [];
+  const filteredEndUsers = endUsers.filter((u) => u.name.toLowerCase().includes(userSearch.toLowerCase()));
 
   useEffect(() => {
     if (detail) setEditForm({ title: detail.training.title, description: detail.training.description });
@@ -395,9 +397,16 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                   </button>
                 </div>
                 {assignForm.assigneeType === "users" && (
-                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto border border-slate-200 rounded p-2">
-                    {endUsers.length === 0 && <span className="text-xs text-slate-400">No users yet.</span>}
-                    {endUsers.map((u) => (
+                  <>
+                    <input
+                      placeholder="Search people…"
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    />
+                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto border border-slate-200 rounded p-2">
+                    {filteredEndUsers.length === 0 && <span className="text-xs text-slate-400">No matching users.</span>}
+                    {filteredEndUsers.map((u) => (
                       <label key={u.id} className="flex items-center gap-1 text-xs bg-slate-50 px-2 py-1 rounded">
                         <input
                           type="checkbox"
@@ -407,7 +416,8 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                         {u.name}
                       </label>
                     ))}
-                  </div>
+                    </div>
+                  </>
                 )}
                 <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                   <span>Due by (optional):</span>

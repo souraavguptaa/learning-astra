@@ -227,6 +227,7 @@ export function useAssignedTrainings() {
     queryKey: ["assigned-trainings"],
     queryFn: async () =>
       (await api.get<{ training: Training; progress: TrainingProgress | null }[]>("/trainings/assigned")).data,
+    refetchInterval: 15000, // so a newly-assigned training shows up without navigating away and back
   });
 }
 

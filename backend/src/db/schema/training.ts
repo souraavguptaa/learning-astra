@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, check, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, index, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { assessments } from "./assessment.js";
 import { contentItems } from "./content.js";
 import { franchises, userRoleEnum, users } from "./org.js";
@@ -48,22 +48,30 @@ export const trainingItems = pgTable(
         (${table.itemType} = 'assessment' AND ${table.assessmentId} IS NOT NULL AND ${table.contentId} IS NULL)
       )`,
     ),
+    index("training_items_training_id_idx").on(table.trainingId),
   ],
 );
 
-export const trainingAssignments = pgTable("training_assignments", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  trainingId: uuid("training_id")
-    .notNull()
-    .references(() => trainings.id, { onDelete: "cascade" }),
-  assigneeType: assigneeTypeEnum("assignee_type").notNull(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
-  role: userRoleEnum("role"),
-  franchiseId: uuid("franchise_id").references(() => franchises.id, { onDelete: "cascade" }),
-  dueAt: timestamp("due_at", { withTimezone: true }),
-  isMandatory: boolean("is_mandatory").default(true).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+export const trainingAssignments = pgTable(
+  "training_assignments",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    trainingId: uuid("training_id")
+      .notNull()
+      .references(() => trainings.id, { onDelete: "cascade" }),
+    assigneeType: assigneeTypeEnum("assignee_type").notNull(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    role: userRoleEnum("role"),
+    franchiseId: uuid("franchise_id").references(() => franchises.id, { onDelete: "cascade" }),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    isMandatory: boolean("is_mandatory").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("training_assignments_training_id_idx").on(table.trainingId),
+    index("training_assignments_user_id_idx").on(table.userId),
+  ],
+);
 
 export const trainingVersions = pgTable("training_versions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
