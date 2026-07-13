@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useAddTicketMessage, useTicketDetail } from "../../features/ticket.js";
+import { useAddTicketMessage, useTicketDetail, type Attachment } from "../../features/ticket.js";
+import { AttachmentList } from "./AttachmentList.js";
 
 const STATUS_BADGE: Record<string, string> = {
   open: "bg-amber-50 text-amber-700",
@@ -18,7 +19,7 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
   async function handleReply(e: React.FormEvent) {
     e.preventDefault();
     if (!reply.trim()) return;
-    await addMessage.mutateAsync(reply.trim());
+    await addMessage.mutateAsync({ message: reply.trim() });
     setReply("");
   }
 
@@ -28,8 +29,9 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
         <div>
           <h3 className="font-semibold">{ticket.subject}</h3>
           <p className="text-sm text-slate-500">{ticket.description}</p>
+          <AttachmentList attachments={ticket.attachments as Attachment[]} />
         </div>
-        <span className={`px-2 py-0.5 rounded text-xs ${STATUS_BADGE[ticket.status]}`}>{ticket.status}</span>
+        <span className={`px-2 py-0.5 rounded text-xs shrink-0 ${STATUS_BADGE[ticket.status]}`}>{ticket.status}</span>
       </div>
 
       {children}
@@ -41,6 +43,7 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
               {m.senderName} · {new Date(m.createdAt).toLocaleString()}
             </div>
             {m.message}
+            <AttachmentList attachments={m.attachments} />
           </div>
         ))}
         {messages.length === 0 && <p className="text-sm text-slate-400">No replies yet.</p>}

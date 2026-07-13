@@ -60,7 +60,17 @@ export function useTicketDetail(ticketId: string | null) {
     queryFn: async () =>
       (await api.get<{ ticket: Ticket; messages: TicketMessage[]; kbSubmissions: KbSubmission[] }>(`/tickets/${ticketId}`)).data,
     enabled: !!ticketId,
+    refetchInterval: ticketId ? 8000 : false, // poll so replies show up without a manual reload
   });
+}
+
+export async function uploadTicketAttachment(file: File): Promise<Attachment> {
+  const { data } = await api.post<{ uploadUrl: string; fileKey: string }>("/tickets/attachment-upload-url", {
+    filename: file.name,
+    contentType: file.type || "application/octet-stream",
+  });
+  await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+  return { fileKey: data.fileKey, fileName: file.name };
 }
 
 export function useCreateTicket() {
@@ -75,7 +85,8 @@ export function useCreateTicket() {
 export function useAddTicketMessage(ticketId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (message: string) => (await api.post(`/tickets/${ticketId}/messages`, { message })).data,
+    mutationFn: async (input: { message: string; attachments?: Attachment[] }) =>
+      (await api.post(`/tickets/${ticketId}/messages`, input)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ticket", ticketId] }),
   });
 }

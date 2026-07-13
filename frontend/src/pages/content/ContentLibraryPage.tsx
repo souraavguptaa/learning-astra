@@ -29,7 +29,8 @@ export function ContentLibraryPage() {
   const { data: content, isLoading } = useContentList();
   const { data: masterTopics } = useMasterTopics();
   const createMasterTopic = useCreateMasterTopic();
-  const upload = useUploadContent();
+  const [uploadPct, setUploadPct] = useState<number | null>(null);
+  const upload = useUploadContent((pct) => setUploadPct(pct === -1 ? null : pct));
 
   const [form, setForm] = useState({
     title: "",
@@ -41,6 +42,7 @@ export function ContentLibraryPage() {
   const [selectedRoles, setSelectedRoles] = useState<UserRole[]>(["franchise_owner", "operator", "employee"]);
   const [file, setFile] = useState<File | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [newTopicTitle, setNewTopicTitle] = useState("");
 
@@ -54,6 +56,7 @@ export function ContentLibraryPage() {
     e.preventDefault();
     if (!file) return;
     setWarning(null);
+    setSuccess(null);
     try {
       const result = await upload.mutateAsync({
         file,
@@ -65,6 +68,7 @@ export function ContentLibraryPage() {
         masterTopicId: form.masterTopicId || undefined,
       });
       if (result.warning) setWarning(result.warning);
+      else setSuccess(`"${result.item.title}" uploaded successfully.`);
       setForm({ title: "", description: "", topic: "", language: "Hindi", masterTopicId: "" });
       setFile(null);
       (document.getElementById("file-input") as HTMLInputElement | null)?.value &&
@@ -94,6 +98,14 @@ export function ContentLibraryPage() {
         <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
           {warning}
           <button className="ml-3 underline" onClick={() => setWarning(null)}>
+            dismiss
+          </button>
+        </div>
+      )}
+      {success && (
+        <div className="rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
+          ✓ {success}
+          <button className="ml-3 underline" onClick={() => setSuccess(null)}>
             dismiss
           </button>
         </div>
@@ -188,8 +200,16 @@ export function ContentLibraryPage() {
             disabled={upload.isPending}
             className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
           >
-            {upload.isPending ? "Uploading…" : "Upload"}
+            {upload.isPending ? `Uploading… ${uploadPct ?? 0}%` : "Upload"}
           </button>
+          {upload.isPending && (
+            <div className="w-full h-2 bg-slate-200 rounded overflow-hidden">
+              <div
+                className="h-full bg-astra transition-all"
+                style={{ width: `${uploadPct ?? 0}%` }}
+              />
+            </div>
+          )}
         </form>
       </section>
 

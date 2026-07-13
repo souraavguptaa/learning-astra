@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../../lib/authContext.js";
 import { useVideoProgress } from "./useVideoProgress.js";
 
 function formatTime(seconds: number): string {
@@ -11,6 +12,7 @@ function formatTime(seconds: number): string {
 export function VideoPlayer({ contentId, src, onComplete }: { contentId: string; src: string; onComplete?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { progress, ready, runHeartbeat, startHeartbeat, stopHeartbeat } = useVideoProgress(contentId, videoRef);
+  const { user } = useAuth();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -91,20 +93,29 @@ export function VideoPlayer({ contentId, src, onComplete }: { contentId: string;
 
   return (
     <div className="w-full select-none" onContextMenu={(e) => e.preventDefault()}>
-      <video
-        ref={videoRef}
-        src={src}
-        className="w-full rounded bg-black"
-        controls={false}
-        onLoadedMetadata={handleLoadedMetadata}
-        onPlay={handlePlay}
-        onPause={handlePause}
-        onTimeUpdate={handleTimeUpdate}
-        onSeeking={handleSeeking}
-        onEnded={() => runHeartbeat()}
-        disablePictureInPicture
-        playsInline
-      />
+      <div className="relative">
+        <video
+          ref={videoRef}
+          src={src}
+          className="w-full rounded bg-black"
+          controls={false}
+          onLoadedMetadata={handleLoadedMetadata}
+          onPlay={handlePlay}
+          onPause={handlePause}
+          onTimeUpdate={handleTimeUpdate}
+          onSeeking={handleSeeking}
+          onEnded={() => runHeartbeat()}
+          disablePictureInPicture
+          playsInline
+        />
+        {user && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+            <span className="text-white/25 text-sm font-medium -rotate-[20deg] whitespace-nowrap">
+              {user.name} · {user.email}
+            </span>
+          </div>
+        )}
+      </div>
       <div className="flex items-center gap-3 mt-2 bg-slate-100 rounded px-3 py-2">
         <button
           onClick={togglePlay}

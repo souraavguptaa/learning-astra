@@ -9,6 +9,7 @@ import { assessmentRouter } from "./modules/assessment/assessment.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { certificateRouter } from "./modules/certificate/certificate.routes.js";
 import { contentRouter } from "./modules/content/content.routes.js";
+import { fileRouter } from "./modules/file/file.routes.js";
 import { gamificationRouter } from "./modules/gamification/gamification.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { notificationRouter } from "./modules/notification/notification.routes.js";
@@ -38,6 +39,7 @@ export function createApp() {
   app.use("/api/notifications", notificationRouter);
   app.use("/api/announcements", announcementRouter);
   app.use("/api/analytics", analyticsRouter);
+  app.use("/api/files", fileRouter);
 
   app.use(errorHandler);
 

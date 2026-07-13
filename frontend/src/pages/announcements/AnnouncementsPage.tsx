@@ -1,17 +1,31 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFranchises } from "../../features/org.js";
 import {
+  uploadAnnouncementAttachment,
   useAllAnnouncements,
   useAnnouncementReadStatus,
   useCreateAnnouncement,
   useDeleteAnnouncement,
-  useMarkAnnouncementRead,
   useMyAnnouncements,
 } from "../../features/announcement.js";
 import { useAuth } from "../../lib/authContext.js";
 import type { UserRole } from "../../lib/authContext.js";
+import { api } from "../../lib/api.js";
 
 const MANAGER_ROLES: UserRole[] = ["super_admin", "admin", "trainer"];
+
+function AttachmentLink({ fileKey }: { fileKey: string | null }) {
+  if (!fileKey) return null;
+  async function open() {
+    const { data } = await api.get<{ url: string }>("/files/download-url", { params: { key: fileKey } });
+    window.open(data.url, "_blank");
+  }
+  return (
+    <button onClick={open} className="text-xs text-astra underline mt-1">
+      📎 View attachment
+    </button>
+  );
+}
 
 function ManagerView() {
   const { data: announcements } = useAllAnnouncements();
@@ -20,6 +34,8 @@ function ManagerView() {
   const del = useDeleteAnnouncement();
   const [statusId, setStatusId] = useState<string | null>(null);
   const { data: readStatus } = useAnnouncementReadStatus(statusId);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState<{
     title: string;
@@ -31,14 +47,22 @@ function ManagerView() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    await create.mutateAsync({
-      title: form.title,
-      body: form.body,
-      targetType: form.targetType,
-      targetRole: form.targetType === "role" ? form.targetRole : undefined,
-      targetFranchiseId: form.targetType === "franchise" ? form.targetFranchiseId : undefined,
-    });
-    setForm({ title: "", body: "", targetType: "all", targetRole: "employee", targetFranchiseId: "" });
+    setUploading(true);
+    try {
+      const attachmentFileKey = file ? await uploadAnnouncementAttachment(file) : undefined;
+      await create.mutateAsync({
+        title: form.title,
+        body: form.body,
+        targetType: form.targetType,
+        targetRole: form.targetType === "role" ? form.targetRole : undefined,
+        targetFranchiseId: form.targetType === "franchise" ? form.targetFranchiseId : undefined,
+        attachmentFileKey,
+      });
+      setForm({ title: "", body: "", targetType: "all", targetRole: "employee", targetFranchiseId: "" });
+      setFile(null);
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -60,6 +84,7 @@ function ManagerView() {
           className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
           rows={2}
         />
+        <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-xs" />
         <div className="flex gap-2">
           <select
             value={form.targetType}
@@ -97,7 +122,9 @@ function ManagerView() {
               ))}
             </select>
           )}
-          <button className="rounded-md bg-astra text-white px-4 py-1.5 text-sm">Post</button>
+          <button disabled={uploading} className="rounded-md bg-astra text-white px-4 py-1.5 text-sm disabled:opacity-60">
+            {uploading ? "Posting…" : "Post"}
+          </button>
         </div>
       </form>
 
@@ -108,6 +135,7 @@ function ManagerView() {
               <div>
                 <div className="font-medium">{a.title}</div>
                 <div className="text-sm text-slate-600">{a.body}</div>
+                <AttachmentLink fileKey={a.attachmentFileKey} />
                 <div className="text-xs text-slate-400 mt-1">
                   {a.targetType === "all" ? "Everyone" : a.targetType === "role" ? `Role: ${a.targetRole}` : "Specific franchise"}
                 </div>
@@ -135,12 +163,6 @@ function ManagerView() {
 
 function EndUserView() {
   const { data: announcements } = useMyAnnouncements();
-  const markRead = useMarkAnnouncementRead();
-
-  useEffect(() => {
-    announcements?.filter((a) => !a.isRead).forEach((a) => markRead.mutate(a.id));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [announcements?.map((a) => a.id).join(",")]);
 
   return (
     <div className="space-y-4">
@@ -151,6 +173,7 @@ function EndUserView() {
           <div key={a.id} className="bg-white rounded-lg border border-slate-200 p-4">
             <div className="font-medium">{a.title}</div>
             <div className="text-sm text-slate-600">{a.body}</div>
+            <AttachmentLink fileKey={a.attachmentFileKey} />
             <div className="text-xs text-slate-400 mt-1">{new Date(a.createdAt).toLocaleString()}</div>
           </div>
         ))}

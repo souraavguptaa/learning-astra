@@ -1,6 +1,6 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AssessmentBuilderForm } from "../../components/assessment/AssessmentBuilderForm.js";
 import { SortableItemRow } from "../../components/trainingBuilder/SortableItemRow.js";
 import { useContentList } from "../../features/content.js";
@@ -11,30 +11,35 @@ import {
   useBumpVersion,
   useCreateTraining,
   usePublishTraining,
+  useRemoveAssignment,
   useRemoveTrainingItem,
   useReorderTrainingItems,
   useTrainingDetail,
   useTrainings,
   useUpdateTraining,
 } from "../../features/training.js";
-import { useFranchises } from "../../features/org.js";
+import { useFranchises, useUsers } from "../../features/org.js";
 import type { UserRole } from "../../lib/authContext.js";
+
+type AssigneeType = "role" | "franchise" | "users";
 
 export function TrainingBuilderPage() {
   const { data: trainings } = useTrainings();
   const { data: contentList } = useContentList();
   const { data: franchises } = useFranchises();
+  const { data: allUsers } = useUsers();
   const createTraining = useCreateTraining();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", description: "", isMandatory: false });
   const [pickedContentId, setPickedContentId] = useState("");
   const [showAssessmentForm, setShowAssessmentForm] = useState(false);
-  const [assignForm, setAssignForm] = useState<{ assigneeType: "role" | "franchise"; role: UserRole; franchiseId: string }>({
-    assigneeType: "role",
-    role: "employee",
-    franchiseId: "",
-  });
+  const [assignForm, setAssignForm] = useState<{ assigneeType: AssigneeType; role: UserRole; franchiseId: string; userIds: string[] }>(
+    { assigneeType: "role", role: "employee", franchiseId: "", userIds: [] },
+  );
+  const [assigning, setAssigning] = useState(false);
+  const [editForm, setEditForm] = useState({ title: "", description: "" });
+  const [justSaved, setJustSaved] = useState<string | null>(null);
 
   const { data: detail } = useTrainingDetail(selectedId);
   const addItem = useAddTrainingItem(selectedId ?? "");
@@ -43,14 +48,32 @@ export function TrainingBuilderPage() {
   const publish = usePublishTraining(selectedId ?? "");
   const bumpVersion = useBumpVersion(selectedId ?? "");
   const assign = useAssignTraining(selectedId ?? "");
+  const removeAssignment = useRemoveAssignment(selectedId ?? "");
   const updateTraining = useUpdateTraining(selectedId ?? "");
   const { data: npsReport } = useNpsReport(detail?.training.npsEnabled ? selectedId : null);
+
+  const endUsers = allUsers?.filter((u) => ["franchise_owner", "operator", "employee"].includes(u.role)) ?? [];
+
+  useEffect(() => {
+    if (detail) setEditForm({ title: detail.training.title, description: detail.training.description });
+  }, [detail?.training.id]);
+
+  function flashSaved(label: string) {
+    setJustSaved(label);
+    setTimeout(() => setJustSaved(null), 2000);
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     const training = await createTraining.mutateAsync(form);
     setForm({ title: "", description: "", isMandatory: false });
     setSelectedId(training.id);
+  }
+
+  async function handleSaveDetails(e: React.FormEvent) {
+    e.preventDefault();
+    await updateTraining.mutateAsync({ title: editForm.title, description: editForm.description });
+    flashSaved("Saved");
   }
 
   async function handleAddItem() {
@@ -72,13 +95,47 @@ export function TrainingBuilderPage() {
     reorderItems.mutate(reordered);
   }
 
+  async function handlePublish() {
+    await publish.mutateAsync();
+    flashSaved("Published");
+  }
+
+  async function handleBumpVersion(changeType: "minor" | "major") {
+    await bumpVersion.mutateAsync(changeType);
+    flashSaved(changeType === "major" ? "Major update sent — everyone must redo this training" : "Minor update saved");
+  }
+
   async function handleAssign(e: React.FormEvent) {
     e.preventDefault();
-    if (assignForm.assigneeType === "role") {
-      await assign.mutateAsync({ assigneeType: "role", role: assignForm.role });
-    } else {
-      await assign.mutateAsync({ assigneeType: "franchise", franchiseId: assignForm.franchiseId });
+    setAssigning(true);
+    try {
+      if (assignForm.assigneeType === "role") {
+        await assign.mutateAsync({ assigneeType: "role", role: assignForm.role });
+      } else if (assignForm.assigneeType === "franchise") {
+        await assign.mutateAsync({ assigneeType: "franchise", franchiseId: assignForm.franchiseId });
+      } else {
+        for (const userId of assignForm.userIds) {
+          await assign.mutateAsync({ assigneeType: "user", userId });
+        }
+      }
+      setAssignForm((f) => ({ ...f, userIds: [] }));
+      flashSaved("Assigned");
+    } finally {
+      setAssigning(false);
     }
+  }
+
+  function toggleAssignUser(userId: string) {
+    setAssignForm((f) => ({
+      ...f,
+      userIds: f.userIds.includes(userId) ? f.userIds.filter((id) => id !== userId) : [...f.userIds, userId],
+    }));
+  }
+
+  function describeAssignment(a: { assigneeType: string; role: string | null; franchiseId: string | null; userId: string | null }) {
+    if (a.assigneeType === "role") return `Everyone with role: ${a.role}`;
+    if (a.assigneeType === "franchise") return `Everyone at: ${franchises?.find((f) => f.id === a.franchiseId)?.name ?? "Unknown franchise"}`;
+    return allUsers?.find((u) => u.id === a.userId)?.name ?? "Unknown user";
   }
 
   return (
@@ -94,7 +151,7 @@ export function TrainingBuilderPage() {
             className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
           />
           <textarea
-            placeholder="Description"
+            placeholder="Description / notes for this training"
             required
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -107,7 +164,7 @@ export function TrainingBuilderPage() {
               checked={form.isMandatory}
               onChange={(e) => setForm((f) => ({ ...f, isMandatory: e.target.checked }))}
             />
-            Mandatory
+            Mandatory for everyone it's assigned to
           </label>
           <button className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium">
             Create training
@@ -135,48 +192,89 @@ export function TrainingBuilderPage() {
         {!detail && <p className="text-slate-400">Select or create a training to edit it.</p>}
         {detail && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold">{detail.training.title}</h2>
+            {justSaved && (
+              <div className="rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-800">
+                ✓ {justSaved}
+              </div>
+            )}
+
+            <section className="bg-white rounded-lg border border-slate-200 p-4">
+              <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-slate-500">
                   {detail.training.status} · v{detail.training.versionMajor}.{detail.training.versionMinor}
                 </p>
-                <label className="text-xs text-slate-500 flex items-center gap-1 mt-1">
-                  <input
-                    type="checkbox"
-                    checked={detail.training.npsEnabled}
-                    onChange={(e) => updateTraining.mutate({ npsEnabled: e.target.checked })}
-                  />
-                  Collect NPS feedback for this training
-                </label>
+                <div className="flex gap-2">
+                  {detail.training.status === "draft" && (
+                    <button
+                      onClick={handlePublish}
+                      disabled={publish.isPending}
+                      className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+                    >
+                      {publish.isPending ? "Publishing…" : "Publish"}
+                    </button>
+                  )}
+                  {detail.training.status === "published" && (
+                    <>
+                      <button
+                        onClick={() => handleBumpVersion("minor")}
+                        disabled={bumpVersion.isPending}
+                        className="rounded-md border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-60"
+                        title="Small tweak — people who already completed it don't need to redo it"
+                      >
+                        {bumpVersion.isPending ? "Saving…" : "Minor update"}
+                      </button>
+                      <button
+                        onClick={() => handleBumpVersion("major")}
+                        disabled={bumpVersion.isPending}
+                        className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm disabled:opacity-60"
+                        title="Big change — everyone who already completed it must redo it"
+                      >
+                        {bumpVersion.isPending ? "Saving…" : "Major update"}
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-2">
-                {detail.training.status === "draft" && (
+              <form onSubmit={handleSaveDetails} className="space-y-2">
+                <input
+                  value={editForm.title}
+                  onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                  className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-lg font-bold"
+                />
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="Add any information trainees should know about this training…"
+                  className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                  rows={3}
+                />
+                <div className="flex items-center gap-4">
                   <button
-                    onClick={() => publish.mutate()}
-                    className="rounded-md bg-astra text-white px-3 py-1.5 text-sm"
+                    type="submit"
+                    disabled={updateTraining.isPending}
+                    className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
                   >
-                    Publish
+                    {updateTraining.isPending ? "Saving…" : "Save details"}
                   </button>
-                )}
-                {detail.training.status === "published" && (
-                  <>
-                    <button
-                      onClick={() => bumpVersion.mutate("minor")}
-                      className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
-                    >
-                      Minor update
-                    </button>
-                    <button
-                      onClick={() => bumpVersion.mutate("major")}
-                      className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm"
-                    >
-                      Major update
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+                  <label className="text-xs text-slate-500 flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={detail.training.isMandatory}
+                      onChange={(e) => updateTraining.mutate({ isMandatory: e.target.checked })}
+                    />
+                    Mandatory for everyone assigned
+                  </label>
+                  <label className="text-xs text-slate-500 flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      checked={detail.training.npsEnabled}
+                      onChange={(e) => updateTraining.mutate({ npsEnabled: e.target.checked })}
+                    />
+                    Collect NPS feedback
+                  </label>
+                </div>
+              </form>
+            </section>
 
             <section className="bg-white rounded-lg border border-slate-200 p-4">
               <h3 className="font-semibold text-slate-700 mb-3">Items (drag to reorder)</h3>
@@ -230,49 +328,84 @@ export function TrainingBuilderPage() {
             </section>
 
             <section className="bg-white rounded-lg border border-slate-200 p-4">
-              <h3 className="font-semibold text-slate-700 mb-3">Assign to</h3>
-              <form onSubmit={handleAssign} className="flex gap-2 items-center">
-                <select
-                  value={assignForm.assigneeType}
-                  onChange={(e) => setAssignForm((f) => ({ ...f, assigneeType: e.target.value as "role" | "franchise" }))}
-                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
-                >
-                  <option value="role">Role</option>
-                  <option value="franchise">Franchise</option>
-                </select>
-                {assignForm.assigneeType === "role" && (
+              <h3 className="font-semibold text-slate-700 mb-1">Who is this assigned to?</h3>
+              <p className="text-xs text-slate-400 mb-3">
+                Pick a whole role, everyone at one franchise, or specific people — you can add as many of each as you like.
+              </p>
+              <form onSubmit={handleAssign} className="space-y-2">
+                <div className="flex gap-2">
                   <select
-                    value={assignForm.role}
-                    onChange={(e) => setAssignForm((f) => ({ ...f, role: e.target.value as UserRole }))}
+                    value={assignForm.assigneeType}
+                    onChange={(e) => setAssignForm((f) => ({ ...f, assigneeType: e.target.value as AssigneeType }))}
                     className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
                   >
-                    <option value="franchise_owner">Franchise Owner</option>
-                    <option value="operator">Operator</option>
-                    <option value="employee">Employee</option>
+                    <option value="role">A whole role</option>
+                    <option value="franchise">Everyone at a franchise</option>
+                    <option value="users">Specific people</option>
                   </select>
-                )}
-                {assignForm.assigneeType === "franchise" && (
-                  <select
-                    value={assignForm.franchiseId}
-                    onChange={(e) => setAssignForm((f) => ({ ...f, franchiseId: e.target.value }))}
-                    className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                  {assignForm.assigneeType === "role" && (
+                    <select
+                      value={assignForm.role}
+                      onChange={(e) => setAssignForm((f) => ({ ...f, role: e.target.value as UserRole }))}
+                      className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    >
+                      <option value="franchise_owner">Franchise Owner</option>
+                      <option value="operator">Operator</option>
+                      <option value="employee">Employee</option>
+                    </select>
+                  )}
+                  {assignForm.assigneeType === "franchise" && (
+                    <select
+                      value={assignForm.franchiseId}
+                      onChange={(e) => setAssignForm((f) => ({ ...f, franchiseId: e.target.value }))}
+                      className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    >
+                      <option value="">Select franchise…</option>
+                      {franchises?.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    disabled={
+                      assigning ||
+                      (assignForm.assigneeType === "franchise" && !assignForm.franchiseId) ||
+                      (assignForm.assigneeType === "users" && assignForm.userIds.length === 0)
+                    }
+                    className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
                   >
-                    <option value="">Select franchise…</option>
-                    {franchises?.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
-                      </option>
+                    {assigning ? "Assigning…" : "Assign"}
+                  </button>
+                </div>
+                {assignForm.assigneeType === "users" && (
+                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto border border-slate-200 rounded p-2">
+                    {endUsers.length === 0 && <span className="text-xs text-slate-400">No users yet.</span>}
+                    {endUsers.map((u) => (
+                      <label key={u.id} className="flex items-center gap-1 text-xs bg-slate-50 px-2 py-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={assignForm.userIds.includes(u.id)}
+                          onChange={() => toggleAssignUser(u.id)}
+                        />
+                        {u.name}
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 )}
-                <button className="rounded-md bg-astra text-white px-3 py-1.5 text-sm">Assign</button>
               </form>
-              <ul className="mt-3 text-sm text-slate-500 space-y-1">
+              <ul className="mt-3 text-sm space-y-1">
+                {detail.assignments.length === 0 && <li className="text-slate-400">Not assigned to anyone yet.</li>}
                 {detail.assignments.map((a) => (
-                  <li key={a.id}>
-                    {a.assigneeType === "role" && `Role: ${a.role}`}
-                    {a.assigneeType === "franchise" && `Franchise: ${franchises?.find((f) => f.id === a.franchiseId)?.name ?? a.franchiseId}`}
-                    {a.assigneeType === "user" && `User: ${a.userId}`}
+                  <li key={a.id} className="flex items-center justify-between bg-slate-50 rounded px-2 py-1">
+                    <span>{describeAssignment(a)}</span>
+                    <button
+                      onClick={() => removeAssignment.mutate(a.id)}
+                      className="text-red-500 text-xs hover:underline"
+                    >
+                      Remove
+                    </button>
                   </li>
                 ))}
               </ul>

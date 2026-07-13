@@ -29,6 +29,15 @@ export function useAllAnnouncements() {
   });
 }
 
+export async function uploadAnnouncementAttachment(file: File): Promise<string> {
+  const { data } = await api.post<{ uploadUrl: string; fileKey: string }>("/announcements/attachment-upload-url", {
+    filename: file.name,
+    contentType: file.type || "application/octet-stream",
+  });
+  await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+  return data.fileKey;
+}
+
 export function useCreateAnnouncement() {
   const qc = useQueryClient();
   return useMutation({
@@ -38,6 +47,7 @@ export function useCreateAnnouncement() {
       targetType: "all" | "role" | "franchise";
       targetRole?: UserRole;
       targetFranchiseId?: string;
+      attachmentFileKey?: string;
     }) => (await api.post<Announcement>("/announcements", input)).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["announcements-all"] });

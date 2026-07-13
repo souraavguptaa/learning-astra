@@ -93,12 +93,33 @@ export function useTrainingDetail(trainingId: string | null) {
   });
 }
 
+type TrainingDetail = {
+  training: Training;
+  items: { item: TrainingItem; content: ContentItem | null; assessment: AssessmentSummary | null }[];
+  assignments: TrainingAssignment[];
+};
+
 export function useUpdateTraining(trainingId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: Partial<{ title: string; description: string; isMandatory: boolean; npsEnabled: boolean }>) =>
       (await api.put<Training>(`/trainings/${trainingId}`, input)).data,
-    onSuccess: () => {
+    // Optimistic: flip the UI instantly instead of waiting on a round-trip, roll back on failure.
+    onMutate: async (input) => {
+      await qc.cancelQueries({ queryKey: ["training", trainingId] });
+      const previous = qc.getQueryData<TrainingDetail>(["training", trainingId]);
+      if (previous) {
+        qc.setQueryData<TrainingDetail>(["training", trainingId], {
+          ...previous,
+          training: { ...previous.training, ...input },
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      if (context?.previous) qc.setQueryData(["training", trainingId], context.previous);
+    },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["training", trainingId] });
       qc.invalidateQueries({ queryKey: ["trainings"] });
     },
@@ -169,6 +190,14 @@ export function useAssignTraining(trainingId: string) {
       role?: UserRole;
       franchiseId?: string;
     }) => (await api.post<TrainingAssignment>(`/trainings/${trainingId}/assign`, input)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["training", trainingId] }),
+  });
+}
+
+export function useRemoveAssignment(trainingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (assignmentId: string) => api.delete(`/trainings/${trainingId}/assign/${assignmentId}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["training", trainingId] }),
   });
 }

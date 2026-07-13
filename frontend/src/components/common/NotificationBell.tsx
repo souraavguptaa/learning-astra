@@ -1,6 +1,20 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMarkAllNotificationsRead, useMarkNotificationRead, useMyNotifications } from "../../features/notification.js";
+
+function playPing() {
+  const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+  if (!Ctx) return;
+  const ctx = new Ctx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.frequency.value = 880;
+  gain.gain.setValueAtTime(0.15, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.3);
+}
 
 export function NotificationBell() {
   const { data: notifications } = useMyNotifications();
@@ -10,6 +24,11 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
 
   const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
+  const lastCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (lastCount.current !== null && unreadCount > lastCount.current) playPing();
+    lastCount.current = unreadCount;
+  }, [unreadCount]);
 
   function handleClick(id: string, deepLink: string | null) {
     markRead.mutate(id);

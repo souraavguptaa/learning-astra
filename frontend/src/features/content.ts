@@ -59,7 +59,25 @@ function inferContentType(file: File): ContentType {
   return "pdf";
 }
 
-export function useUploadContent() {
+/** XHR (not fetch) because it's the only way to get upload progress events natively. */
+function putWithProgress(url: string, file: File, onProgress: (pct: number) => void): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url);
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(`File upload to storage failed (${xhr.status}). Check your connection and try again.`));
+    };
+    xhr.onerror = () => reject(new Error("File upload to storage failed. Check your connection and try again."));
+    xhr.send(file);
+  });
+}
+
+export function useUploadContent(onProgress?: (pct: number) => void) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
@@ -72,19 +90,14 @@ export function useUploadContent() {
       masterTopicId?: string;
     }) => {
       const { file } = input;
+      onProgress?.(0);
       const { data: uploadInfo } = await api.post<{ uploadUrl: string; fileKey: string }>("/content/upload-url", {
         filename: file.name,
         contentType: file.type || "application/octet-stream",
       });
 
-      const putRes = await fetch(uploadInfo.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type || "application/octet-stream" },
-        body: file,
-      });
-      if (!putRes.ok) {
-        throw new Error(`File upload to storage failed (${putRes.status}). Check your connection and try again.`);
-      }
+      await putWithProgress(uploadInfo.uploadUrl, file, (pct) => onProgress?.(pct));
+      onProgress?.(100);
 
       const { data } = await api.post("/content", {
         type: inferContentType(file),
@@ -100,6 +113,7 @@ export function useUploadContent() {
       return data as { item: ContentItem; warning: string | null };
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["content"] }),
+    onSettled: () => onProgress?.(-1),
   });
 }
 

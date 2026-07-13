@@ -1,18 +1,28 @@
 import { useState } from "react";
 import { TicketThread } from "../../components/ticket/TicketThread.js";
-import { useCreateTicket, useMyTickets } from "../../features/ticket.js";
+import { useCreateTicket, useMyTickets, uploadTicketAttachment, type Attachment } from "../../features/ticket.js";
 
 export function MyTicketsPage() {
   const { data: tickets } = useMyTickets();
   const createTicket = useCreateTicket();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState({ subject: "", description: "" });
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const ticket = await createTicket.mutateAsync(form);
-    setForm({ subject: "", description: "" });
-    setSelectedId(ticket.id);
+    setUploading(true);
+    try {
+      let attachments: Attachment[] | undefined;
+      if (file) attachments = [await uploadTicketAttachment(file)];
+      const ticket = await createTicket.mutateAsync({ ...form, attachments });
+      setForm({ subject: "", description: "" });
+      setFile(null);
+      setSelectedId(ticket.id);
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -35,7 +45,13 @@ export function MyTicketsPage() {
             className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
             rows={3}
           />
-          <button className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium">Create ticket</button>
+          <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-xs" />
+          <button
+            disabled={uploading}
+            className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium disabled:opacity-60"
+          >
+            {uploading ? "Creating…" : "Create ticket"}
+          </button>
         </form>
         <div className="space-y-1">
           {tickets?.map((t) => (

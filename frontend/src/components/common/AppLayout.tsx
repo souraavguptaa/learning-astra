@@ -1,5 +1,6 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
+import { AnnouncementBanner } from "./AnnouncementBanner.js";
 import { NotificationBell } from "./NotificationBell.js";
 
 const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
@@ -53,23 +54,32 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
 export function AppLayout() {
   const { user, logout } = useAuth();
   const nav = user ? NAV_BY_ROLE[user.role] ?? [] : [];
+  const location = useLocation();
+  const currentLabel = nav.find((item) => (item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)))?.label;
 
   return (
     <div className="min-h-screen flex bg-slate-50">
       <aside className="w-60 bg-white border-r border-slate-200 flex flex-col">
-        <div className="px-5 py-4 border-b border-slate-200">
+        <Link to="/" className="block px-5 py-4 border-b border-slate-200 hover:bg-slate-50">
           <div className="font-bold text-astra">Learning Astra</div>
           <div className="text-xs text-slate-400">SastaSundar Learning Dashboard</div>
-        </div>
+        </Link>
         <nav className="flex-1 py-3">
           {nav.map((item) => (
-            <Link
+            <NavLink
               key={item.path}
               to={item.path}
-              className="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-100 hover:text-astra"
+              end={item.path === "/"}
+              className={({ isActive }) =>
+                `block px-5 py-2 text-sm border-l-2 ${
+                  isActive
+                    ? "border-astra bg-blue-50 text-astra font-medium"
+                    : "border-transparent text-slate-600 hover:bg-slate-100 hover:text-astra"
+                }`
+              }
             >
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
         <div className="px-5 py-4 border-t border-slate-200 text-sm">
@@ -82,7 +92,9 @@ export function AppLayout() {
         <div className="px-5 py-3 text-[10px] text-slate-300">Created by Sourav Gupta</div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex justify-end items-center px-8 py-3 border-b border-slate-200 bg-white">
+        <AnnouncementBanner />
+        <header className="flex justify-between items-center px-8 py-3 border-b border-slate-200 bg-white">
+          <span className="text-sm font-medium text-slate-500">{currentLabel}</span>
           <NotificationBell />
         </header>
         <main className="flex-1 p-8 overflow-x-auto">
