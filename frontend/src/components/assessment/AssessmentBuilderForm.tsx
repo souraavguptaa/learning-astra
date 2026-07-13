@@ -18,29 +18,33 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
   const [passPercentage, setPassPercentage] = useState(70);
   const [maxAttempts, setMaxAttempts] = useState(3);
   const [questions, setQuestions] = useState<AssessmentQuestionInput[]>([emptyQuestion()]);
+  const [current, setCurrent] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  function updateQuestion(index: number, patch: Partial<AssessmentQuestionInput>) {
-    setQuestions((qs) => qs.map((q, i) => (i === index ? { ...q, ...patch } : q)));
+  const q = questions[current];
+
+  function updateQuestion(patch: Partial<AssessmentQuestionInput>) {
+    setQuestions((qs) => qs.map((x, i) => (i === current ? { ...x, ...patch } : x)));
   }
 
-  function updateOption(qIndex: number, oIndex: number, patch: { optionText?: string; isCorrect?: boolean }) {
+  function updateOption(oIndex: number, patch: { optionText?: string; isCorrect?: boolean }) {
     setQuestions((qs) =>
-      qs.map((q, i) => {
-        if (i !== qIndex) return q;
-        const options = q.options.map((o, j) => {
+      qs.map((x, i) => {
+        if (i !== current) return x;
+        const options = x.options.map((o, j) => {
           if (patch.isCorrect !== undefined) {
             // single-correct-answer semantics: selecting one clears the others
             return { ...o, isCorrect: j === oIndex ? patch.isCorrect! : false };
           }
           return j === oIndex ? { ...o, ...patch } : o;
         });
-        return { ...q, options };
+        return { ...x, options };
       }),
     );
   }
 
-  function setQuestionType(qIndex: number, type: "mcq" | "true_false") {
-    updateQuestion(qIndex, {
+  function setQuestionType(type: "mcq" | "true_false") {
+    updateQuestion({
       type,
       options:
         type === "true_false"
@@ -55,28 +59,54 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
     });
   }
 
-  function addQuestion() {
-    setQuestions((qs) => [...qs, emptyQuestion()]);
+  function addOption() {
+    setQuestions((qs) => qs.map((x, i) => (i === current ? { ...x, options: [...x.options, { optionText: "", isCorrect: false }] } : x)));
   }
 
-  function removeQuestion(index: number) {
-    setQuestions((qs) => qs.filter((_, i) => i !== index));
+  function removeQuestion() {
+    if (questions.length === 1) return;
+    setQuestions((qs) => qs.filter((_, i) => i !== current));
+    setCurrent((c) => Math.max(0, c - 1));
   }
 
-  function addOption(qIndex: number) {
-    setQuestions((qs) =>
-      qs.map((q, i) => (i === qIndex ? { ...q, options: [...q.options, { optionText: "", isCorrect: false }] } : q)),
-    );
+  function validateCurrent(): boolean {
+    if (!q.questionText.trim()) {
+      setError("Question text is required.");
+      return false;
+    }
+    if (q.type === "mcq" && q.options.some((o) => !o.optionText.trim())) {
+      setError("Every option needs text.");
+      return false;
+    }
+    setError(null);
+    return true;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function goNext() {
+    if (!validateCurrent()) return;
+    if (current === questions.length - 1) {
+      setQuestions((qs) => [...qs, emptyQuestion()]);
+    }
+    setCurrent((c) => c + 1);
+  }
+
+  function goBack() {
+    setError(null);
+    setCurrent((c) => Math.max(0, c - 1));
+  }
+
+  async function handleSave() {
+    if (!title.trim()) {
+      setError("Assessment title is required.");
+      return;
+    }
+    if (!validateCurrent()) return;
     await createAssessment.mutateAsync({ title, passPercentage, maxAttempts, questions });
     onDone();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-slate-50 rounded p-4 border border-slate-200">
+    <div className="space-y-4 bg-slate-50 rounded p-4 border border-slate-200">
       <div className="flex gap-2">
         <input
           placeholder="Assessment title"
@@ -109,76 +139,88 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
         </label>
       </div>
 
-      {questions.map((q, qIndex) => (
-        <div key={qIndex} className="bg-white rounded border border-slate-200 p-3 space-y-2">
-          <div className="flex gap-2 items-center">
-            <input
-              placeholder={`Question ${qIndex + 1}`}
-              required
-              value={q.questionText}
-              onChange={(e) => updateQuestion(qIndex, { questionText: e.target.value })}
-              className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
-            />
-            <select
-              value={q.type}
-              onChange={(e) => setQuestionType(qIndex, e.target.value as "mcq" | "true_false")}
-              className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
-            >
-              <option value="mcq">MCQ</option>
-              <option value="true_false">True/False</option>
-            </select>
-            {questions.length > 1 && (
-              <button type="button" onClick={() => removeQuestion(qIndex)} className="text-red-500 text-xs">
-                Remove
-              </button>
-            )}
-          </div>
-          <div className="space-y-1 pl-2">
-            {q.options.map((o, oIndex) => (
-              <div key={oIndex} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`correct-${qIndex}`}
-                  checked={o.isCorrect}
-                  onChange={() => updateOption(qIndex, oIndex, { isCorrect: true })}
-                />
-                <input
-                  placeholder={`Option ${oIndex + 1}`}
-                  required
-                  disabled={q.type === "true_false"}
-                  value={o.optionText}
-                  onChange={(e) => updateOption(qIndex, oIndex, { optionText: e.target.value })}
-                  className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm disabled:bg-slate-100"
-                />
-              </div>
-            ))}
-            {q.type === "mcq" && (
-              <button type="button" onClick={() => addOption(qIndex)} className="text-astra text-xs">
-                + add option
-              </button>
-            )}
-          </div>
+      <div className="bg-white rounded border border-slate-200 p-3 space-y-2">
+        <div className="flex items-center justify-between text-xs text-slate-500">
+          <span>
+            Question {current + 1} of {questions.length}
+          </span>
+          {questions.length > 1 && (
+            <button type="button" onClick={removeQuestion} className="text-red-500">
+              Remove this question
+            </button>
+          )}
         </div>
-      ))}
-
-      <div className="flex gap-2">
-        <button type="button" onClick={addQuestion} className="text-astra text-sm underline">
-          + Add question
-        </button>
+        <div className="flex gap-2 items-center">
+          <input
+            placeholder={`Question ${current + 1}`}
+            required
+            value={q.questionText}
+            onChange={(e) => updateQuestion({ questionText: e.target.value })}
+            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+          />
+          <select
+            value={q.type}
+            onChange={(e) => setQuestionType(e.target.value as "mcq" | "true_false")}
+            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          >
+            <option value="mcq">MCQ</option>
+            <option value="true_false">True/False</option>
+          </select>
+        </div>
+        <div className="space-y-1 pl-2">
+          {q.options.map((o, oIndex) => (
+            <div key={oIndex} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`correct-${current}`}
+                checked={o.isCorrect}
+                onChange={() => updateOption(oIndex, { isCorrect: true })}
+              />
+              <input
+                placeholder={`Option ${oIndex + 1}`}
+                required
+                disabled={q.type === "true_false"}
+                value={o.optionText}
+                onChange={(e) => updateOption(oIndex, { optionText: e.target.value })}
+                className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm disabled:bg-slate-100"
+              />
+            </div>
+          ))}
+          {q.type === "mcq" && (
+            <button type="button" onClick={addOption} className="text-astra text-xs">
+              + add option
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="flex gap-2">
+      {error && <p className="text-xs text-red-600">{error}</p>}
+
+      <div className="flex items-center gap-2">
         <button
-          type="submit"
-          disabled={createAssessment.isPending}
-          className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium"
+          type="button"
+          onClick={goBack}
+          disabled={current === 0}
+          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-40"
         >
-          Save assessment
+          Back
+        </button>
+        <button type="button" onClick={goNext} className="rounded-md border border-astra text-astra px-3 py-1.5 text-sm">
+          Next question →
+        </button>
+        <div className="flex-1" />
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={createAssessment.isPending}
+          className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+        >
+          {createAssessment.isPending ? "Saving…" : "Save assessment"}
         </button>
         <button type="button" onClick={onDone} className="text-sm text-slate-500">
           Cancel
         </button>
       </div>
-    </form>
+    </div>
   );
 }

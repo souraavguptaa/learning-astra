@@ -14,6 +14,7 @@ import { gamificationRouter } from "./modules/gamification/gamification.routes.j
 import { healthRouter } from "./modules/health/health.routes.js";
 import { notificationRouter } from "./modules/notification/notification.routes.js";
 import { orgRouter } from "./modules/org/org.routes.js";
+import { adRouter, videoRouter } from "./modules/promo/promo.routes.js";
 import { progressRouter } from "./modules/progress/progress.routes.js";
 import { kbSubmissionRouter, ticketRouter } from "./modules/ticket/ticket.routes.js";
 import { trainingRouter } from "./modules/training/training.routes.js";
@@ -40,6 +41,8 @@ export function createApp() {
   app.use("/api/announcements", announcementRouter);
   app.use("/api/analytics", analyticsRouter);
   app.use("/api/files", fileRouter);
+  app.use("/api/ads", adRouter);
+  app.use("/api/videos", videoRouter);
 
   app.use(errorHandler);
 

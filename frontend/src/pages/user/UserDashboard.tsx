@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { AdPopup } from "../../components/common/AdPopup.js";
 import { useMyGamification } from "../../features/gamification.js";
 import { useAssignedTrainings } from "../../features/training.js";
 import { useAuth } from "../../lib/authContext.js";
@@ -14,6 +15,7 @@ export function UserDashboard() {
 
   return (
     <div className="space-y-8">
+      <AdPopup />
       <h1 className="text-2xl font-bold text-slate-800">Welcome, {user?.name}</h1>
 
       {gamification && (

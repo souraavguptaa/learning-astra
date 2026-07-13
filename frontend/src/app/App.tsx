@@ -1,8 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/common/AppLayout.js";
 import { ProtectedRoute } from "../components/common/ProtectedRoute.js";
+import { useAssignedTrainings } from "../features/training.js";
 import { AuthProvider, useAuth } from "../lib/authContext.js";
 import { AdminDashboard } from "../pages/admin/AdminDashboard.js";
+import { AdsManagementPage } from "../pages/ads/AdsManagementPage.js";
 import { AnnouncementsPage } from "../pages/announcements/AnnouncementsPage.js";
 import { LoginPage } from "../pages/auth/LoginPage.js";
 import { CertificatesPage } from "../pages/certificates/CertificatesPage.js";
@@ -19,6 +21,14 @@ import { TrainingBuilderPage } from "../pages/trainer/TrainingBuilderPage.js";
 import { MyTicketsPage } from "../pages/tickets/MyTicketsPage.js";
 import { TicketQueuePage } from "../pages/tickets/TicketQueuePage.js";
 import { UserDashboard } from "../pages/user/UserDashboard.js";
+import { PartnerVideosPage } from "../pages/videos/PartnerVideosPage.js";
+
+function EndUserHome() {
+  const { data: assigned } = useAssignedTrainings();
+  const blocking = assigned?.find((a) => a.training.isMandatory && !a.progress?.completed);
+  if (blocking) return <Navigate to={`/learning/${blocking.training.id}`} replace />;
+  return <UserDashboard />;
+}
 
 function HomeRoute() {
   const { user } = useAuth();
@@ -31,7 +41,7 @@ function HomeRoute() {
     case "trainer":
       return <TrainerDashboard />;
     default:
-      return <UserDashboard />;
+      return <EndUserHome />;
   }
 }
 
@@ -150,6 +160,22 @@ export function App() {
             element={
               <ProtectedRoute roles={["super_admin"]}>
                 <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ads"
+            element={
+              <ProtectedRoute roles={["super_admin", "admin"]}>
+                <AdsManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="videos"
+            element={
+              <ProtectedRoute>
+                <PartnerVideosPage />
               </ProtectedRoute>
             }
           />

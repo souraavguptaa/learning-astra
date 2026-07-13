@@ -11,6 +11,8 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "Users & Org", path: "/users" },
     { label: "KB Review", path: "/kb-review" },
     { label: "Announcements", path: "/announcements" },
+    { label: "Ads", path: "/ads" },
+    { label: "Partner Videos", path: "/videos" },
     { label: "Reports", path: "/reports" },
   ],
   admin: [
@@ -20,6 +22,8 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "Trainings", path: "/trainings" },
     { label: "Assessments", path: "/assessments" },
     { label: "Announcements", path: "/announcements" },
+    { label: "Ads", path: "/ads" },
+    { label: "Partner Videos", path: "/videos" },
   ],
   trainer: [
     { label: "Overview", path: "/" },
@@ -28,12 +32,14 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "Assessments", path: "/assessments" },
     { label: "Tickets", path: "/tickets" },
     { label: "Announcements", path: "/announcements" },
+    { label: "Partner Videos", path: "/videos" },
   ],
   franchise_owner: [
     { label: "My Learning", path: "/" },
     { label: "AI Support", path: "/support" },
     { label: "My Tickets", path: "/my-tickets" },
     { label: "Certificates", path: "/certificates" },
+    { label: "Partner Videos", path: "/videos" },
     { label: "Announcements", path: "/announcements" },
   ],
   operator: [
@@ -42,6 +48,7 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "My Tickets", path: "/my-tickets" },
     { label: "Certificates", path: "/certificates" },
     { label: "Leaderboard", path: "/leaderboard" },
+    { label: "Partner Videos", path: "/videos" },
     { label: "Announcements", path: "/announcements" },
   ],
   employee: [
@@ -50,6 +57,7 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "My Tickets", path: "/my-tickets" },
     { label: "Certificates", path: "/certificates" },
     { label: "Leaderboard", path: "/leaderboard" },
+    { label: "Partner Videos", path: "/videos" },
     { label: "Announcements", path: "/announcements" },
   ],
 };
