@@ -1,18 +1,55 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAskSupport, type SupportAskResult } from "../../features/support.js";
+
+const SpeechRecognitionCtor: any =
+  typeof window !== "undefined" ? (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition : undefined;
+const speechSynthesisSupported = typeof window !== "undefined" && "speechSynthesis" in window;
 
 export function AiSupportPage() {
   const navigate = useNavigate();
   const ask = useAskSupport();
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<SupportAskResult | null>(null);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!SpeechRecognitionCtor) return;
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = navigator.language || "en-IN";
+    recognition.interimResults = false;
+    recognition.onresult = (e: any) => setQuery(e.results[0][0].transcript);
+    recognition.onend = () => setListening(false);
+    recognition.onerror = () => setListening(false);
+    recognitionRef.current = recognition;
+    return () => recognition.stop();
+  }, []);
+
+  function toggleListening() {
+    if (!recognitionRef.current) return;
+    if (listening) {
+      recognitionRef.current.stop();
+      setListening(false);
+    } else {
+      setQuery("");
+      recognitionRef.current.start();
+      setListening(true);
+    }
+  }
+
+  function speak(text: string) {
+    if (!speechSynthesisSupported) return;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
     const res = await ask.mutateAsync(query.trim());
     setResult(res);
+    if (res.confident && res.answer) speak(res.answer);
   }
 
   function raiseTicket() {
@@ -24,18 +61,30 @@ export function AiSupportPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-800">AI Support</h1>
         <p className="text-slate-500 mt-1">
-          Ask a question in any language. I'll search every video, document, and announcement in Learning Astra for
-          a verified answer — if I can't find one, you can raise a ticket in one click.
+          Ask a question in any language, by typing or speaking. I'll search every video, document, and announcement
+          in Learning Astra for a verified answer — if I can't find one, you can raise a ticket in one click.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
-          placeholder="Ask a question…"
+          placeholder={listening ? "Listening…" : "Ask a question…"}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm"
         />
+        {SpeechRecognitionCtor && (
+          <button
+            type="button"
+            onClick={toggleListening}
+            title={listening ? "Stop listening" : "Ask by voice"}
+            className={`rounded-md px-3 py-2 text-sm border ${
+              listening ? "bg-red-500 text-white border-red-500 animate-pulse" : "border-slate-300 text-slate-600"
+            }`}
+          >
+            🎤
+          </button>
+        )}
         <button
           type="submit"
           disabled={ask.isPending || !query.trim()}
@@ -49,7 +98,18 @@ export function AiSupportPage() {
         <div className="bg-white rounded-lg border border-slate-200 p-5 space-y-4">
           {result.confident ? (
             <>
-              <p className="text-slate-700 whitespace-pre-wrap">{result.answer}</p>
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-slate-700 whitespace-pre-wrap flex-1">{result.answer}</p>
+                {speechSynthesisSupported && result.answer && (
+                  <button
+                    onClick={() => speak(result.answer!)}
+                    title="Listen"
+                    className="shrink-0 text-slate-400 hover:text-astra text-lg"
+                  >
+                    🔊
+                  </button>
+                )}
+              </div>
               {result.matches.length > 0 && (
                 <div>
                   <div className="text-xs font-medium text-slate-400 mb-1">Sources</div>

@@ -5,6 +5,7 @@ import { ApiError } from "../../middleware/errorHandler.js";
 import { generateCertificate } from "../certificate/certificate.service.js";
 import { awardPoints, checkAndAwardBadges } from "../gamification/gamification.service.js";
 import { notify } from "../notification/notification.service.js";
+import { upsertEmbedding } from "../support/support.service.js";
 import { addAssessmentItemToTraining, advanceTrainingProgressForAssessment } from "../training/training.service.js";
 
 interface QuestionInput {
@@ -58,6 +59,11 @@ export async function createAssessment(
   }
 
   await addAssessmentItemToTraining(input.trainingId, assessment.id);
+
+  const questionSummary = input.questions.map((q) => q.questionText).join(". ");
+  upsertEmbedding("assessment", assessment.id, `${assessment.title}. ${questionSummary}`).catch((err) =>
+    console.error("Failed to embed assessment:", err),
+  );
 
   return assessment;
 }

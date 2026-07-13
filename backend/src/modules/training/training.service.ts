@@ -15,7 +15,14 @@ import {
 import { ApiError } from "../../middleware/errorHandler.js";
 import { awardPoints, checkAndAwardBadges } from "../gamification/gamification.service.js";
 import { notify } from "../notification/notification.service.js";
+import { upsertEmbedding } from "../support/support.service.js";
 import type { UserRole } from "../../utils/jwt.js";
+
+function embedTraining(training: { id: string; title: string; description: string }) {
+  upsertEmbedding("training", training.id, `${training.title}. ${training.description}`).catch((err) =>
+    console.error("Failed to embed training:", err),
+  );
+}
 
 export async function createTraining(
   trainerId: string,
@@ -31,6 +38,7 @@ export async function createTraining(
       trainerId,
     })
     .returning();
+  embedTraining(training);
   return training;
 }
 
@@ -69,6 +77,7 @@ export async function updateTraining(
 ) {
   const [training] = await db.update(trainings).set(input).where(eq(trainings.id, trainingId)).returning();
   if (!training) throw new ApiError(404, "Training not found");
+  if (input.title !== undefined || input.description !== undefined) embedTraining(training);
   return training;
 }
 
