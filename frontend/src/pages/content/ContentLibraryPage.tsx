@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { DocumentViewer } from "../../components/documentViewer/DocumentViewer.js";
+import { lazy, Suspense, useState } from "react";
 import {
   useContentList,
   useContentPlaybackUrl,
@@ -9,6 +8,10 @@ import {
   type ContentItem,
 } from "../../features/content.js";
 import type { UserRole } from "../../lib/authContext.js";
+
+const DocumentViewer = lazy(() =>
+  import("../../components/documentViewer/DocumentViewer.js").then((m) => ({ default: m.DocumentViewer })),
+);
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: "franchise_owner", label: "Franchise Owner" },
@@ -246,7 +249,11 @@ export function ContentLibraryPage() {
             {playback?.type === "video" && (
               <video src={playback.url} controls className="w-full rounded" controlsList="nodownload" />
             )}
-            {playback && playback.type !== "video" && <DocumentViewer fileUrl={playback.url} />}
+            {playback && playback.type !== "video" && (
+              <Suspense fallback={<p className="text-slate-400 text-sm">Loading viewer…</p>}>
+                <DocumentViewer fileUrl={playback.url} />
+              </Suspense>
+            )}
           </div>
         </div>
       )}

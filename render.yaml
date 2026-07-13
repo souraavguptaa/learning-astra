@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: learning-astra-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build --workspace=backend
+    startCommand: npm run start --workspace=backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: learning-astra-content
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://learning-astra-frontend.onrender.com
+
+  - type: web
+    name: learning-astra-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build --workspace=frontend
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://learning-astra-backend.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

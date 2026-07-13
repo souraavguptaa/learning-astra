@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTrainingCompletionReport } from "../../features/analytics.js";
 import { useFranchises } from "../../features/org.js";
-import { tokenStore } from "../../lib/api.js";
+import { API_BASE_URL, tokenStore } from "../../lib/api.js";
 
 export function ReportsPage() {
   const [franchiseId, setFranchiseId] = useState("");
@@ -10,7 +10,7 @@ export function ReportsPage() {
 
   async function handleExport() {
     const params = new URLSearchParams({ format: "xlsx", ...(franchiseId ? { franchiseId } : {}) });
-    const res = await fetch(`/api/analytics/training-completion?${params.toString()}`, {
+    const res = await fetch(`${API_BASE_URL}/analytics/training-completion?${params.toString()}`, {
       headers: { Authorization: `Bearer ${tokenStore.getAccess()}` },
     });
     const blob = await res.blob();

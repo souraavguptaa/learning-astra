@@ -16,8 +16,10 @@ export const tokenStore = {
   },
 };
 
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "/api"; // dev: Vite proxy; prod: set VITE_API_URL to the deployed backend
+
 export const api = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use((config) => {
@@ -39,7 +41,7 @@ api.interceptors.response.use(
       try {
         if (!refreshingPromise) {
           refreshingPromise = axios
-            .post("/api/auth/refresh", { refreshToken: tokenStore.getRefresh() })
+            .post(`${API_BASE_URL}/auth/refresh`, { refreshToken: tokenStore.getRefresh() })
             .then(({ data }) => {
               tokenStore.set(data.accessToken, data.refreshToken);
               return data.accessToken as string;

@@ -1,13 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AssessmentRunner } from "../../components/assessment/AssessmentRunner.js";
 import { NpsPrompt } from "../../components/common/NpsPrompt.js";
-import { DocumentViewer } from "../../components/documentViewer/DocumentViewer.js";
 import { VideoPlayer } from "../../components/video/VideoPlayer.js";
 import { useContentPlaybackUrl } from "../../features/content.js";
 import { markViewed } from "../../features/progress.js";
 import { useTrainingForUser } from "../../features/training.js";
+
+const DocumentViewer = lazy(() =>
+  import("../../components/documentViewer/DocumentViewer.js").then((m) => ({ default: m.DocumentViewer })),
+);
 
 function isItemComplete(entry: { item: { itemType: string }; progress: { completed?: boolean; passed?: boolean } | null }): boolean {
   if (!entry.progress) return false;
@@ -96,7 +99,11 @@ export function TrainingPlayerPage() {
                 onComplete={() => qc.invalidateQueries({ queryKey: ["training-for-user", trainingId] })}
               />
             )}
-            {playback && activeEntry.content.type !== "video" && <DocumentViewer fileUrl={playback.url} />}
+            {playback && activeEntry.content.type !== "video" && (
+              <Suspense fallback={<p className="text-slate-400 text-sm">Loading viewer…</p>}>
+                <DocumentViewer fileUrl={playback.url} />
+              </Suspense>
+            )}
           </div>
         )}
         {allItemsComplete && data.training.npsEnabled && trainingId && <NpsPrompt trainingId={trainingId} />}

@@ -1,4 +1,4 @@
-import { api, tokenStore } from "../lib/api.js";
+import { API_BASE_URL, api, tokenStore } from "../lib/api.js";
 
 export interface ProgressState {
   lastPositionSeconds: number;
@@ -29,5 +29,8 @@ export function beaconFinalPosition(contentId: string, currentTime: number, dura
   if (!token) return;
   const blob = new Blob([JSON.stringify({ currentTime, durationSeconds })], { type: "application/json" });
   // sendBeacon can't set custom headers, so we pass the token via query string for this one best-effort call.
-  navigator.sendBeacon?.(`/api/progress/content/${contentId}/heartbeat?token=${encodeURIComponent(token)}`, blob);
+  navigator.sendBeacon?.(
+    `${API_BASE_URL}/progress/content/${contentId}/heartbeat?token=${encodeURIComponent(token)}`,
+    blob,
+  );
 }
