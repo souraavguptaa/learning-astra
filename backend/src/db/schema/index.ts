@@ -6,5 +6,6 @@ export * from "./nps.js";
 export * from "./org.js";
 export * from "./progress.js";
 export * from "./promo.js";
+export * from "./support.js";
 export * from "./ticket.js";
 export * from "./training.js";

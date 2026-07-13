@@ -85,6 +85,13 @@
       "when": 1783973063951,
       "tag": "0011_heavy_steel_serpent",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1783975992633,
+      "tag": "0012_dashing_moira_mactaggert",
+      "breakpoints": true
     }
   ]
 }

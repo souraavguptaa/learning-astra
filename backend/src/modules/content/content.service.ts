@@ -10,6 +10,13 @@ import {
   getUploadUrl,
   putObjectBuffer,
 } from "../../services/r2Service.js";
+import { upsertEmbedding } from "../support/support.service.js";
+
+function embedContentItem(item: { id: string; title: string; description: string; topic: string; language: string }) {
+  upsertEmbedding("content", item.id, `${item.title}. ${item.description}. Topic: ${item.topic}. Language: ${item.language}`).catch(
+    (err) => console.error("Failed to embed content item:", err),
+  );
+}
 
 const NEEDS_CONVERSION: Record<string, boolean> = {
   ppt: true,
@@ -59,6 +66,7 @@ export async function createContentItem(
     .returning();
 
   if (!NEEDS_CONVERSION[input.type]) {
+    embedContentItem(item);
     return { item, warning: null as string | null };
   }
 
@@ -72,6 +80,7 @@ export async function createContentItem(
       .set({ convertedPdfKey, status: "ready" })
       .where(eq(contentItems.id, item.id))
       .returning();
+    embedContentItem(updated);
     return { item: updated, warning: null as string | null };
   } catch (err) {
     await db.update(contentItems).set({ status: "failed" }).where(eq(contentItems.id, item.id));

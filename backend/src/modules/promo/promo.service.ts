@@ -3,6 +3,7 @@ import { db } from "../../db/client.js";
 import { ads, partnerVideos } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
 import { buildFileKey, getUploadUrl } from "../../services/r2Service.js";
+import { upsertEmbedding } from "../support/support.service.js";
 
 export async function createAdUploadUrl(originalFilename: string, contentType: string) {
   const fileKey = buildFileKey("ads", originalFilename);
@@ -12,6 +13,7 @@ export async function createAdUploadUrl(originalFilename: string, contentType: s
 
 export async function createAd(createdBy: string, input: { title: string; imageFileKey: string; linkUrl: string }) {
   const [ad] = await db.insert(ads).values({ ...input, createdBy }).returning();
+  upsertEmbedding("ad", ad.id, ad.title).catch((err) => console.error("Failed to embed ad:", err));
   return ad;
 }
 

@@ -3,6 +3,7 @@ import { db } from "../../db/client.js";
 import { announcementReads, announcements, users } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
 import { buildFileKey, getUploadUrl } from "../../services/r2Service.js";
+import { upsertEmbedding } from "../support/support.service.js";
 import type { UserRole } from "../../utils/jwt.js";
 
 export async function createAttachmentUploadUrl(originalFilename: string, contentType: string) {
@@ -36,6 +37,9 @@ export async function createAnnouncement(
       createdBy,
     })
     .returning();
+  upsertEmbedding("announcement", announcement.id, `${announcement.title}. ${announcement.body}`).catch((err) =>
+    console.error("Failed to embed announcement:", err),
+  );
   return announcement;
 }
 

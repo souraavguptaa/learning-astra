@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { TicketThread } from "../../components/ticket/TicketThread.js";
 import { useCreateTicket, useMyTickets, uploadTicketAttachment, type Attachment } from "../../features/ticket.js";
 
 export function MyTicketsPage() {
+  const location = useLocation();
+  const prefill = (location.state as { prefillSubject?: string; prefillDescription?: string } | null) ?? null;
   const { data: tickets } = useMyTickets();
   const createTicket = useCreateTicket();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [form, setForm] = useState({ subject: "", description: "" });
+  const [form, setForm] = useState({ subject: prefill?.prefillSubject ?? "", description: prefill?.prefillDescription ?? "" });
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);

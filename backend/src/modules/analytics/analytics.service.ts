@@ -1,6 +1,7 @@
 import { and, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import {
+  aiSearchQueries,
   assessmentResults,
   franchises,
   npsResponses,
@@ -40,14 +41,21 @@ export async function getOverview() {
     .from(supportTickets)
     .where(inArray(supportTickets.status, ["open", "in_progress"]));
 
+  const [{ aiSupportQueries, unansweredQueries }] = await db
+    .select({
+      aiSupportQueries: sql<number>`count(*)::int`,
+      unansweredQueries: sql<number>`count(*) filter (where not ${aiSearchQueries.hadConfidentMatch})::int`,
+    })
+    .from(aiSearchQueries);
+
   return {
     totalUsers,
     activeUsers,
     trainingCompletionRate: totalProgress > 0 ? Math.round((completedProgress / totalProgress) * 100) : null,
     assessmentPassRate: totalAttempts > 0 ? Math.round((passedAttempts / totalAttempts) * 100) : null,
     averageNps: avgNps !== null ? Math.round(Number(avgNps) * 10) / 10 : null,
-    aiSupportQueries: 0,
-    unansweredQueries: 0,
+    aiSupportQueries,
+    unansweredQueries,
     openTickets,
   };
 }
