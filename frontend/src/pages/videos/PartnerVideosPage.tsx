@@ -9,6 +9,31 @@ import {
 
 const MANAGER_ROLES = ["super_admin", "admin", "trainer"];
 
+function VideoCard({ title, videoId }: { title: string; videoId: string }) {
+  const [playing, setPlaying] = useState(false);
+
+  if (playing) {
+    return (
+      <iframe
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+        title={title}
+        className="w-full aspect-video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  return (
+    <button onClick={() => setPlaying(true)} className="relative w-full aspect-video block group">
+      <img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={title} className="w-full h-full object-cover" />
+      <span className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+        <span className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center text-white text-2xl">▶</span>
+      </span>
+    </button>
+  );
+}
+
 export function PartnerVideosPage() {
   const { user } = useAuth();
   const { data: videos, isLoading } = usePartnerVideos();
@@ -34,13 +59,7 @@ export function PartnerVideosPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Partner Videos</h1>
-        <p className="text-slate-500 mt-1">
-          Videos from the{" "}
-          <a href="https://www.youtube.com/@SastaSundarApp" target="_blank" rel="noopener noreferrer" className="text-astra underline">
-            SastaSundar YouTube channel
-          </a>
-          .
-        </p>
+        <p className="text-slate-500 mt-1">Videos from the SastaSundar YouTube channel. Click a thumbnail to play it right here.</p>
       </div>
 
       {canManage && (
@@ -80,15 +99,7 @@ export function PartnerVideosPage() {
           const videoId = extractYoutubeId(v.youtubeUrl);
           return (
             <div key={v.id} className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-              {videoId && (
-                <iframe
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title={v.title}
-                  className="w-full aspect-video"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              )}
+              {videoId && <VideoCard title={v.title} videoId={videoId} />}
               <div className="p-3 flex items-center justify-between">
                 <span className="text-sm font-medium">{v.title}</span>
                 {canManage && (
