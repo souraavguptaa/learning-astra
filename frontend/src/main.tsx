@@ -6,6 +6,9 @@ import { App } from "./app/App.js";
 import { ErrorBoundary } from "./components/common/ErrorBoundary.js";
 import "./styles/index.css";
 
+// ponytail: Reticle client SDK left in reticle-dev.ts but disabled here — see vite.config.ts note.
+// if (import.meta.env.DEV) import("./reticle-dev.js");
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } },
 });

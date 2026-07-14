@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import {
   ads,
@@ -27,6 +27,10 @@ export async function upsertEmbedding(sourceType: SourceType, sourceId: string, 
       target: [contentEmbeddings.sourceType, contentEmbeddings.sourceId],
       set: { sourceText: text, embedding, updatedAt: new Date() },
     });
+}
+
+export async function deleteEmbedding(sourceType: SourceType, sourceId: string) {
+  await db.delete(contentEmbeddings).where(and(eq(contentEmbeddings.sourceType, sourceType), eq(contentEmbeddings.sourceId, sourceId)));
 }
 
 export async function reembedAll() {

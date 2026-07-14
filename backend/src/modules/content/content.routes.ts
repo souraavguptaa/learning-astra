@@ -88,3 +88,32 @@ contentRouter.get(
     res.json(await contentService.getContentPlaybackUrl(req.params.id));
   }),
 );
+
+const updateContentSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  topic: z.string().min(1).optional(),
+  language: z.string().min(1).optional(),
+  targetRoles: z.array(z.enum(roleValues)).min(1).optional(),
+  masterTopicId: z.string().uuid().nullable().optional(),
+  fileKey: z.string().min(1).optional(),
+  mimeType: z.string().min(1).optional(),
+});
+
+contentRouter.put(
+  "/:id",
+  authorize(...CONTENT_MANAGERS),
+  validateBody(updateContentSchema),
+  asyncHandler(async (req, res) => {
+    res.json(await contentService.updateContentItem(req.params.id, req.body));
+  }),
+);
+
+contentRouter.delete(
+  "/:id",
+  authorize(...CONTENT_MANAGERS),
+  asyncHandler(async (req, res) => {
+    await contentService.deleteContentItem(req.params.id);
+    res.status(204).send();
+  }),
+);

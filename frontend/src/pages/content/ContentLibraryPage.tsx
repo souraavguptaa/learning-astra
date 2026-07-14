@@ -3,11 +3,14 @@ import {
   useContentList,
   useContentPlaybackUrl,
   useCreateMasterTopic,
+  useDeleteContent,
   useMasterTopics,
+  useUpdateContent,
   useUploadContent,
   type ContentItem,
 } from "../../features/content.js";
 import type { UserRole } from "../../lib/authContext.js";
+import { isAxiosError } from "axios";
 
 const DocumentViewer = lazy(() =>
   import("../../components/documentViewer/DocumentViewer.js").then((m) => ({ default: m.DocumentViewer })),
@@ -45,6 +48,12 @@ export function ContentLibraryPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [newTopicTitle, setNewTopicTitle] = useState("");
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", description: "", topic: "", language: "" });
+  const [editFile, setEditFile] = useState<File | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const updateContent = useUpdateContent(editingItem?.id ?? "");
+  const deleteContent = useDeleteContent();
 
   const { data: playback } = useContentPlaybackUrl(previewId);
 
@@ -75,6 +84,40 @@ export function ContentLibraryPage() {
         ((document.getElementById("file-input") as HTMLInputElement).value = "");
     } catch (err) {
       setWarning(err instanceof Error ? err.message : "Upload failed. Please try again.");
+    }
+  }
+
+  function openEdit(item: ContentItem) {
+    setEditingItem(item);
+    setEditForm({ title: item.title, description: item.description, topic: item.topic, language: item.language });
+    setEditFile(null);
+    setEditError(null);
+  }
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingItem) return;
+    setEditError(null);
+    try {
+      await updateContent.mutateAsync({ ...editForm, file: editFile ?? undefined });
+      setEditingItem(null);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Could not save changes. Please try again.");
+    }
+  }
+
+  async function handleDelete(item: ContentItem) {
+    setWarning(null);
+    setSuccess(null);
+    try {
+      await deleteContent.mutateAsync(item.id);
+      setSuccess(`"${item.title}" deleted.`);
+    } catch (err) {
+      setWarning(
+        isAxiosError(err) && err.response?.data?.error
+          ? err.response.data.error
+          : "Could not delete this content. Please try again.",
+      );
     }
   }
 
@@ -224,12 +267,13 @@ export function ContentLibraryPage() {
               <th className="py-1.5">Language</th>
               <th className="py-1.5">Status</th>
               <th className="py-1.5">Preview</th>
+              <th className="py-1.5">Actions</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="py-3 text-slate-400">
+                <td colSpan={7} className="py-3 text-slate-400">
                   Loading…
                 </td>
               </tr>
@@ -249,6 +293,18 @@ export function ContentLibraryPage() {
                       Preview
                     </button>
                   )}
+                </td>
+                <td className="py-1.5 space-x-2">
+                  <button className="text-astra hover:underline" onClick={() => openEdit(c)}>
+                    Edit
+                  </button>
+                  <button
+                    className="text-red-500 hover:underline"
+                    disabled={deleteContent.isPending}
+                    onClick={() => handleDelete(c)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -274,6 +330,71 @@ export function ContentLibraryPage() {
                 <DocumentViewer fileUrl={playback.url} />
               </Suspense>
             )}
+          </div>
+        </div>
+      )}
+
+      {editingItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+          <div className="bg-white rounded-lg max-w-lg w-full p-5">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold">Edit "{editingItem.title}"</h3>
+              <button className="text-slate-500" onClick={() => setEditingItem(null)}>
+                Close
+              </button>
+            </div>
+            <form onSubmit={handleSaveEdit} className="space-y-2">
+              <input
+                placeholder="Title"
+                required
+                value={editForm.title}
+                onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              />
+              <textarea
+                placeholder="Description"
+                required
+                value={editForm.description}
+                onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                rows={2}
+              />
+              <div className="flex gap-2">
+                <input
+                  placeholder="Topic"
+                  required
+                  value={editForm.topic}
+                  onChange={(e) => setEditForm((f) => ({ ...f, topic: e.target.value }))}
+                  className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                />
+                <select
+                  value={editForm.language}
+                  onChange={(e) => setEditForm((f) => ({ ...f, language: e.target.value }))}
+                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                >
+                  <option>Hindi</option>
+                  <option>English</option>
+                  <option>Bengali</option>
+                </select>
+              </div>
+              <label className="block text-xs text-slate-500">
+                Replace file (optional — leave blank to keep the current one)
+                <input type="file" onChange={(e) => setEditFile(e.target.files?.[0] ?? null)} className="block mt-1 text-sm" />
+              </label>
+              {editError && <p className="text-xs text-red-600">{editError}</p>}
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={updateContent.isPending}
+                  className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+                >
+                  {updateContent.isPending ? "Saving…" : "Save changes"}
+                </button>
+                <button type="button" onClick={() => setEditingItem(null)} className="text-sm text-slate-500">
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

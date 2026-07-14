@@ -117,6 +117,45 @@ export function useUploadContent(onProgress?: (pct: number) => void) {
   });
 }
 
+export function useUpdateContent(contentId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      title?: string;
+      description?: string;
+      topic?: string;
+      language?: string;
+      targetRoles?: UserRole[];
+      masterTopicId?: string | null;
+      file?: File;
+    }) => {
+      const { file, ...rest } = input;
+      let fileKey: string | undefined;
+      let mimeType: string | undefined;
+      if (file) {
+        const { data: uploadInfo } = await api.post<{ uploadUrl: string; fileKey: string }>("/content/upload-url", {
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
+        });
+        await putWithProgress(uploadInfo.uploadUrl, file, () => {});
+        fileKey = uploadInfo.fileKey;
+        mimeType = file.type || "application/octet-stream";
+      }
+      const { data } = await api.put(`/content/${contentId}`, { ...rest, fileKey, mimeType });
+      return data as { item: ContentItem; warning: string | null };
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["content"] }),
+  });
+}
+
+export function useDeleteContent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (contentId: string) => api.delete(`/content/${contentId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["content"] }),
+  });
+}
+
 export function useContentPlaybackUrl(contentId: string | null) {
   return useQuery({
     queryKey: ["content-playback", contentId],
