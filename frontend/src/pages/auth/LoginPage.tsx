@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
 
@@ -9,6 +9,18 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [slow, setSlow] = useState(false);
+  const slowTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (submitting) {
+      slowTimer.current = setTimeout(() => setSlow(true), 4000);
+    } else {
+      clearTimeout(slowTimer.current);
+      setSlow(false);
+    }
+    return () => clearTimeout(slowTimer.current);
+  }, [submitting]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,6 +65,11 @@ export function LoginPage() {
             />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
+          {slow && (
+            <p className="text-sm text-slate-500">
+              Still working — the server may be waking up from idle, this can take up to a minute.
+            </p>
+          )}
           <button
             type="submit"
             disabled={submitting}

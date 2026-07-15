@@ -34,6 +34,9 @@ export function AnnouncementBanner() {
         {imageUrl && (
           <img src={imageUrl} alt="" className="w-full max-h-96 object-contain rounded-lg mb-4 border border-slate-200" />
         )}
+        {markRead.isError && (
+          <p className="text-sm text-red-500 mb-2">Couldn't save that you read this — please try again.</p>
+        )}
         <button
           onClick={() => markRead.mutate(unread.id)}
           disabled={markRead.isPending}

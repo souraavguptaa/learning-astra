@@ -60,6 +60,7 @@ export function useMarkAnnouncementRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => api.post(`/announcements/${id}/read`),
+    retry: 2,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["announcements-mine"] }),
   });
 }
