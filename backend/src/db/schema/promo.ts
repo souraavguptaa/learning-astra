@@ -7,7 +7,7 @@ export const ads = pgTable("ads", {
   title: text("title").notNull(),
   imageFileKey: text("image_file_key").notNull(),
   linkUrl: text("link_url").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
+  isActive: boolean("is_active").default(false).notNull(), // starts as a draft — showing it on the live learner popup is an explicit Activate step
   createdBy: uuid("created_by")
     .notNull()
     .references(() => users.id, { onDelete: "set null" }),

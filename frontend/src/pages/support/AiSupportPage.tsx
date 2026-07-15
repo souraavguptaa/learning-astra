@@ -10,7 +10,9 @@ export function AiSupportPage() {
   const navigate = useNavigate();
   const ask = useAskSupport();
   const [query, setQuery] = useState("");
+  const [askedQuery, setAskedQuery] = useState("");
   const [result, setResult] = useState<SupportAskResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<any>(null);
 
@@ -46,14 +48,24 @@ export function AiSupportPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
-    const res = await ask.mutateAsync(query.trim());
-    setResult(res);
-    if (res.confident && res.answer) speak(res.answer);
+    const asked = query.trim();
+    if (!asked) return;
+    setError(null);
+    setAskedQuery(asked);
+    try {
+      const res = await ask.mutateAsync(asked);
+      setResult(res);
+      if (res.confident && res.answer) speak(res.answer);
+    } catch {
+      setResult(null);
+      setError("Couldn't reach AI Support — check your connection and try again.");
+    }
   }
 
   function raiseTicket() {
-    navigate("/my-tickets", { state: { prefillSubject: query, prefillDescription: `I asked AI Support: "${query}" and it couldn't find an answer.` } });
+    navigate("/my-tickets", {
+      state: { prefillSubject: askedQuery, prefillDescription: `I asked AI Support: "${askedQuery}" and it couldn't find an answer.` },
+    });
   }
 
   return (
@@ -93,6 +105,10 @@ export function AiSupportPage() {
           {ask.isPending ? "Searching…" : "Ask"}
         </button>
       </form>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">{error}</div>
+      )}
 
       {result && (
         <div className="bg-white rounded-lg border border-slate-200 p-5 space-y-4">

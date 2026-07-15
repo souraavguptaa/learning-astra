@@ -9,7 +9,7 @@ import {
   aiSearchQueries,
   trainings,
 } from "../../db/schema/index.js";
-import { NO_ANSWER_SENTINEL, embedText, generateGroundedAnswer } from "../../services/geminiService.js";
+import { embedText, generateGroundedAnswer } from "../../services/geminiService.js";
 
 // ponytail: gemini-embedding-001's cosine similarities for genuinely related pairs land ~0.55-0.75 in
 // practice (not the ~0.85+ some older embedding models produce) — tuned against real queries, not a guess.
@@ -86,6 +86,7 @@ async function resolveSource(sourceType: string, sourceId: string) {
 
 const NOT_CONFIGURED_MESSAGE = "AI Support isn't set up yet. Please raise a support ticket and a trainer will help you.";
 const NO_MATCH_MESSAGE = "I couldn't find verified content for that. Please raise a support ticket and a trainer will help you.";
+const AI_ERROR_MESSAGE = "AI Support is having trouble reaching its model right now. Please try again in a moment, or raise a support ticket.";
 
 export async function ask(userId: string, query: string) {
   const queryEmbedding = await embedText(query, "query");
@@ -110,8 +111,8 @@ export async function ask(userId: string, query: string) {
 
   const confidentRows = rows.filter((r) => Number(r.similarity) >= SIMILARITY_THRESHOLD);
   const context = confidentRows.map((r) => `- ${r.source_text}`).join("\n");
-  const answer = await generateGroundedAnswer(query, context);
-  const hadRealAnswer = !!answer && answer.trim() !== NO_ANSWER_SENTINEL;
+  const answerResult = await generateGroundedAnswer(query, context);
+  const hadRealAnswer = answerResult.status === "answered";
 
   await db.insert(aiSearchQueries).values({
     userId,
@@ -119,11 +120,14 @@ export async function ask(userId: string, query: string) {
     matchedSourceType: top.source_type,
     matchedSourceId: top.source_id,
     similarityScore: top.similarity.toString(),
-    answerText: hadRealAnswer ? answer : null,
+    answerText: hadRealAnswer ? answerResult.text : null,
     hadConfidentMatch: hadRealAnswer,
   });
 
-  if (!hadRealAnswer) {
+  if (answerResult.status === "error") {
+    return { confident: false, answer: null, message: AI_ERROR_MESSAGE, matches: [] };
+  }
+  if (answerResult.status === "no_answer") {
     return { confident: false, answer: null, message: NO_MATCH_MESSAGE, matches: [] };
   }
 
@@ -131,5 +135,5 @@ export async function ask(userId: string, query: string) {
     (m): m is NonNullable<typeof m> => !!m,
   );
 
-  return { confident: true, answer, message: null, matches };
+  return { confident: true, answer: answerResult.text, message: null, matches };
 }

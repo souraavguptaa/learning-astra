@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../lib/authContext.js";
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
@@ -22,6 +23,7 @@ function playPing() {
 }
 
 export function NotificationBell() {
+  const { user } = useAuth();
   const { data: notifications } = useMyNotifications();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
@@ -30,15 +32,28 @@ export function NotificationBell() {
   const [toast, setToast] = useState<Notification | null>(null);
 
   const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
-  const lastCount = useRef<number | null>(null);
+
+  // Toast only for notifications we haven't already shown, tracked in localStorage so a page
+  // reload (or the SPA remounting this component) doesn't re-toast every already-seen unread item.
+  const seenIds = useRef<Set<string> | null>(null);
   useEffect(() => {
-    if (lastCount.current !== null && unreadCount > lastCount.current) {
-      playPing();
-      const newest = notifications?.find((n) => !n.isRead) ?? null;
-      setToast(newest);
+    if (!notifications || !user) return;
+    const storageKey = `notif-seen-${user.id}`;
+    if (seenIds.current === null) {
+      const stored = localStorage.getItem(storageKey);
+      seenIds.current = new Set<string>(stored ? JSON.parse(stored) : []);
+      for (const n of notifications) if (!n.isRead) seenIds.current.add(n.id);
+      localStorage.setItem(storageKey, JSON.stringify([...seenIds.current]));
+      return;
     }
-    lastCount.current = unreadCount;
-  }, [unreadCount, notifications]);
+    const fresh = notifications.filter((n) => !n.isRead && !seenIds.current!.has(n.id));
+    if (fresh.length > 0) {
+      playPing();
+      setToast(fresh[0]);
+      for (const n of fresh) seenIds.current.add(n.id);
+      localStorage.setItem(storageKey, JSON.stringify([...seenIds.current]));
+    }
+  }, [notifications, user]);
 
   useEffect(() => {
     if (!toast) return;

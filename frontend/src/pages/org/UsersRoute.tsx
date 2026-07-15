@@ -6,10 +6,10 @@ export function UsersRoute() {
   if (!user) return null;
 
   if (user.role === "super_admin") {
-    return <UserManagementPage creatableRoles={["trainer", "admin"]} />;
+    return <UserManagementPage creatableRoles={["trainer", "admin"]} canManageFranchises />;
   }
   if (user.role === "admin") {
-    return <UserManagementPage creatableRoles={["franchise_owner", "operator", "employee"]} />;
+    return <UserManagementPage creatableRoles={["franchise_owner", "operator", "employee"]} canManageFranchises />;
   }
   return <p className="text-slate-500">You don't have access to this page.</p>;
 }

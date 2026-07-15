@@ -15,7 +15,10 @@ export function AdsManagementPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return;
+    if (!file) {
+      setError("Choose an image before creating the ad.");
+      return;
+    }
     setUploading(true);
     setError(null);
     try {
@@ -40,7 +43,8 @@ export function AdsManagementPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Ads</h1>
         <p className="text-slate-500 mt-1">
-          Active ads rotate as a popup on the learner home screen every 15 seconds. Clicking one opens its link.
+          Active ads rotate as a popup on the learner home screen every 15 seconds. Clicking one opens its link. New
+          ads start inactive — hit "Activate" below when you're ready for it to go live.
         </p>
       </div>
 
@@ -96,7 +100,12 @@ export function AdsManagementPage() {
                 >
                   {ad.isActive ? "Deactivate" : "Activate"}
                 </button>
-                <button onClick={() => deleteAd.mutate(ad.id)} className="text-red-500 text-xs hover:underline">
+                <button
+                  onClick={() => {
+                    if (window.confirm(`Delete the ad "${ad.title}"? This can't be undone.`)) deleteAd.mutate(ad.id);
+                  }}
+                  className="text-red-500 text-xs hover:underline"
+                >
                   Delete
                 </button>
               </div>

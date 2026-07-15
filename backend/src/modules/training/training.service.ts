@@ -3,6 +3,7 @@ import { db } from "../../db/client.js";
 import {
   assessmentResults,
   assessments,
+  certificates,
   contentItems,
   contentProgress,
   trainingAssignments,
@@ -15,7 +16,7 @@ import {
 import { ApiError } from "../../middleware/errorHandler.js";
 import { awardPoints, checkAndAwardBadges } from "../gamification/gamification.service.js";
 import { notify } from "../notification/notification.service.js";
-import { upsertEmbedding } from "../support/support.service.js";
+import { deleteEmbedding, upsertEmbedding } from "../support/support.service.js";
 import type { UserRole } from "../../utils/jwt.js";
 
 function embedTraining(training: { id: string; title: string; description: string }) {
@@ -40,6 +41,29 @@ export async function createTraining(
     .returning();
   embedTraining(training);
   return training;
+}
+
+// Blocked (rather than cascading) once anyone has real progress or an earned certificate on this
+// training — certificates.trainingId cascades on delete, so an unguarded delete would silently
+// destroy a learner's already-issued proof-of-completion. Untouched drafts/test trainings delete cleanly.
+export async function deleteTraining(trainingId: string) {
+  const [progressRow] = await db.select({ id: trainingProgress.id }).from(trainingProgress).where(eq(trainingProgress.trainingId, trainingId)).limit(1);
+  if (progressRow) {
+    throw new ApiError(400, "This training has learner progress or certificates and can't be deleted. Unassign it instead if it shouldn't be active anymore.");
+  }
+  const [cert] = await db.select({ id: certificates.id }).from(certificates).where(eq(certificates.trainingId, trainingId)).limit(1);
+  if (cert) {
+    throw new ApiError(400, "This training has learner progress or certificates and can't be deleted. Unassign it instead if it shouldn't be active anymore.");
+  }
+
+  const assessmentRows = await db.select({ id: assessments.id }).from(assessments).where(eq(assessments.trainingId, trainingId));
+  const deleted = await db.delete(trainings).where(eq(trainings.id, trainingId)).returning();
+  if (!deleted.length) throw new ApiError(404, "Training not found");
+
+  deleteEmbedding("training", trainingId).catch((err) => console.error("Failed to delete training embedding:", err));
+  for (const a of assessmentRows) {
+    deleteEmbedding("assessment", a.id).catch((err) => console.error("Failed to delete assessment embedding:", err));
+  }
 }
 
 export async function listTrainings(kind?: "course" | "assessment") {
@@ -123,6 +147,11 @@ export async function removeItem(trainingId: string, itemId: string) {
 }
 
 export async function publishTraining(trainingId: string, changedBy: string) {
+  const itemCount = await db.select({ id: trainingItems.id }).from(trainingItems).where(eq(trainingItems.trainingId, trainingId));
+  if (itemCount.length === 0) {
+    throw new ApiError(400, "Add at least one item before publishing — a training with no content would leave assigned learners with nothing to complete.");
+  }
+
   const [training] = await db
     .update(trainings)
     .set({ status: "published", publishedAt: new Date() })
@@ -272,7 +301,7 @@ export async function removeAssignment(trainingId: string, assignmentId: string)
 
 export async function listAssignedTrainings(user: { id: string; role: UserRole; franchiseId: string | null }) {
   const assignmentRows = await db
-    .select({ trainingId: trainingAssignments.trainingId })
+    .select({ trainingId: trainingAssignments.trainingId, isMandatory: trainingAssignments.isMandatory, dueAt: trainingAssignments.dueAt })
     .from(trainingAssignments)
     .where(
       and(
@@ -282,21 +311,36 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
     );
 
   const roleRows = await db
-    .select({ trainingId: trainingAssignments.trainingId })
+    .select({ trainingId: trainingAssignments.trainingId, isMandatory: trainingAssignments.isMandatory, dueAt: trainingAssignments.dueAt })
     .from(trainingAssignments)
     .where(and(eq(trainingAssignments.assigneeType, "role"), eq(trainingAssignments.role, user.role)));
 
   const franchiseRows = user.franchiseId
     ? await db
-        .select({ trainingId: trainingAssignments.trainingId })
+        .select({ trainingId: trainingAssignments.trainingId, isMandatory: trainingAssignments.isMandatory, dueAt: trainingAssignments.dueAt })
         .from(trainingAssignments)
         .where(
           and(eq(trainingAssignments.assigneeType, "franchise"), eq(trainingAssignments.franchiseId, user.franchiseId)),
         )
     : [];
 
-  const trainingIds = [...new Set([...assignmentRows, ...roleRows, ...franchiseRows].map((r) => r.trainingId))];
+  const allAssignments = [...assignmentRows, ...roleRows, ...franchiseRows];
+  const trainingIds = [...new Set(allAssignments.map((r) => r.trainingId))];
   if (trainingIds.length === 0) return [];
+
+  // A training can match more than one assignment (e.g. assigned to the user's role AND directly);
+  // the effective mandatory flag is "mandatory if any matching assignment says so", and the
+  // effective due date is the earliest one set, since that's the binding deadline.
+  const effectiveByTraining = new Map<string, { isMandatory: boolean; dueAt: Date | null }>();
+  for (const a of allAssignments) {
+    const existing = effectiveByTraining.get(a.trainingId);
+    const isMandatory = existing ? existing.isMandatory || a.isMandatory : a.isMandatory;
+    const dueAt =
+      existing?.dueAt && a.dueAt
+        ? (existing.dueAt < a.dueAt ? existing.dueAt : a.dueAt)
+        : (existing?.dueAt ?? a.dueAt ?? null);
+    effectiveByTraining.set(a.trainingId, { isMandatory, dueAt });
+  }
 
   const rows = await db
     .select()
@@ -308,10 +352,15 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
     .from(trainingProgress)
     .where(and(inArray(trainingProgress.trainingId, trainingIds), eq(trainingProgress.userId, user.id)));
 
-  return rows.map((training) => ({
-    training,
-    progress: progressRows.find((p) => p.trainingId === training.id) ?? null,
-  }));
+  return rows.map((training) => {
+    const effective = effectiveByTraining.get(training.id)!;
+    return {
+      training,
+      progress: progressRows.find((p) => p.trainingId === training.id) ?? null,
+      isMandatory: effective.isMandatory,
+      dueAt: effective.dueAt,
+    };
+  });
 }
 
 export async function getTrainingForUser(userId: string, trainingId: string) {

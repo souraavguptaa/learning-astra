@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { api, tokenStore } from "./api.js";
 
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const stored = localStorage.getItem("la_user");
@@ -49,7 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     tokenStore.clear();
     localStorage.removeItem("la_user");
     setUser(null);
-  }, []);
+    // Without this, switching accounts in the same tab (e.g. an admin logging in after a trainer)
+    // can keep serving the previous user's cached — and permission-scoped — query results.
+    queryClient.clear();
+  }, [queryClient]);
 
   return <AuthContext.Provider value={{ user, isLoading, login, logout }}>{children}</AuthContext.Provider>;
 }

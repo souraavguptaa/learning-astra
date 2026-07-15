@@ -27,7 +27,7 @@ export interface TrainingCompletionRow {
   franchiseName: string | null;
   completed: boolean;
   completedAt: string | null;
-  createdAt: string;
+  createdAt: string | null;
 }
 
 export function useTrainingCompletionReport(filter: { franchiseId?: string }) {
@@ -35,9 +35,4 @@ export function useTrainingCompletionReport(filter: { franchiseId?: string }) {
     queryKey: ["training-completion-report", filter],
     queryFn: async () => (await api.get<TrainingCompletionRow[]>("/analytics/training-completion", { params: filter })).data,
   });
-}
-
-export function trainingCompletionExportUrl(filter: { franchiseId?: string }) {
-  const params = new URLSearchParams({ format: "xlsx", ...(filter.franchiseId ? { franchiseId: filter.franchiseId } : {}) });
-  return `/api/analytics/training-completion?${params.toString()}`;
 }

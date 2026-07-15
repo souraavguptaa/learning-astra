@@ -56,6 +56,18 @@ export function useCreateAnnouncement() {
   });
 }
 
+export function useUpdateAnnouncement(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { title?: string; body?: string; attachmentFileKey?: string }) =>
+      (await api.put<Announcement>(`/announcements/${id}`, input)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["announcements-all"] });
+      qc.invalidateQueries({ queryKey: ["announcements-mine"] });
+    },
+  });
+}
+
 export function useMarkAnnouncementRead() {
   const qc = useQueryClient();
   return useMutation({

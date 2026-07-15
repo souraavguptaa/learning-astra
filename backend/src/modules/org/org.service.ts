@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import { companies, franchises, users } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
@@ -36,7 +36,9 @@ export async function listUsers(filter: { role?: UserRole; franchiseId?: string 
   const rows = await db
     .select()
     .from(users)
-    .where(conditions.length ? and(...conditions) : undefined);
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(asc(users.name)); // stable order — without this, the list can visibly reshuffle after
+  // any update (e.g. Deactivate), which is a real risk of misclicking the wrong row next
   return rows.map(({ passwordHash: _passwordHash, ...rest }) => rest);
 }
 
@@ -66,6 +68,13 @@ export async function createUser(
 
   const { passwordHash: _passwordHash, ...safeUser } = user;
   return { user: safeUser, tempPassword };
+}
+
+export async function updateUserFranchise(userId: string, franchiseId: string | null) {
+  const [user] = await db.update(users).set({ franchiseId }).where(eq(users.id, userId)).returning();
+  if (!user) throw new ApiError(404, "User not found");
+  const { passwordHash: _passwordHash, ...safeUser } = user;
+  return safeUser;
 }
 
 export async function setUserActive(userId: string, isActive: boolean) {

@@ -7,6 +7,8 @@ import {
   useCreateAnnouncement,
   useDeleteAnnouncement,
   useMyAnnouncements,
+  useUpdateAnnouncement,
+  type Announcement,
 } from "../../features/announcement.js";
 import { useAuth } from "../../lib/authContext.js";
 import type { UserRole } from "../../lib/authContext.js";
@@ -36,6 +38,9 @@ function ManagerView() {
   const { data: readStatus } = useAnnouncementReadStatus(statusId);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", body: "" });
+  const update = useUpdateAnnouncement(editingId ?? "");
 
   const [form, setForm] = useState<{
     title: string;
@@ -63,6 +68,17 @@ function ManagerView() {
     } finally {
       setUploading(false);
     }
+  }
+
+  function openEdit(a: Announcement) {
+    setEditingId(a.id);
+    setEditForm({ title: a.title, body: a.body });
+  }
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    await update.mutateAsync(editForm);
+    setEditingId(null);
   }
 
   return (
@@ -131,24 +147,56 @@ function ManagerView() {
       <div className="space-y-2">
         {announcements?.map((a) => (
           <div key={a.id} className="bg-white rounded-lg border border-slate-200 p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="font-medium">{a.title}</div>
-                <div className="text-sm text-slate-600">{a.body}</div>
-                <AttachmentLink fileKey={a.attachmentFileKey} />
-                <div className="text-xs text-slate-400 mt-1">
-                  {a.targetType === "all" ? "Everyone" : a.targetType === "role" ? `Role: ${a.targetRole}` : "Specific franchise"}
+            {editingId === a.id ? (
+              <form onSubmit={handleSaveEdit} className="space-y-2">
+                <input
+                  value={editForm.title}
+                  onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                  className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium"
+                />
+                <textarea
+                  value={editForm.body}
+                  onChange={(e) => setEditForm((f) => ({ ...f, body: e.target.value }))}
+                  className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                  rows={2}
+                />
+                <div className="flex gap-2 text-xs">
+                  <button type="submit" disabled={update.isPending} className="rounded-md bg-astra text-white px-3 py-1 disabled:opacity-60">
+                    {update.isPending ? "Saving…" : "Save"}
+                  </button>
+                  <button type="button" onClick={() => setEditingId(null)} className="text-slate-500">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-medium">{a.title}</div>
+                  <div className="text-sm text-slate-600">{a.body}</div>
+                  <AttachmentLink fileKey={a.attachmentFileKey} />
+                  <div className="text-xs text-slate-400 mt-1">
+                    {a.targetType === "all" ? "Everyone" : a.targetType === "role" ? `Role: ${a.targetRole}` : "Specific franchise"}
+                  </div>
+                </div>
+                <div className="flex gap-2 text-xs">
+                  <button onClick={() => setStatusId(statusId === a.id ? null : a.id)} className="text-astra">
+                    Read status
+                  </button>
+                  <button onClick={() => openEdit(a)} className="text-astra">
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Remove the announcement "${a.title}"?`)) del.mutate(a.id);
+                    }}
+                    className="text-red-500"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2 text-xs">
-                <button onClick={() => setStatusId(statusId === a.id ? null : a.id)} className="text-astra">
-                  Read status
-                </button>
-                <button onClick={() => del.mutate(a.id)} className="text-red-500">
-                  Remove
-                </button>
-              </div>
-            </div>
+            )}
             {statusId === a.id && readStatus && (
               <div className="mt-2 text-xs text-slate-500 border-t border-slate-100 pt-2">
                 Read by {readStatus.filter((r) => r.readAt).length} / {readStatus.length}

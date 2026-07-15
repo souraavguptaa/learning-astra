@@ -1,25 +1,32 @@
 import { useState } from "react";
 import { useTrainingCompletionReport } from "../../features/analytics.js";
 import { useFranchises } from "../../features/org.js";
-import { API_BASE_URL, tokenStore } from "../../lib/api.js";
+import { api } from "../../lib/api.js";
 
 export function ReportsPage() {
   const [franchiseId, setFranchiseId] = useState("");
+  const [exportError, setExportError] = useState<string | null>(null);
   const { data: franchises } = useFranchises();
   const { data: rows, isLoading } = useTrainingCompletionReport({ franchiseId: franchiseId || undefined });
 
   async function handleExport() {
-    const params = new URLSearchParams({ format: "xlsx", ...(franchiseId ? { franchiseId } : {}) });
-    const res = await fetch(`${API_BASE_URL}/analytics/training-completion?${params.toString()}`, {
-      headers: { Authorization: `Bearer ${tokenStore.getAccess()}` },
-    });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "training-completion.xlsx";
-    a.click();
-    URL.revokeObjectURL(url);
+    setExportError(null);
+    try {
+      // Routed through the shared `api` client (not a raw fetch) so an expired access token gets
+      // silently refreshed and retried the same way every other request in the app does.
+      const res = await api.get("/analytics/training-completion", {
+        params: { format: "xlsx", ...(franchiseId ? { franchiseId } : {}) },
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "training-completion.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setExportError("Could not export the report. Please try again.");
+    }
   }
 
   return (
@@ -30,6 +37,7 @@ export function ReportsPage() {
           Export to Excel
         </button>
       </div>
+      {exportError && <p className="text-sm text-red-600">{exportError}</p>}
       <select
         value={franchiseId}
         onChange={(e) => setFranchiseId(e.target.value)}
@@ -68,7 +76,7 @@ export function ReportsPage() {
                 <td className="py-1.5 px-3">{r.userName}</td>
                 <td className="py-1.5 px-3">{r.role}</td>
                 <td className="py-1.5 px-3">{r.franchiseName ?? "—"}</td>
-                <td className="py-1.5 px-3">{r.completed ? "Completed" : "In progress"}</td>
+                <td className="py-1.5 px-3">{r.completed ? "Completed" : r.createdAt ? "In progress" : "Not started"}</td>
                 <td className="py-1.5 px-3">{r.completedAt ? new Date(r.completedAt).toLocaleDateString() : "—"}</td>
               </tr>
             ))}

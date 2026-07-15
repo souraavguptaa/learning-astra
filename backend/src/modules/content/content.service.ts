@@ -138,6 +138,17 @@ export async function updateContentItem(
   return { item: updated, warning: null as string | null };
 }
 
+/** Re-runs conversion against the already-uploaded file — for a "failed" item where the file itself
+ * is fine but conversion hit a transient issue (LibreOffice unavailable, timeout, etc). */
+export async function retryConversion(contentId: string) {
+  const [existing] = await db.select().from(contentItems).where(eq(contentItems.id, contentId)).limit(1);
+  if (!existing) throw new ApiError(404, "Content not found");
+  if (!NEEDS_CONVERSION[existing.type]) throw new ApiError(400, "This content type doesn't need conversion.");
+
+  const [processing] = await db.update(contentItems).set({ status: "processing" }).where(eq(contentItems.id, contentId)).returning();
+  return convertAndFinalize(processing);
+}
+
 export async function deleteContentItem(contentId: string) {
   const usedIn = await db.select({ id: trainingItems.id }).from(trainingItems).where(eq(trainingItems.contentId, contentId)).limit(1);
   if (usedIn.length > 0) {

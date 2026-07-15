@@ -5,6 +5,7 @@ import {
   useCreateMasterTopic,
   useDeleteContent,
   useMasterTopics,
+  useRetryConversion,
   useUpdateContent,
   useUploadContent,
   type ContentItem,
@@ -54,6 +55,7 @@ export function ContentLibraryPage() {
   const [editError, setEditError] = useState<string | null>(null);
   const updateContent = useUpdateContent(editingItem?.id ?? "");
   const deleteContent = useDeleteContent();
+  const retryConversion = useRetryConversion();
 
   const { data: playback } = useContentPlaybackUrl(previewId);
 
@@ -117,6 +119,22 @@ export function ContentLibraryPage() {
         isAxiosError(err) && err.response?.data?.error
           ? err.response.data.error
           : "Could not delete this content. Please try again.",
+      );
+    }
+  }
+
+  async function handleRetryConversion(item: ContentItem) {
+    setWarning(null);
+    setSuccess(null);
+    try {
+      const result = await retryConversion.mutateAsync(item.id);
+      if (result.warning) setWarning(result.warning);
+      else setSuccess(`"${item.title}" converted successfully.`);
+    } catch (err) {
+      setWarning(
+        isAxiosError(err) && err.response?.data?.error
+          ? err.response.data.error
+          : "Retry failed. Please try again.",
       );
     }
   }
@@ -295,6 +313,15 @@ export function ContentLibraryPage() {
                   )}
                 </td>
                 <td className="py-1.5 space-x-2">
+                  {c.status === "failed" && (
+                    <button
+                      className="text-amber-600 hover:underline"
+                      disabled={retryConversion.isPending}
+                      onClick={() => handleRetryConversion(c)}
+                    >
+                      {retryConversion.isPending ? "Retrying…" : "Retry"}
+                    </button>
+                  )}
                   <button className="text-astra hover:underline" onClick={() => openEdit(c)}>
                     Edit
                   </button>

@@ -68,6 +68,15 @@ trainingRouter.get(
   }),
 );
 
+trainingRouter.delete(
+  "/:id",
+  authorize(...MANAGERS),
+  asyncHandler(async (req, res) => {
+    await trainingService.deleteTraining(req.params.id);
+    res.json({ success: true });
+  }),
+);
+
 trainingRouter.get(
   "/:id/for-user",
   asyncHandler(async (req, res) => {

@@ -80,6 +80,21 @@ announcementRouter.get(
   }),
 );
 
+const updateSchema = z.object({
+  title: z.string().min(1).optional(),
+  body: z.string().min(1).optional(),
+  attachmentFileKey: z.string().optional(),
+});
+
+announcementRouter.put(
+  "/:id",
+  authorize(...MANAGERS),
+  validateBody(updateSchema),
+  asyncHandler(async (req, res) => {
+    res.json(await announcementService.updateAnnouncement(req.params.id, req.body));
+  }),
+);
+
 announcementRouter.delete(
   "/:id",
   authorize(...MANAGERS),

@@ -153,6 +153,14 @@ export function useCreateTraining() {
   });
 }
 
+export function useDeleteTraining() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (trainingId: string) => api.delete(`/trainings/${trainingId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["trainings"] }),
+  });
+}
+
 export function useAddTrainingItem(trainingId: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -226,7 +234,11 @@ export function useAssignedTrainings() {
   return useQuery({
     queryKey: ["assigned-trainings"],
     queryFn: async () =>
-      (await api.get<{ training: Training; progress: TrainingProgress | null }[]>("/trainings/assigned")).data,
+      (
+        await api.get<{ training: Training; progress: TrainingProgress | null; isMandatory: boolean; dueAt: string | null }[]>(
+          "/trainings/assigned",
+        )
+      ).data,
     refetchInterval: 15000, // so a newly-assigned training shows up without navigating away and back
   });
 }

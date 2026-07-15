@@ -9,6 +9,10 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
   super_admin: [
     { label: "Overview", path: "/" },
     { label: "Users & Org", path: "/users" },
+    { label: "Content", path: "/content" },
+    { label: "Trainings", path: "/trainings" },
+    { label: "Assessments", path: "/assessments" },
+    { label: "Tickets", path: "/tickets" },
     { label: "KB Review", path: "/kb-review" },
     { label: "Announcements", path: "/announcements" },
     { label: "Ads", path: "/ads" },
@@ -21,6 +25,7 @@ const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
     { label: "Content", path: "/content" },
     { label: "Trainings", path: "/trainings" },
     { label: "Assessments", path: "/assessments" },
+    { label: "Tickets", path: "/tickets" },
     { label: "Announcements", path: "/announcements" },
     { label: "Ads", path: "/ads" },
     { label: "Partner Videos", path: "/videos" },

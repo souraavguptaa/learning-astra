@@ -63,6 +63,17 @@ orgRouter.post(
   }),
 );
 
+const setFranchiseSchema = z.object({ franchiseId: z.string().uuid().nullable() });
+
+orgRouter.patch(
+  "/users/:id/franchise",
+  authorize("super_admin", "admin"),
+  validateBody(setFranchiseSchema),
+  asyncHandler(async (req, res) => {
+    res.json(await orgService.updateUserFranchise(req.params.id, req.body.franchiseId));
+  }),
+);
+
 const setActiveSchema = z.object({ isActive: z.boolean() });
 
 orgRouter.patch(

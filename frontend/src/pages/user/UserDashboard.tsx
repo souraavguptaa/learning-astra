@@ -47,14 +47,14 @@ export function UserDashboard() {
         <section>
           <h2 className="font-semibold text-slate-700 mb-2">Continue Learning</h2>
           <div className="space-y-2">
-            {inProgress.map(({ training }) => (
+            {inProgress.map(({ training, isMandatory }) => (
               <Link
                 key={training.id}
                 to={`/learning/${training.id}`}
                 className="block bg-white border border-slate-200 rounded-lg p-4 hover:border-astra"
               >
                 <div className="font-medium">{training.title}</div>
-                <div className="text-xs text-slate-400">{training.isMandatory ? "Mandatory" : "Optional"}</div>
+                <div className="text-xs text-slate-400">{isMandatory ? "Mandatory" : "Optional"}</div>
               </Link>
             ))}
           </div>
@@ -65,14 +65,14 @@ export function UserDashboard() {
         <h2 className="font-semibold text-slate-700 mb-2">Assigned Trainings</h2>
         {notStarted.length === 0 && <p className="text-slate-400 text-sm">Nothing new assigned right now.</p>}
         <div className="space-y-2">
-          {notStarted.map(({ training }) => (
+          {notStarted.map(({ training, isMandatory }) => (
             <Link
               key={training.id}
               to={`/learning/${training.id}`}
               className="block bg-white border border-slate-200 rounded-lg p-4 hover:border-astra"
             >
               <div className="font-medium">{training.title}</div>
-              <div className="text-xs text-slate-400">{training.isMandatory ? "Mandatory" : "Optional"}</div>
+              <div className="text-xs text-slate-400">{isMandatory ? "Mandatory" : "Optional"}</div>
             </Link>
           ))}
         </div>

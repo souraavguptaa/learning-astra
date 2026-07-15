@@ -6,6 +6,7 @@ import {
   useFranchises,
   useResetPassword,
   useSetUserActive,
+  useSetUserFranchise,
   useUsers,
 } from "../../features/org.js";
 
@@ -18,14 +19,21 @@ const ROLE_LABELS: Record<UserRole, string> = {
   employee: "Employee",
 };
 
-const FRANCHISE_LINKED_ROLES: UserRole[] = ["franchise_owner", "operator"];
+const FRANCHISE_LINKED_ROLES: UserRole[] = ["franchise_owner", "operator", "employee"];
 
-export function UserManagementPage({ creatableRoles }: { creatableRoles: UserRole[] }) {
+export function UserManagementPage({
+  creatableRoles,
+  canManageFranchises,
+}: {
+  creatableRoles: UserRole[];
+  canManageFranchises: boolean;
+}) {
   const { data: users, isLoading: usersLoading } = useUsers();
   const { data: franchises } = useFranchises();
   const createUser = useCreateUser();
   const createFranchise = useCreateFranchise();
   const setActive = useSetUserActive();
+  const setFranchise = useSetUserFranchise();
   const resetPassword = useResetPassword();
 
   const [form, setForm] = useState({
@@ -37,8 +45,6 @@ export function UserManagementPage({ creatableRoles }: { creatableRoles: UserRol
   });
   const [franchiseForm, setFranchiseForm] = useState({ name: "", code: "", location: "" });
   const [lastCreated, setLastCreated] = useState<{ email: string; tempPassword: string } | null>(null);
-
-  const canManageFranchises = creatableRoles.some((r) => FRANCHISE_LINKED_ROLES.includes(r));
 
   async function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
@@ -66,6 +72,12 @@ export function UserManagementPage({ creatableRoles }: { creatableRoles: UserRol
   async function handleResetPassword(id: string) {
     const result = await resetPassword.mutateAsync(id);
     setLastCreated(result);
+  }
+
+  function handleToggleActive(id: string, name: string, currentlyActive: boolean) {
+    const verb = currentlyActive ? "Deactivate" : "Activate";
+    if (!window.confirm(`${verb} ${name}'s account?`)) return;
+    setActive.mutate({ id, isActive: !currentlyActive });
   }
 
   return (
@@ -206,6 +218,7 @@ export function UserManagementPage({ creatableRoles }: { creatableRoles: UserRol
               <th className="py-1.5">Name</th>
               <th className="py-1.5">Email</th>
               <th className="py-1.5">Role</th>
+              <th className="py-1.5">Franchise</th>
               <th className="py-1.5">Status</th>
               <th className="py-1.5">Actions</th>
             </tr>
@@ -213,7 +226,7 @@ export function UserManagementPage({ creatableRoles }: { creatableRoles: UserRol
           <tbody>
             {usersLoading && (
               <tr>
-                <td colSpan={5} className="py-3 text-slate-400">
+                <td colSpan={6} className="py-3 text-slate-400">
                   Loading…
                 </td>
               </tr>
@@ -224,6 +237,25 @@ export function UserManagementPage({ creatableRoles }: { creatableRoles: UserRol
                 <td className="py-1.5">{u.email}</td>
                 <td className="py-1.5">{ROLE_LABELS[u.role]}</td>
                 <td className="py-1.5">
+                  {FRANCHISE_LINKED_ROLES.includes(u.role) ? (
+                    <select
+                      value={u.franchiseId ?? ""}
+                      disabled={setFranchise.isPending}
+                      onChange={(e) => setFranchise.mutate({ id: u.id, franchiseId: e.target.value || null })}
+                      className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                    >
+                      <option value="">No franchise</option>
+                      {franchises?.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="py-1.5">
                   <span className={u.isActive ? "text-emerald-600" : "text-slate-400"}>
                     {u.isActive ? "Active" : "Inactive"}
                   </span>
@@ -231,7 +263,7 @@ export function UserManagementPage({ creatableRoles }: { creatableRoles: UserRol
                 <td className="py-1.5 space-x-3">
                   <button
                     className="text-astra hover:underline"
-                    onClick={() => setActive.mutate({ id: u.id, isActive: !u.isActive })}
+                    onClick={() => handleToggleActive(u.id, u.name, u.isActive)}
                   >
                     {u.isActive ? "Deactivate" : "Activate"}
                   </button>

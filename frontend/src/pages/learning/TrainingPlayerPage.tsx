@@ -72,7 +72,10 @@ export function TrainingPlayerPage() {
       </div>
 
       <div className="col-span-2">
-        {!activeEntry && <p className="text-slate-400">Select an item to begin.</p>}
+        {data.items.length === 0 && (
+          <p className="text-slate-400">This training doesn't have any content yet. Check back later or contact your trainer.</p>
+        )}
+        {data.items.length > 0 && !activeEntry && <p className="text-slate-400">Select an item to begin.</p>}
         {activeEntry && !activeEntry.unlocked && (
           <p className="text-slate-400">Complete the previous item to unlock this one.</p>
         )}

@@ -148,6 +148,14 @@ export function useUpdateContent(contentId: string) {
   });
 }
 
+export function useRetryConversion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (contentId: string) => (await api.post(`/content/${contentId}/retry-conversion`)).data as { item: ContentItem; warning: string | null },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["content"] }),
+  });
+}
+
 export function useDeleteContent() {
   const qc = useQueryClient();
   return useMutation({

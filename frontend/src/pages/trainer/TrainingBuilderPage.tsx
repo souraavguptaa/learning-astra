@@ -1,6 +1,7 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useEffect, useState } from "react";
+import { isAxiosError } from "axios";
 import { AssessmentBuilderForm } from "../../components/assessment/AssessmentBuilderForm.js";
 import { SortableItemRow } from "../../components/trainingBuilder/SortableItemRow.js";
 import { useContentList } from "../../features/content.js";
@@ -10,6 +11,7 @@ import {
   useAssignTraining,
   useBumpVersion,
   useCreateTraining,
+  useDeleteTraining,
   usePublishTraining,
   useRemoveAssignment,
   useRemoveTrainingItem,
@@ -48,12 +50,14 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
   const [userSearch, setUserSearch] = useState("");
   const [editForm, setEditForm] = useState({ title: "", description: "" });
   const [justSaved, setJustSaved] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   const { data: detail } = useTrainingDetail(selectedId);
   const addItem = useAddTrainingItem(selectedId ?? "");
   const reorderItems = useReorderTrainingItems(selectedId ?? "");
   const removeItem = useRemoveTrainingItem(selectedId ?? "");
   const publish = usePublishTraining(selectedId ?? "");
+  const deleteTraining = useDeleteTraining();
   const bumpVersion = useBumpVersion(selectedId ?? "");
   const assign = useAssignTraining(selectedId ?? "");
   const removeAssignment = useRemoveAssignment(selectedId ?? "");
@@ -105,8 +109,25 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
   }
 
   async function handlePublish() {
-    await publish.mutateAsync();
-    flashSaved("Published");
+    setPublishError(null);
+    try {
+      await publish.mutateAsync();
+      flashSaved("Published");
+    } catch (err) {
+      setPublishError(isAxiosError(err) && err.response?.data?.error ? err.response.data.error : "Could not publish. Please try again.");
+    }
+  }
+
+  async function handleDelete() {
+    if (!selectedId || !detail) return;
+    if (!window.confirm(`Delete "${detail.training.title}"? This can't be undone.`)) return;
+    setPublishError(null);
+    try {
+      await deleteTraining.mutateAsync(selectedId);
+      setSelectedId(null);
+    } catch (err) {
+      setPublishError(isAxiosError(err) && err.response?.data?.error ? err.response.data.error : "Could not delete. Please try again.");
+    }
   }
 
   async function handleBumpVersion(changeType: "minor" | "major") {
@@ -210,6 +231,9 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                 ✓ {justSaved}
               </div>
             )}
+            {publishError && (
+              <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">{publishError}</div>
+            )}
 
             <section className="bg-white rounded-lg border border-slate-200 p-4">
               <div className="flex items-center justify-between mb-3">
@@ -246,6 +270,13 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                       </button>
                     </>
                   )}
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleteTraining.isPending}
+                    className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm disabled:opacity-60"
+                  >
+                    {deleteTraining.isPending ? "Deleting…" : "Delete"}
+                  </button>
                 </div>
               </div>
               <form onSubmit={handleSaveDetails} className="space-y-2">

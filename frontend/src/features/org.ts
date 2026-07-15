@@ -66,6 +66,15 @@ export function useSetUserActive() {
   });
 }
 
+export function useSetUserFranchise() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, franchiseId }: { id: string; franchiseId: string | null }) =>
+      (await api.patch<OrgUser>(`/org/users/${id}/franchise`, { franchiseId })).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+  });
+}
+
 export function useResetPassword() {
   return useMutation({
     mutationFn: async (id: string) =>

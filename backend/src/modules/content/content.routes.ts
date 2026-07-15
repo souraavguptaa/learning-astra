@@ -109,6 +109,14 @@ contentRouter.put(
   }),
 );
 
+contentRouter.post(
+  "/:id/retry-conversion",
+  authorize(...CONTENT_MANAGERS),
+  asyncHandler(async (req, res) => {
+    res.json(await contentService.retryConversion(req.params.id));
+  }),
+);
+
 contentRouter.delete(
   "/:id",
   authorize(...CONTENT_MANAGERS),

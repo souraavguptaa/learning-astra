@@ -30,6 +30,7 @@ export async function uploadToR2(uploadUrl: string, file: File): Promise<void> {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30_000, // no request should hang the UI forever — the backend's own AI calls time out well under this
 });
 
 api.interceptors.request.use((config) => {

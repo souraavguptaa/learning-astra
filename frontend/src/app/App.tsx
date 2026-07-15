@@ -25,7 +25,7 @@ import { PartnerVideosPage } from "../pages/videos/PartnerVideosPage.js";
 
 function EndUserHome() {
   const { data: assigned } = useAssignedTrainings();
-  const blocking = assigned?.find((a) => a.training.isMandatory && !a.progress?.completed);
+  const blocking = assigned?.find((a) => a.isMandatory && !a.progress?.completed);
   if (blocking) return <Navigate to={`/learning/${blocking.training.id}`} replace />;
   return <UserDashboard />;
 }

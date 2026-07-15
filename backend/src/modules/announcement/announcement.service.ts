@@ -43,6 +43,17 @@ export async function createAnnouncement(
   return announcement;
 }
 
+export async function updateAnnouncement(id: string, input: { title?: string; body?: string; attachmentFileKey?: string }) {
+  const [updated] = await db.update(announcements).set(input).where(eq(announcements.id, id)).returning();
+  if (!updated) throw new ApiError(404, "Announcement not found");
+  if (input.title !== undefined || input.body !== undefined) {
+    upsertEmbedding("announcement", updated.id, `${updated.title}. ${updated.body}`).catch((err) =>
+      console.error("Failed to embed announcement:", err),
+    );
+  }
+  return updated;
+}
+
 export async function listAllAnnouncements() {
   return db.select().from(announcements).orderBy(desc(announcements.createdAt));
 }
