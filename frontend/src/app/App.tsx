@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/common/AppLayout.js";
+import { GlobalProgressBar } from "../components/common/GlobalProgressBar.js";
 import { ProtectedRoute } from "../components/common/ProtectedRoute.js";
 import { useAssignedTrainings } from "../features/training.js";
 import { AuthProvider, useAuth } from "../lib/authContext.js";
@@ -48,6 +49,7 @@ function HomeRoute() {
 export function App() {
   return (
     <AuthProvider>
+      <GlobalProgressBar />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
