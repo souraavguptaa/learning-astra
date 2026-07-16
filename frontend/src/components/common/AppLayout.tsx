@@ -79,6 +79,7 @@ export function AppLayout() {
     <div className="min-h-screen flex bg-slate-50">
       <aside className="w-60 bg-white border-r border-slate-200 flex flex-col">
         <Link to="/" className="block px-5 py-4 border-b border-slate-200 hover:bg-slate-50">
+          <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-7 w-auto mb-1" />
           <div className="font-bold text-astra">Learning Astra</div>
           <div className="text-xs text-slate-400">SastaSundar Learning Dashboard</div>
         </Link>

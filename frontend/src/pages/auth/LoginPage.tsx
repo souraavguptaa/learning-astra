@@ -40,6 +40,7 @@ export function LoginPage() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow p-8 space-y-6">
         <div className="text-center space-y-1">
+          <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-10 w-auto mx-auto mb-2" />
           <h1 className="text-2xl font-bold text-astra">Learning Astra</h1>
           <p className="text-sm text-slate-500">SastaSundar Learning Dashboard</p>
         </div>
