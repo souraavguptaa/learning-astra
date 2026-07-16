@@ -23,9 +23,8 @@ function playPing() {
 }
 
 // Distinct sound for new support tickets so a trainer notices it over the generic ping.
-// Falls back to the generic ping until /public/sounds/ticket-alert.mp3 actually exists.
 function playTicketAlert() {
-  const audio = new Audio("/sounds/ticket-alert.mp3");
+  const audio = new Audio("/sounds/ticket-alert.wav");
   audio.play().catch(() => playPing());
 }
 
