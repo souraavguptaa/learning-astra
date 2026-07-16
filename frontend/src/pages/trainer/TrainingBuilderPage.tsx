@@ -1,6 +1,7 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { AssessmentBuilderForm } from "../../components/assessment/AssessmentBuilderForm.js";
 import { AssignmentPanel } from "../../components/trainingBuilder/AssignmentPanel.js";
@@ -38,6 +39,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
   const [editForm, setEditForm] = useState({ title: "", description: "" });
   const [justSaved, setJustSaved] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [listSearch, setListSearch] = useState("");
 
   const { data: detail } = useTrainingDetail(selectedId);
   const addItem = useAddTrainingItem(selectedId ?? "");
@@ -55,6 +57,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
 
   useEffect(() => {
     setActiveTab("build");
+    setPublishError(null); // a delete/publish error from the previously-selected item must not bleed into this one
   }, [selectedId]);
 
   function flashSaved(label: string) {
@@ -67,6 +70,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
     const training = await createTraining.mutateAsync({ ...form, isMandatory: false, isStandaloneAssessment: kind === "assessment" });
     setForm({ title: "", description: "" });
     setSelectedId(training.id);
+    flashSaved(`${noun} created — add content below, then Publish when ready.`);
   }
 
   async function handleSaveDetails(e: React.FormEvent) {
@@ -79,6 +83,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
     if (!pickedContentId) return;
     await addItem.mutateAsync(pickedContentId);
     setPickedContentId("");
+    flashSaved("Content added");
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -141,16 +146,26 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
             className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
             rows={2}
           />
-          <button className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium">
-            Create {noun.toLowerCase()}
+          <button disabled={createTraining.isPending} className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium disabled:opacity-60">
+            {createTraining.isPending ? "Creating…" : `Create ${noun.toLowerCase()}`}
           </button>
         </form>
         <p className="text-xs text-slate-400 px-1">
           Build it once below, then hit "Assign" any time you want to hand it to someone — no need to
           recreate it.
         </p>
+        {trainings && trainings.length > 5 && (
+          <input
+            placeholder={`Search ${kind === "assessment" ? "assessments" : "trainings"}…`}
+            value={listSearch}
+            onChange={(e) => setListSearch(e.target.value)}
+            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+          />
+        )}
         <div className="space-y-1">
-          {trainings?.map((t) => (
+          {trainings
+            ?.filter((t) => t.title.toLowerCase().includes(listSearch.toLowerCase()))
+            .map((t) => (
             <div
               key={t.id}
               className={`rounded text-sm border ${selectedId === t.id ? "border-astra bg-blue-50" : "border-slate-200 bg-white"}`}
@@ -218,43 +233,46 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
             {activeTab === "build" && (
               <>
                 <section className="bg-white rounded-lg border border-slate-200 p-4">
-                  <div className="flex items-center justify-end mb-3 gap-2">
-                    {detail.training.status === "draft" && (
+                  <div className="flex items-center justify-between mb-3 gap-2">
+                    <h3 className="font-semibold text-slate-700">1. Details</h3>
+                    <div className="flex gap-2">
+                      {detail.training.status === "draft" && (
+                        <button
+                          onClick={handlePublish}
+                          disabled={publish.isPending}
+                          className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+                        >
+                          {publish.isPending ? "Publishing…" : "Publish"}
+                        </button>
+                      )}
+                      {detail.training.status === "published" && (
+                        <>
+                          <button
+                            onClick={() => handleBumpVersion("minor")}
+                            disabled={bumpVersion.isPending}
+                            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-60"
+                            title="Small tweak — people who already completed it don't need to redo it"
+                          >
+                            {bumpVersion.isPending ? "Saving…" : "Minor update"}
+                          </button>
+                          <button
+                            onClick={() => handleBumpVersion("major")}
+                            disabled={bumpVersion.isPending}
+                            className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm disabled:opacity-60"
+                            title="Big change — everyone who already completed it must redo it"
+                          >
+                            {bumpVersion.isPending ? "Saving…" : "Major update"}
+                          </button>
+                        </>
+                      )}
                       <button
-                        onClick={handlePublish}
-                        disabled={publish.isPending}
-                        className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+                        onClick={handleDelete}
+                        disabled={deleteTraining.isPending}
+                        className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm disabled:opacity-60"
                       >
-                        {publish.isPending ? "Publishing…" : "Publish"}
+                        {deleteTraining.isPending ? "Deleting…" : "Delete"}
                       </button>
-                    )}
-                    {detail.training.status === "published" && (
-                      <>
-                        <button
-                          onClick={() => handleBumpVersion("minor")}
-                          disabled={bumpVersion.isPending}
-                          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-60"
-                          title="Small tweak — people who already completed it don't need to redo it"
-                        >
-                          {bumpVersion.isPending ? "Saving…" : "Minor update"}
-                        </button>
-                        <button
-                          onClick={() => handleBumpVersion("major")}
-                          disabled={bumpVersion.isPending}
-                          className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm disabled:opacity-60"
-                          title="Big change — everyone who already completed it must redo it"
-                        >
-                          {bumpVersion.isPending ? "Saving…" : "Major update"}
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={handleDelete}
-                      disabled={deleteTraining.isPending}
-                      className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm disabled:opacity-60"
-                    >
-                      {deleteTraining.isPending ? "Deleting…" : "Delete"}
-                    </button>
+                    </div>
                   </div>
                   <form onSubmit={handleSaveDetails} className="space-y-2">
                     <input
@@ -277,20 +295,23 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                       >
                         {updateTraining.isPending ? "Saving…" : "Save details"}
                       </button>
-                      <label className="text-xs text-slate-500 flex items-center gap-1">
+                      <label
+                        className="text-xs text-slate-500 flex items-center gap-1"
+                        title="Asks each learner to rate this training 0–10 after they finish, so you can see how well it landed"
+                      >
                         <input
                           type="checkbox"
                           checked={detail.training.npsEnabled}
                           onChange={(e) => updateTraining.mutate({ npsEnabled: e.target.checked })}
                         />
-                        Collect NPS feedback
+                        Collect NPS feedback (a satisfaction rating from learners)
                       </label>
                     </div>
                   </form>
                 </section>
 
                 <section className="bg-white rounded-lg border border-slate-200 p-4">
-                  <h3 className="font-semibold text-slate-700 mb-3">Items (drag to reorder)</h3>
+                  <h3 className="font-semibold text-slate-700 mb-3">2. Content &amp; Quiz (drag to reorder)</h3>
                   <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={detail.items.map((i) => i.item.id)} strategy={verticalListSortingStrategy}>
                       <div className="space-y-2">
@@ -306,7 +327,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                       </div>
                     </SortableContext>
                   </DndContext>
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex gap-2 mt-3 items-center">
                     {kind !== "assessment" && (
                       <>
                         <select
@@ -323,9 +344,16 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                               </option>
                             ))}
                         </select>
-                        <button onClick={handleAddItem} className="rounded-md bg-astra text-white px-3 py-1.5 text-sm">
-                          Add content
+                        <button
+                          onClick={handleAddItem}
+                          disabled={addItem.isPending || !pickedContentId}
+                          className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+                        >
+                          {addItem.isPending ? "Adding…" : "Add content"}
                         </button>
+                        <Link to="/content" className="text-xs text-astra hover:underline whitespace-nowrap">
+                          + upload new file
+                        </Link>
                       </>
                     )}
                     {!showAssessmentForm && (

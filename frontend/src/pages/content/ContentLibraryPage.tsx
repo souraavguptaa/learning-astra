@@ -220,6 +220,7 @@ export function ContentLibraryPage() {
               value={form.masterTopicId}
               onChange={(e) => setForm((f) => ({ ...f, masterTopicId: e.target.value }))}
               className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              title="Groups the same lesson uploaded in different languages together, so a learner can switch language and land on the matching video/document. Leave as standalone if this content has no other-language versions."
             >
               <option value="">No master topic (standalone)</option>
               {masterTopics?.map((t) => (

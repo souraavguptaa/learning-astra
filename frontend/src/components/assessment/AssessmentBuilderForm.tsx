@@ -107,36 +107,44 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
 
   return (
     <div className="space-y-4 bg-slate-50 rounded p-4 border border-slate-200">
-      <div className="flex gap-2">
-        <input
-          placeholder="Assessment title"
-          required
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
-        />
-        <label className="text-xs text-slate-500 flex items-center gap-1">
-          Pass %
+      <div>
+        <label className="text-xs text-slate-500">Assessment title</label>
+        <div className="flex gap-2 mt-0.5">
           <input
-            type="number"
-            min={1}
-            max={100}
-            value={passPercentage}
-            onChange={(e) => setPassPercentage(Number(e.target.value))}
-            className="w-16 rounded-md border border-slate-300 px-2 py-1"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
           />
-        </label>
-        <label className="text-xs text-slate-500 flex items-center gap-1">
-          Max attempts
-          <input
-            type="number"
-            min={1}
-            max={20}
-            value={maxAttempts}
-            onChange={(e) => setMaxAttempts(Number(e.target.value))}
-            className="w-16 rounded-md border border-slate-300 px-2 py-1"
-          />
-        </label>
+          <label
+            className="text-xs text-slate-500 flex items-center gap-1"
+            title="The minimum score a learner needs to pass this quiz"
+          >
+            Pass %
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={passPercentage}
+              onChange={(e) => setPassPercentage(Number(e.target.value))}
+              className="w-16 rounded-md border border-slate-300 px-2 py-1"
+            />
+          </label>
+          <label
+            className="text-xs text-slate-500 flex items-center gap-1"
+            title="How many times a learner can retake this quiz before they're locked out"
+          >
+            Max attempts
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={maxAttempts}
+              onChange={(e) => setMaxAttempts(Number(e.target.value))}
+              className="w-16 rounded-md border border-slate-300 px-2 py-1"
+            />
+          </label>
+        </div>
       </div>
 
       <div className="bg-white rounded border border-slate-200 p-3 space-y-2">
@@ -150,9 +158,9 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
             </button>
           )}
         </div>
+        <label className="text-xs text-slate-500">Question text</label>
         <div className="flex gap-2 items-center">
           <input
-            placeholder={`Question ${current + 1}`}
             required
             value={q.questionText}
             onChange={(e) => updateQuestion({ questionText: e.target.value })}
@@ -167,6 +175,7 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
             <option value="true_false">True/False</option>
           </select>
         </div>
+        <p className="text-xs text-slate-400 pl-2">Pick the circle next to the correct answer.</p>
         <div className="space-y-1 pl-2">
           {q.options.map((o, oIndex) => (
             <div key={oIndex} className="flex items-center gap-2">
@@ -176,8 +185,8 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
                 checked={o.isCorrect}
                 onChange={() => updateOption(oIndex, { isCorrect: true })}
               />
+              <span className="text-xs text-slate-400 w-14 shrink-0">Option {oIndex + 1}</span>
               <input
-                placeholder={`Option ${oIndex + 1}`}
                 required
                 disabled={q.type === "true_false"}
                 value={o.optionText}
