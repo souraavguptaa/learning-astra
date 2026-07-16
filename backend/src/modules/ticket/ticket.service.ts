@@ -24,6 +24,13 @@ export async function createTicket(
       attachments: input.attachments ?? [],
     })
     .returning();
+
+  const [requester] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId)).limit(1);
+  const trainers = await db.select({ id: users.id }).from(users).where(eq(users.role, "trainer"));
+  for (const t of trainers) {
+    await notify(t.id, "ticket_created", "New Support Ticket", `${requester?.name ?? "Someone"} raised: "${ticket.subject}"`, "/tickets");
+  }
+
   return ticket;
 }
 

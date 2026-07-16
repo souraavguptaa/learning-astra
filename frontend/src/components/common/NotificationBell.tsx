@@ -22,6 +22,13 @@ function playPing() {
   osc.stop(ctx.currentTime + 0.3);
 }
 
+// Distinct sound for new support tickets so a trainer notices it over the generic ping.
+// Falls back to the generic ping until /public/sounds/ticket-alert.mp3 actually exists.
+function playTicketAlert() {
+  const audio = new Audio("/sounds/ticket-alert.mp3");
+  audio.play().catch(() => playPing());
+}
+
 export function NotificationBell() {
   const { user } = useAuth();
   const { data: notifications } = useMyNotifications();
@@ -48,7 +55,8 @@ export function NotificationBell() {
     }
     const fresh = notifications.filter((n) => !n.isRead && !seenIds.current!.has(n.id));
     if (fresh.length > 0) {
-      playPing();
+      if (fresh.some((n) => n.type === "ticket_created")) playTicketAlert();
+      else playPing();
       setToast(fresh[0]);
       for (const n of fresh) seenIds.current.add(n.id);
       localStorage.setItem(storageKey, JSON.stringify([...seenIds.current]));
