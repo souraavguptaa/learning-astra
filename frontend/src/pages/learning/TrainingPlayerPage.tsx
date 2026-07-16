@@ -59,7 +59,7 @@ export function TrainingPlayerPage() {
               disabled={!unlocked}
               onClick={() => setActiveItemId(item.id)}
               className={`w-full text-left px-3 py-2 rounded text-sm border flex items-center gap-2 ${
-                activeItemId === item.id ? "border-astra bg-orange-50" : "border-slate-200 bg-white"
+                activeItemId === item.id ? "border-astra bg-blue-50" : "border-slate-200 bg-white"
               } ${!unlocked ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <span>{complete ? "✅" : unlocked ? "▶️" : "🔒"}</span>

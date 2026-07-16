@@ -168,7 +168,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
             .map((t) => (
             <div
               key={t.id}
-              className={`rounded text-sm border ${selectedId === t.id ? "border-astra bg-orange-50" : "border-slate-200 bg-white"}`}
+              className={`rounded text-sm border ${selectedId === t.id ? "border-astra bg-blue-50" : "border-slate-200 bg-white"}`}
             >
               <button onClick={() => setSelectedId(t.id)} className="w-full text-left px-3 py-2">
                 <div className="font-medium">{t.title}</div>
@@ -373,7 +373,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                 </section>
 
                 {detail.training.status === "draft" && detail.items.length > 0 && (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-800">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
                     Ready? Hit <strong>Publish</strong> above, then switch to the <strong>Assign</strong> tab to hand
                     it out.
                   </div>

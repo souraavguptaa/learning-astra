@@ -140,7 +140,7 @@ export function AiSupportPage() {
                             window.open(m.deepLink, "_blank");
                           }
                         }}
-                        className="text-xs bg-orange-50 text-astra px-2 py-1 rounded hover:underline"
+                        className="text-xs bg-blue-50 text-astra px-2 py-1 rounded hover:underline"
                       >
                         📎 {m.title}
                       </Link>

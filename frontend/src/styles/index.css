@@ -3,27 +3,27 @@
 @tailwind utilities;
 
 :root {
-  /* Warm coral/terracotta primary + a warm off-white background + barely-there shadows — a
-     clean modern SaaS look (matched to a reference screenshot) rather than claymorphism's puffy
-     3D surfaces. Token names kept as-is so no component file needed to change. */
-  --astra: #e8604c;
-  --astra-dark: #d14e3a;
-  --astra-soft: #fbe4df;
-  --clay-bg: #edebe6;
-  --shadow-clay: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.1);
-  --shadow-clay-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 3px 8px -3px rgba(0, 0, 0, 0.08);
-  --shadow-clay-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-  --shadow-clay-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 16px 32px -12px rgba(0, 0, 0, 0.18);
+  /* Premium enterprise palette modeled on Salesforce Lightning: confident enterprise blue
+     primary, deep navy for emphasis, cool gray-blue page background, white cards with crisp
+     subtle shadows. Token names kept as-is so no component file needed to change. */
+  --astra: #0176d3;
+  --astra-dark: #032d60;
+  --astra-soft: #eaf5fe;
+  --clay-bg: #f3f6f9;
+  --shadow-clay: 0 1px 2px rgba(3, 45, 96, 0.06), 0 8px 24px -10px rgba(3, 45, 96, 0.14);
+  --shadow-clay-sm: 0 1px 2px rgba(3, 45, 96, 0.07), 0 3px 8px -3px rgba(3, 45, 96, 0.1);
+  --shadow-clay-inset: inset 0 0 0 1px rgba(3, 45, 96, 0.14);
+  --shadow-clay-hover: 0 2px 4px rgba(3, 45, 96, 0.08), 0 16px 32px -12px rgba(3, 45, 96, 0.22);
 }
 
 :root.dark {
-  --astra: #f2846f;
-  --astra-dark: #e8604c;
-  --astra-soft: rgba(242, 132, 111, 0.15);
-  --clay-bg: #1a1613;
+  --astra: #4bb0ff;
+  --astra-dark: #1b96ff;
+  --astra-soft: rgba(27, 150, 255, 0.14);
+  --clay-bg: #0b1420;
   --shadow-clay: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
   --shadow-clay-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 3px 8px -3px rgba(0, 0, 0, 0.4);
-  --shadow-clay-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-clay-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   --shadow-clay-hover: 0 2px 4px rgba(0, 0, 0, 0.4), 0 16px 32px -12px rgba(0, 0, 0, 0.6);
 }
 
@@ -172,14 +172,17 @@
   .dark .border-amber-200 {
     border-color: rgba(245, 158, 11, 0.35);
   }
-  .dark .bg-orange-50 {
-    background-color: rgba(232, 96, 76, 0.15);
+  .dark .bg-blue-50 {
+    background-color: rgba(27, 150, 255, 0.14);
   }
-  .dark .text-orange-700,
-  .dark .text-orange-800 {
-    color: #f2846f;
+  .dark .bg-blue-100 {
+    background-color: rgba(27, 150, 255, 0.22);
   }
-  .dark .border-orange-200 {
-    border-color: rgba(232, 96, 76, 0.35);
+  .dark .text-blue-700,
+  .dark .text-blue-800 {
+    color: #4bb0ff;
+  }
+  .dark .border-blue-200 {
+    border-color: rgba(27, 150, 255, 0.35);
   }
 }
