@@ -12,6 +12,7 @@ export default {
         astra: {
           DEFAULT: "var(--astra)",
           dark: "var(--astra-dark)",
+          soft: "var(--astra-soft)",
         },
         clay: {
           bg: "var(--clay-bg)",
@@ -19,15 +20,13 @@ export default {
       },
       borderRadius: {
         DEFAULT: "12px",
-        md: "16px",
-        lg: "26px",
-        xl: "32px",
+        md: "14px",
+        lg: "22px",
+        xl: "28px",
       },
       boxShadow: {
-        // Claymorphism recipe: soft colored outer glow + inset dark (bottom-right) + inset light
-        // (top-left) — reads as a puffy raised surface instead of a flat bordered box. Full values
-        // (not just the color) are swapped per-theme since the "light highlight" component needs to
-        // change too, not just hue — see index.css.
+        // Clean modern SaaS card look: one soft, barely-there shadow instead of claymorphism's
+        // puffy triple-layer — full values (not just color) swap per-theme, see index.css.
         clay: "var(--shadow-clay)",
         "clay-sm": "var(--shadow-clay-sm)",
         "clay-inset": "var(--shadow-clay-inset)",

@@ -93,7 +93,7 @@ export function AppLayout() {
               className={({ isActive }) =>
                 `block px-4 py-2 rounded-lg text-sm ${
                   isActive
-                    ? "bg-astra text-white font-medium shadow-clay-sm"
+                    ? "bg-astra-soft text-astra-dark font-medium"
                     : "text-slate-600 hover:bg-slate-100 hover:text-astra"
                 }`
               }

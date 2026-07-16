@@ -3,23 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --astra: #0d9488;
-  --astra-dark: #0f766e;
-  --clay-bg: #fdf8f0;
-  --shadow-clay: 0 10px 24px -6px rgba(13, 148, 136, 0.28), inset -6px -6px 12px rgba(13, 148, 136, 0.1), inset 6px 6px 10px rgba(255, 255, 255, 0.85);
-  --shadow-clay-sm: 0 4px 12px -3px rgba(13, 148, 136, 0.25), inset -3px -3px 6px rgba(13, 148, 136, 0.1), inset 3px 3px 6px rgba(255, 255, 255, 0.8);
-  --shadow-clay-inset: inset 3px 3px 6px rgba(13, 148, 136, 0.15), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+  /* Warm coral/terracotta primary + a warm off-white background + barely-there shadows — a
+     clean modern SaaS look (matched to a reference screenshot) rather than claymorphism's puffy
+     3D surfaces. Token names kept as-is so no component file needed to change. */
+  --astra: #e8604c;
+  --astra-dark: #d14e3a;
+  --astra-soft: #fbe4df;
+  --clay-bg: #edebe6;
+  --shadow-clay: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.1);
+  --shadow-clay-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 3px 8px -3px rgba(0, 0, 0, 0.08);
+  --shadow-clay-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 :root.dark {
-  --astra: #2dd4bf;
-  --astra-dark: #14b8a6;
-  --clay-bg: #0f172a;
-  /* Dark surfaces can't use a white inset highlight (it would glow) — swapped for a faint
-     lighter-slate highlight instead, not just a re-tinted color. */
-  --shadow-clay: 0 10px 24px -6px rgba(0, 0, 0, 0.5), inset -6px -6px 12px rgba(0, 0, 0, 0.35), inset 6px 6px 10px rgba(148, 163, 184, 0.08);
-  --shadow-clay-sm: 0 4px 12px -3px rgba(0, 0, 0, 0.4), inset -3px -3px 6px rgba(0, 0, 0, 0.3), inset 3px 3px 6px rgba(148, 163, 184, 0.06);
-  --shadow-clay-inset: inset 3px 3px 6px rgba(0, 0, 0, 0.45), inset -3px -3px 6px rgba(148, 163, 184, 0.05);
+  --astra: #f2846f;
+  --astra-dark: #e8604c;
+  --astra-soft: rgba(242, 132, 111, 0.15);
+  --clay-bg: #1a1613;
+  --shadow-clay: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-clay-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 3px 8px -3px rgba(0, 0, 0, 0.4);
+  --shadow-clay-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 @layer base {
@@ -27,8 +30,8 @@
     background-color: var(--clay-bg);
     transition: background-color 200ms ease;
   }
-  /* Claymorphism reads as "soft, squishy, alive" — a slight press-down on click sells that
-     better than instant snapping, and costs nothing since it's scoped to interactive elements. */
+  /* A slight press-down on click reads as "alive" and costs nothing since it's scoped to
+     interactive elements. */
   button,
   a,
   input,
@@ -130,14 +133,14 @@
   .dark .border-amber-200 {
     border-color: rgba(245, 158, 11, 0.35);
   }
-  .dark .bg-teal-50 {
-    background-color: rgba(45, 212, 191, 0.15);
+  .dark .bg-orange-50 {
+    background-color: rgba(232, 96, 76, 0.15);
   }
-  .dark .text-teal-700,
-  .dark .text-teal-800 {
-    color: #5eead4;
+  .dark .text-orange-700,
+  .dark .text-orange-800 {
+    color: #f2846f;
   }
-  .dark .border-teal-200 {
-    border-color: rgba(45, 212, 191, 0.35);
+  .dark .border-orange-200 {
+    border-color: rgba(232, 96, 76, 0.35);
   }
 }
