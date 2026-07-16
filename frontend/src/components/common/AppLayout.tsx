@@ -129,7 +129,9 @@ export function AppLayout() {
           </div>
         </header>
         <main className="flex-1 p-8 overflow-x-auto">
-          <Outlet />
+          <div key={location.pathname} className="page-enter">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

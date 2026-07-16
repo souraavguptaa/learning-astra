@@ -15,11 +15,7 @@ export function AdminDashboard() {
       <h1 className="text-2xl font-bold text-slate-800">Welcome, {user?.name}</h1>
       <div className="grid grid-cols-2 gap-4">
         {QUICK_LINKS.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            className="bg-white rounded-lg shadow-clay p-4 hover:border-astra transition-colors"
-          >
+          <Link key={link.to} to={link.to} className="hover-lift block bg-white rounded-lg shadow-clay p-4">
             <div className="font-semibold text-slate-800">{link.label}</div>
             <div className="text-sm text-slate-500 mt-1">{link.description}</div>
           </Link>

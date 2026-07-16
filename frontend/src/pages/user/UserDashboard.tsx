@@ -4,6 +4,19 @@ import { useMyGamification } from "../../features/gamification.js";
 import { useAssignedTrainings } from "../../features/training.js";
 import { useAuth } from "../../lib/authContext.js";
 
+function DueBadge({ dueAt }: { dueAt: string | null }) {
+  if (!dueAt) return null;
+  const due = new Date(dueAt);
+  const overdue = due.getTime() < Date.now();
+  const soon = !overdue && due.getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000; // within 3 days
+  const cls = overdue ? "bg-red-50 text-red-700" : soon ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-500";
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${cls}`}>
+      {overdue ? "Overdue — was due" : "Due"} {due.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+    </span>
+  );
+}
+
 export function UserDashboard() {
   const { user } = useAuth();
   const { data: assigned, isLoading } = useAssignedTrainings();
@@ -47,14 +60,26 @@ export function UserDashboard() {
         <section>
           <h2 className="font-semibold text-slate-700 mb-2">Continue Learning</h2>
           <div className="space-y-2">
-            {inProgress.map(({ training, isMandatory }) => (
+            {inProgress.map(({ training, isMandatory, dueAt }) => (
               <Link
                 key={training.id}
                 to={`/learning/${training.id}`}
-                className="block bg-white border border-slate-200 rounded-lg p-4 hover:border-astra"
+                className="hover-lift flex items-center justify-between gap-3 bg-white shadow-clay-sm rounded-lg p-4"
               >
-                <div className="font-medium">{training.title}</div>
-                <div className="text-xs text-slate-400">{isMandatory ? "Mandatory" : "Optional"}</div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xl shrink-0">▶️</span>
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{training.title}</div>
+                    <span
+                      className={`inline-block mt-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        isMandatory ? "bg-astra-soft text-astra-dark" : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {isMandatory ? "Mandatory" : "Optional"}
+                    </span>
+                  </div>
+                </div>
+                <DueBadge dueAt={dueAt} />
               </Link>
             ))}
           </div>
@@ -65,14 +90,26 @@ export function UserDashboard() {
         <h2 className="font-semibold text-slate-700 mb-2">Assigned Trainings</h2>
         {notStarted.length === 0 && <p className="text-slate-400 text-sm">Nothing new assigned right now.</p>}
         <div className="space-y-2">
-          {notStarted.map(({ training, isMandatory }) => (
+          {notStarted.map(({ training, isMandatory, dueAt }) => (
             <Link
               key={training.id}
               to={`/learning/${training.id}`}
-              className="block bg-white border border-slate-200 rounded-lg p-4 hover:border-astra"
+              className="hover-lift flex items-center justify-between gap-3 bg-white shadow-clay-sm rounded-lg p-4"
             >
-              <div className="font-medium">{training.title}</div>
-              <div className="text-xs text-slate-400">{isMandatory ? "Mandatory" : "Optional"}</div>
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-xl shrink-0">📘</span>
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{training.title}</div>
+                  <span
+                    className={`inline-block mt-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      isMandatory ? "bg-astra-soft text-astra-dark" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {isMandatory ? "Mandatory" : "Optional"}
+                  </span>
+                </div>
+              </div>
+              <DueBadge dueAt={dueAt} />
             </Link>
           ))}
         </div>
@@ -86,9 +123,10 @@ export function UserDashboard() {
               <Link
                 key={training.id}
                 to={`/learning/${training.id}`}
-                className="block bg-white border border-slate-200 rounded-lg p-4 opacity-70"
+                className="hover-lift flex items-center gap-3 bg-white shadow-clay-sm rounded-lg p-4 opacity-70"
               >
-                <div className="font-medium">✓ {training.title}</div>
+                <span className="text-lg text-emerald-600">✓</span>
+                <div className="font-medium truncate">{training.title}</div>
               </Link>
             ))}
           </div>

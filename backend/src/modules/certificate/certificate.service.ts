@@ -1,6 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import { certificates, trainings, users } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
@@ -127,7 +127,13 @@ export async function generateCertificate(
 }
 
 export async function listMyCertificates(userId: string) {
-  return db.select().from(certificates).where(eq(certificates.userId, userId));
+  const rows = await db
+    .select({ certificate: certificates, trainingTitle: trainings.title })
+    .from(certificates)
+    .innerJoin(trainings, eq(certificates.trainingId, trainings.id))
+    .where(eq(certificates.userId, userId))
+    .orderBy(desc(certificates.issuedAt));
+  return rows.map(({ certificate, trainingTitle }) => ({ ...certificate, trainingTitle }));
 }
 
 export async function getCertificateDownloadUrl(certificateId: string, userId: string) {

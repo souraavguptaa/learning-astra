@@ -59,6 +59,7 @@ export interface Certificate {
   id: string;
   certificateNumber: string;
   trainingId: string;
+  trainingTitle: string;
   scorePercentage: string;
   issuedAt: string;
 }

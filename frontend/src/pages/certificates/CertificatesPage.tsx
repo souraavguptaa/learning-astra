@@ -16,12 +16,18 @@ export function CertificatesPage() {
       {certificates?.length === 0 && <p className="text-slate-400">No certificates yet — pass an assessment to earn one.</p>}
       <div className="grid grid-cols-2 gap-4">
         {certificates?.map((c) => (
-          <div key={c.id} className="bg-white rounded-lg shadow-clay p-4">
-            <div className="text-xs text-slate-400">{c.certificateNumber}</div>
-            <div className="font-medium mt-1">Score: {c.scorePercentage}%</div>
-            <div className="text-xs text-slate-400 mb-3">{new Date(c.issuedAt).toLocaleDateString()}</div>
-            <button onClick={() => handleDownload(c.id)} className="text-astra text-sm underline">
-              Download PDF
+          <div key={c.id} className="hover-lift bg-white rounded-lg shadow-clay p-5">
+            <div className="text-3xl mb-2">🏅</div>
+            <div className="font-semibold text-slate-800 leading-snug">{c.trainingTitle}</div>
+            <div className="flex items-center gap-2 mt-2 text-sm">
+              <span className="bg-emerald-50 text-emerald-700 rounded-full px-2 py-0.5 text-xs font-medium">
+                {Math.round(Number(c.scorePercentage))}%
+              </span>
+              <span className="text-slate-400 text-xs">{new Date(c.issuedAt).toLocaleDateString()}</span>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1 font-mono">{c.certificateNumber}</div>
+            <button onClick={() => handleDownload(c.id)} className="mt-3 text-astra text-sm font-medium hover:underline">
+              Download PDF ↓
             </button>
           </div>
         ))}
