@@ -1,20 +1,20 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        // Warm-leaning vibrant teal — trending in current SaaS design, reads as fresh/health-adjacent
-        // (fits a pharmacy brand), and deliberately avoids red/coral since this app already uses
-        // red-500/600 everywhere for danger/delete actions — a red or coral primary would collide
-        // with that existing "red = stop" convention.
+        // Values come from CSS custom properties (defined in index.css, swapped under .dark) so
+        // every existing bg-astra/shadow-clay/bg-clay-bg usage across the app adapts to dark mode
+        // automatically — no per-component dark: variants needed for the core design tokens.
         astra: {
-          DEFAULT: "#0d9488",
-          dark: "#0f766e",
+          DEFAULT: "var(--astra)",
+          dark: "var(--astra-dark)",
         },
         clay: {
-          bg: "#fdf8f0",
+          bg: "var(--clay-bg)",
         },
       },
       borderRadius: {
@@ -25,11 +25,12 @@ export default {
       },
       boxShadow: {
         // Claymorphism recipe: soft colored outer glow + inset dark (bottom-right) + inset light
-        // (top-left) — reads as a puffy raised surface instead of a flat bordered box.
-        clay: "0 10px 24px -6px rgba(13, 148, 136, 0.28), inset -6px -6px 12px rgba(13, 148, 136, 0.10), inset 6px 6px 10px rgba(255, 255, 255, 0.85)",
-        "clay-sm": "0 4px 12px -3px rgba(13, 148, 136, 0.25), inset -3px -3px 6px rgba(13, 148, 136, 0.10), inset 3px 3px 6px rgba(255, 255, 255, 0.8)",
-        // Inverted (inset-only) — for form fields, giving a "carved into clay" look instead of raised.
-        "clay-inset": "inset 3px 3px 6px rgba(13, 148, 136, 0.15), inset -3px -3px 6px rgba(255, 255, 255, 0.9)",
+        // (top-left) — reads as a puffy raised surface instead of a flat bordered box. Full values
+        // (not just the color) are swapped per-theme since the "light highlight" component needs to
+        // change too, not just hue — see index.css.
+        clay: "var(--shadow-clay)",
+        "clay-sm": "var(--shadow-clay-sm)",
+        "clay-inset": "var(--shadow-clay-inset)",
       },
       keyframes: {
         "loading-bar": {

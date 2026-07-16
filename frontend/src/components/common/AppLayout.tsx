@@ -4,6 +4,7 @@ import { useAuth } from "../../lib/authContext.js";
 import { AnnouncementBanner } from "./AnnouncementBanner.js";
 import { ChangePasswordModal } from "./ChangePasswordModal.js";
 import { NotificationBell } from "./NotificationBell.js";
+import { ThemeToggle } from "./ThemeToggle.js";
 
 const NAV_BY_ROLE: Record<string, { label: string; path: string }[]> = {
   super_admin: [
@@ -122,7 +123,10 @@ export function AppLayout() {
         <AnnouncementBanner />
         <header className="flex justify-between items-center px-8 py-3 bg-white rounded-xl shadow-clay-sm">
           <span className="text-sm font-medium text-slate-500">{currentLabel}</span>
-          <NotificationBell />
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <NotificationBell />
+          </div>
         </header>
         <main className="flex-1 p-8 overflow-x-auto">
           <Outlet />

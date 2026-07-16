@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "../../components/common/ThemeToggle.js";
 import { useAuth } from "../../lib/authContext.js";
 
 export function LoginPage() {
@@ -37,7 +38,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-clay-bg flex items-center justify-center px-4">
+    <div className="min-h-screen bg-clay-bg flex items-center justify-center px-4 relative">
+      <ThemeToggle className="absolute top-4 right-4" />
       <div className="w-full max-w-sm bg-white rounded-xl shadow-clay p-8 space-y-6">
         <div className="text-center space-y-1">
           <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-10 w-auto mx-auto mb-2" />
