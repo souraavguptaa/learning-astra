@@ -113,6 +113,20 @@
       "when": 1784127881432,
       "tag": "0015_fresh_outlaw_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1784212732222,
+      "tag": "0016_fast_bloodscream",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1784212831054,
+      "tag": "0017_luxuriant_terror",
+      "breakpoints": true
     }
   ]
 }

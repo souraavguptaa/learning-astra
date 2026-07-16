@@ -71,7 +71,9 @@ export function MyTicketsPage() {
               }`}
             >
               <div className="font-medium">{t.subject}</div>
-              <div className="text-xs text-slate-400">{t.status}</div>
+              <div className="text-xs text-slate-400">
+                {t.ticketNumber} · {t.status}
+              </div>
             </button>
           ))}
         </div>

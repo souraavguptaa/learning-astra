@@ -14,6 +14,7 @@ export const supportTickets = pgTable(
   "support_tickets",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    ticketNumber: text("ticket_number").notNull().unique(),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),

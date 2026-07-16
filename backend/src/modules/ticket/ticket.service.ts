@@ -1,9 +1,18 @@
+import { randomUUID } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import { kbSubmissions, supportTickets, ticketMessages, users } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
 import { notify } from "../notification/notification.service.js";
 import { buildFileKey, getUploadUrl } from "../../services/r2Service.js";
+
+// Same shape as certificate numbers (LA-2026-XXXXXXXX) — an 8-char hex suffix from a UUID is
+// collision-safe enough at this scale without a uniqueness-retry loop.
+export function buildTicketNumber(): string {
+  const year = new Date().getFullYear();
+  const suffix = randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
+  return `TKT-${year}-${suffix}`;
+}
 
 export async function createAttachmentUploadUrl(originalFilename: string, contentType: string) {
   const fileKey = buildFileKey("tickets", originalFilename);
@@ -18,6 +27,7 @@ export async function createTicket(
   const [ticket] = await db
     .insert(supportTickets)
     .values({
+      ticketNumber: buildTicketNumber(),
       userId,
       subject: input.subject,
       description: input.description,

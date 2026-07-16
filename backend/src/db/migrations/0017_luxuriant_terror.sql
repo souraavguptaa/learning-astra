@@ -1,0 +1,1 @@
+ALTER TABLE "support_tickets" ALTER COLUMN "ticket_number" SET NOT NULL;

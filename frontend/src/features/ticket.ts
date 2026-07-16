@@ -9,6 +9,7 @@ export interface Attachment {
 
 export interface Ticket {
   id: string;
+  ticketNumber: string;
   userId: string;
   subject: string;
   description: string;

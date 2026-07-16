@@ -34,7 +34,10 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold">{ticket.subject}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold">{ticket.subject}</h3>
+            <span className="text-xs text-slate-400 font-mono">{ticket.ticketNumber}</span>
+          </div>
           {isManager && ticket.requesterName && (
             <p className="text-xs text-slate-500 mt-0.5">
               Replying to <span className="font-medium">{ticket.requesterName}</span> ({ticket.requesterEmail}){" "}

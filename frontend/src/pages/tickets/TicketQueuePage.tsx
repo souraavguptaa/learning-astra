@@ -44,7 +44,7 @@ export function TicketQueuePage() {
             >
               <div className="font-medium">{t.subject}</div>
               <div className="text-xs text-slate-400">
-                {t.requesterName} · {t.status}
+                {t.ticketNumber} · {t.requesterName} · {t.status}
               </div>
             </button>
           ))}
