@@ -8,7 +8,7 @@ const MANAGER_ROLES = ["super_admin", "admin", "trainer"];
 
 const STATUS_BADGE: Record<string, string> = {
   open: "bg-amber-50 text-amber-700",
-  in_progress: "bg-blue-50 text-blue-700",
+  in_progress: "bg-teal-50 text-teal-700",
   resolved: "bg-emerald-50 text-emerald-700",
 };
 

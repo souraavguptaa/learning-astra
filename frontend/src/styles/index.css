@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    background-color: #eef1fb;
+    background-color: #fdf8f0;
   }
   /* Claymorphism reads as "soft, squishy, alive" — a slight press-down on click sells that
      better than instant snapping, and costs nothing since it's scoped to interactive elements. */

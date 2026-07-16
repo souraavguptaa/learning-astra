@@ -67,7 +67,7 @@ export function MyTicketsPage() {
               key={t.id}
               onClick={() => setSelectedId(t.id)}
               className={`w-full text-left px-3 py-2 rounded text-sm border ${
-                selectedId === t.id ? "border-astra bg-blue-50" : "border-slate-200 bg-white"
+                selectedId === t.id ? "border-astra bg-teal-50" : "border-slate-200 bg-white"
               }`}
             >
               <div className="font-medium">{t.subject}</div>

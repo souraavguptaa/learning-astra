@@ -28,7 +28,7 @@ export function GlobalProgressBar() {
   if (!visible) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-1 z-[300] bg-blue-100 overflow-hidden animate-fade-in">
+    <div className="fixed top-0 left-0 right-0 h-1 z-[300] bg-teal-100 overflow-hidden animate-fade-in">
       <div className="h-full w-1/3 bg-astra animate-loading-bar" />
     </div>
   );
