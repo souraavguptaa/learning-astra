@@ -88,7 +88,7 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
           <select
             value={assignForm.assigneeType}
             onChange={(e) => setAssignForm((f) => ({ ...f, assigneeType: e.target.value as AssigneeType }))}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           >
             <option value="role">A whole role</option>
             <option value="franchise">Everyone at a franchise</option>
@@ -98,7 +98,7 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
             <select
               value={assignForm.role}
               onChange={(e) => setAssignForm((f) => ({ ...f, role: e.target.value as UserRole }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             >
               <option value="franchise_owner">Franchise Owner</option>
               <option value="operator">Operator</option>
@@ -109,7 +109,7 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
             <select
               value={assignForm.franchiseId}
               onChange={(e) => setAssignForm((f) => ({ ...f, franchiseId: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             >
               <option value="">Select franchise…</option>
               {franchises?.map((f) => (
@@ -125,7 +125,7 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
               (assignForm.assigneeType === "franchise" && !assignForm.franchiseId) ||
               (assignForm.assigneeType === "users" && assignForm.userIds.length === 0)
             }
-            className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+            className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm disabled:opacity-60"
           >
             {assigning ? "Assigning…" : "Assign"}
           </button>
@@ -136,7 +136,7 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
               placeholder="Search people…"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto border border-slate-200 rounded p-2">
               {filteredEndUsers.length === 0 && <span className="text-xs text-slate-400">No matching users.</span>}
@@ -155,14 +155,14 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
             type="date"
             value={assignForm.dueDate}
             onChange={(e) => setAssignForm((f) => ({ ...f, dueDate: e.target.value }))}
-            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+            className="rounded-md shadow-clay-inset px-2 py-1 text-xs"
           />
           <input
             type="time"
             value={assignForm.dueTime}
             onChange={(e) => setAssignForm((f) => ({ ...f, dueTime: e.target.value }))}
             disabled={!assignForm.dueDate}
-            className="rounded-md border border-slate-300 px-2 py-1 text-xs disabled:opacity-50"
+            className="rounded-md shadow-clay-inset px-2 py-1 text-xs disabled:opacity-50"
           />
           <label className="flex items-center gap-1">
             <input

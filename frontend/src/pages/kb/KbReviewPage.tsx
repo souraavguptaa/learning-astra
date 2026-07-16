@@ -22,7 +22,7 @@ export function KbReviewPage() {
         {submissions?.map((s) => {
           const edit = editing[s.id];
           return (
-            <div key={s.id} className="bg-white rounded-lg border border-slate-200 p-4 space-y-2">
+            <div key={s.id} className="bg-white rounded-lg shadow-clay p-4 space-y-2">
               <div className="text-xs text-slate-400">
                 From ticket "{s.ticketSubject}" · submitted by {s.trainerName}
               </div>
@@ -40,12 +40,12 @@ export function KbReviewPage() {
                   <input
                     value={edit.title}
                     onChange={(e) => setEditing((prev) => ({ ...prev, [s.id]: { ...edit, title: e.target.value } }))}
-                    className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                   />
                   <textarea
                     value={edit.description}
                     onChange={(e) => setEditing((prev) => ({ ...prev, [s.id]: { ...edit, description: e.target.value } }))}
-                    className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                     rows={2}
                   />
                 </div>
@@ -61,7 +61,7 @@ export function KbReviewPage() {
                     </button>
                     <button
                       onClick={() => startEdit(s.id, s.proposedContent)}
-                      className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                      className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                     >
                       Edit & Approve
                     </button>

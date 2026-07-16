@@ -33,7 +33,7 @@ export function ReportsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Reports</h1>
-        <button onClick={handleExport} className="rounded-md bg-astra text-white px-4 py-1.5 text-sm">
+        <button onClick={handleExport} className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm">
           Export to Excel
         </button>
       </div>
@@ -41,7 +41,7 @@ export function ReportsPage() {
       <select
         value={franchiseId}
         onChange={(e) => setFranchiseId(e.target.value)}
-        className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+        className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
       >
         <option value="">All franchises</option>
         {franchises?.map((f) => (
@@ -50,7 +50,7 @@ export function ReportsPage() {
           </option>
         ))}
       </select>
-      <div className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
+      <div className="bg-white rounded-lg shadow-clay overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-slate-500 border-b border-slate-200">

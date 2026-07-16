@@ -76,24 +76,24 @@ export function AppLayout() {
   const mustChangePassword = !!user?.mustChangePassword;
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
-      <aside className="w-60 bg-white border-r border-slate-200 flex flex-col">
-        <Link to="/" className="block px-5 py-4 border-b border-slate-200 hover:bg-slate-50">
+    <div className="min-h-screen flex bg-clay-bg gap-4 p-4">
+      <aside className="w-60 shrink-0 bg-white rounded-xl shadow-clay flex flex-col">
+        <Link to="/" className="block px-5 py-4 hover:bg-slate-50 rounded-t-xl">
           <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-7 w-auto mb-1" />
           <div className="font-bold text-astra">Learning Astra</div>
           <div className="text-xs text-slate-400">SastaSundar Learning Dashboard</div>
         </Link>
-        <nav className="flex-1 py-3">
+        <nav className="flex-1 py-3 px-2 space-y-1">
           {nav.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === "/"}
               className={({ isActive }) =>
-                `block px-5 py-2 text-sm border-l-2 ${
+                `block px-4 py-2 rounded-lg text-sm ${
                   isActive
-                    ? "border-astra bg-blue-50 text-astra font-medium"
-                    : "border-transparent text-slate-600 hover:bg-slate-100 hover:text-astra"
+                    ? "bg-astra text-white font-medium shadow-clay-sm"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-astra"
                 }`
               }
             >
@@ -101,7 +101,7 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="px-5 py-4 border-t border-slate-200 text-sm">
+        <div className="px-5 py-4 text-sm">
           <div className="font-medium text-slate-700">{user?.name}</div>
           <div className="text-xs text-slate-400 mb-2 capitalize">{user?.role.replace("_", " ")}</div>
           <div className="flex items-center gap-3">
@@ -118,9 +118,9 @@ export function AppLayout() {
       {(showChangePassword || mustChangePassword) && (
         <ChangePasswordModal onClose={() => setShowChangePassword(false)} forced={mustChangePassword} />
       )}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 gap-4">
         <AnnouncementBanner />
-        <header className="flex justify-between items-center px-8 py-3 border-b border-slate-200 bg-white">
+        <header className="flex justify-between items-center px-8 py-3 bg-white rounded-xl shadow-clay-sm">
           <span className="text-sm font-medium text-slate-500">{currentLabel}</span>
           <NotificationBell />
         </header>

@@ -12,7 +12,7 @@ export function LeaderboardPage() {
         {user?.role === "employee" ? "Employees" : "Franchise Owners & Operators"} ranked by points earned.
       </p>
       {isLoading && <p className="text-slate-400">Loading…</p>}
-      <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100">
+      <div className="bg-white rounded-lg shadow-clay divide-y divide-slate-100">
         {leaderboard?.map((entry, idx) => (
           <div key={entry.userId} className="flex items-center gap-3 px-4 py-3">
             <span className="w-6 text-center font-bold text-slate-400">{idx + 1}</span>

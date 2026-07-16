@@ -72,9 +72,9 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
           value={reply}
           onChange={(e) => setReply(e.target.value)}
           placeholder={isManager && ticket.requesterName ? `Reply to ${ticket.requesterName}…` : "Write a reply…"}
-          className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+          className="flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
         />
-        <button className="rounded-md bg-astra text-white px-3 py-1.5 text-sm" disabled={addMessage.isPending}>
+        <button className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm" disabled={addMessage.isPending}>
           Send
         </button>
       </form>

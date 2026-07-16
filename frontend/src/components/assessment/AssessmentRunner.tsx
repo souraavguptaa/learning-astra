@@ -64,7 +64,7 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
               setResult(null);
               setSelections({});
             }}
-            className="rounded-md bg-astra text-white px-4 py-1.5 text-sm"
+            className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm"
           >
             Retry ({attemptsRemaining - 1} attempt{attemptsRemaining - 1 === 1 ? "" : "s"} left)
           </button>
@@ -108,7 +108,7 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
       <button
         type="submit"
         disabled={submit.isPending || Object.keys(selections).length < questions.length}
-        className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+        className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm font-medium disabled:opacity-60"
       >
         Submit
       </button>

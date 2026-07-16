@@ -23,7 +23,7 @@ export function SuperAdminDashboard() {
           TILES.map((tile) => {
             const value = data[tile.key];
             return (
-              <div key={tile.key} className="bg-white rounded-lg border border-slate-200 p-4">
+              <div key={tile.key} className="bg-white rounded-lg shadow-clay p-4">
                 <div className="text-2xl font-bold text-astra">
                   {value === null || value === undefined ? "—" : value}
                   {value !== null && value !== undefined && tile.suffix}

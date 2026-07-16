@@ -16,7 +16,7 @@ export function CertificatesPage() {
       {certificates?.length === 0 && <p className="text-slate-400">No certificates yet — pass an assessment to earn one.</p>}
       <div className="grid grid-cols-2 gap-4">
         {certificates?.map((c) => (
-          <div key={c.id} className="bg-white rounded-lg border border-slate-200 p-4">
+          <div key={c.id} className="bg-white rounded-lg shadow-clay p-4">
             <div className="text-xs text-slate-400">{c.certificateNumber}</div>
             <div className="font-medium mt-1">Score: {c.scorePercentage}%</div>
             <div className="text-xs text-slate-400 mb-3">{new Date(c.issuedAt).toLocaleDateString()}</div>

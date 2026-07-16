@@ -130,23 +130,23 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
     <div className="grid grid-cols-3 gap-6">
       <div className="col-span-1 space-y-4">
         <h1 className="text-xl font-bold text-slate-800">{kind === "assessment" ? "Assessments" : "Trainings"}</h1>
-        <form onSubmit={handleCreate} className="bg-white rounded-lg border border-slate-200 p-4 space-y-2">
+        <form onSubmit={handleCreate} className="bg-white rounded-lg shadow-clay p-4 space-y-2">
           <input
             placeholder="Title"
             required
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <textarea
             placeholder={`Description / notes for this ${noun.toLowerCase()}`}
             required
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             rows={2}
           />
-          <button disabled={createTraining.isPending} className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium disabled:opacity-60">
+          <button disabled={createTraining.isPending} className="w-full rounded-md bg-astra text-white shadow-clay-sm py-1.5 text-sm font-medium disabled:opacity-60">
             {createTraining.isPending ? "Creating…" : `Create ${noun.toLowerCase()}`}
           </button>
         </form>
@@ -159,7 +159,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
             placeholder={`Search ${kind === "assessment" ? "assessments" : "trainings"}…`}
             value={listSearch}
             onChange={(e) => setListSearch(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
         )}
         <div className="space-y-1">
@@ -225,14 +225,14 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
             </div>
 
             {activeTab === "assign" && (
-              <section className="bg-white rounded-lg border border-slate-200 p-4">
+              <section className="bg-white rounded-lg shadow-clay p-4">
                 <AssignmentPanel trainingId={detail.training.id} />
               </section>
             )}
 
             {activeTab === "build" && (
               <>
-                <section className="bg-white rounded-lg border border-slate-200 p-4">
+                <section className="bg-white rounded-lg shadow-clay p-4">
                   <div className="flex items-center justify-between mb-3 gap-2">
                     <h3 className="font-semibold text-slate-700">1. Details</h3>
                     <div className="flex gap-2">
@@ -240,7 +240,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                         <button
                           onClick={handlePublish}
                           disabled={publish.isPending}
-                          className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+                          className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm disabled:opacity-60"
                         >
                           {publish.isPending ? "Publishing…" : "Publish"}
                         </button>
@@ -250,7 +250,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                           <button
                             onClick={() => handleBumpVersion("minor")}
                             disabled={bumpVersion.isPending}
-                            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-60"
+                            className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm disabled:opacity-60"
                             title="Small tweak — people who already completed it don't need to redo it"
                           >
                             {bumpVersion.isPending ? "Saving…" : "Minor update"}
@@ -278,20 +278,20 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                     <input
                       value={editForm.title}
                       onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
-                      className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-lg font-bold"
+                      className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-lg font-bold"
                     />
                     <textarea
                       value={editForm.description}
                       onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
                       placeholder="Add any information trainees should know about this training…"
-                      className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                      className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                       rows={3}
                     />
                     <div className="flex items-center gap-4">
                       <button
                         type="submit"
                         disabled={updateTraining.isPending}
-                        className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+                        className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm disabled:opacity-60"
                       >
                         {updateTraining.isPending ? "Saving…" : "Save details"}
                       </button>
@@ -310,7 +310,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                   </form>
                 </section>
 
-                <section className="bg-white rounded-lg border border-slate-200 p-4">
+                <section className="bg-white rounded-lg shadow-clay p-4">
                   <h3 className="font-semibold text-slate-700 mb-3">2. Content &amp; Quiz (drag to reorder)</h3>
                   <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={detail.items.map((i) => i.item.id)} strategy={verticalListSortingStrategy}>
@@ -333,7 +333,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                         <select
                           value={pickedContentId}
                           onChange={(e) => setPickedContentId(e.target.value)}
-                          className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                          className="flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                         >
                           <option value="">Select content to add…</option>
                           {contentList
@@ -347,7 +347,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                         <button
                           onClick={handleAddItem}
                           disabled={addItem.isPending || !pickedContentId}
-                          className="rounded-md bg-astra text-white px-3 py-1.5 text-sm disabled:opacity-60"
+                          className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm disabled:opacity-60"
                         >
                           {addItem.isPending ? "Adding…" : "Add content"}
                         </button>
@@ -380,7 +380,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                 )}
 
                 {detail.training.npsEnabled && npsReport && (
-                  <section className="bg-white rounded-lg border border-slate-200 p-4">
+                  <section className="bg-white rounded-lg shadow-clay p-4">
                     <h3 className="font-semibold text-slate-700 mb-3">NPS Feedback</h3>
                     {npsReport.responseCount === 0 && <p className="text-sm text-slate-400">No responses yet.</p>}
                     {npsReport.responseCount > 0 && (

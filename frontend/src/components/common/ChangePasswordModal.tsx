@@ -46,7 +46,7 @@ export function ChangePasswordModal({ onClose, forced }: { onClose?: () => void;
             required
             value={form.currentPassword}
             onChange={(e) => setForm((f) => ({ ...f, currentPassword: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <input
             type="password"
@@ -55,7 +55,7 @@ export function ChangePasswordModal({ onClose, forced }: { onClose?: () => void;
             minLength={8}
             value={form.newPassword}
             onChange={(e) => setForm((f) => ({ ...f, newPassword: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <input
             type="password"
@@ -64,12 +64,12 @@ export function ChangePasswordModal({ onClose, forced }: { onClose?: () => void;
             minLength={8}
             value={form.confirmPassword}
             onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             disabled={changePassword.isPending}
-            className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium disabled:opacity-60"
+            className="w-full rounded-md bg-astra text-white shadow-clay-sm py-1.5 text-sm font-medium disabled:opacity-60"
           >
             {changePassword.isPending ? "Changing…" : "Change password"}
           </button>

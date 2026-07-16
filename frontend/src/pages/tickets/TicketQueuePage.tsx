@@ -26,7 +26,7 @@ export function TicketQueuePage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+          className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
         >
           <option value="">All statuses</option>
           <option value="open">Open</option>
@@ -53,13 +53,13 @@ export function TicketQueuePage() {
       <div className="col-span-2">
         {!selectedId && <p className="text-slate-400">Select a ticket.</p>}
         {selectedId && (
-          <div className="bg-white rounded-lg border border-slate-200 p-4 space-y-4">
+          <div className="bg-white rounded-lg shadow-clay p-4 space-y-4">
             <TicketThread ticketId={selectedId}>
               <div className="flex gap-2">
                 <select
                   value={detail?.ticket.status ?? "open"}
                   onChange={(e) => setStatus.mutate(e.target.value as "open" | "in_progress" | "resolved")}
-                  className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  className="rounded-md shadow-clay-inset px-2 py-1 text-sm"
                 >
                   <option value="open">Open</option>
                   <option value="in_progress">In Progress</option>
@@ -87,14 +87,14 @@ export function TicketQueuePage() {
                   required
                   value={kbForm.title}
                   onChange={(e) => setKbForm((f) => ({ ...f, title: e.target.value }))}
-                  className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                  className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                 />
                 <textarea
                   placeholder="Solution text"
                   required
                   value={kbForm.description}
                   onChange={(e) => setKbForm((f) => ({ ...f, description: e.target.value }))}
-                  className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                  className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                   rows={2}
                 />
                 <div className="flex gap-2">
@@ -103,12 +103,12 @@ export function TicketQueuePage() {
                     required
                     value={kbForm.topic}
                     onChange={(e) => setKbForm((f) => ({ ...f, topic: e.target.value }))}
-                    className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    className="flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                   />
                   <select
                     value={kbForm.language}
                     onChange={(e) => setKbForm((f) => ({ ...f, language: e.target.value }))}
-                    className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                    className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                   >
                     <option>Hindi</option>
                     <option>English</option>
@@ -116,7 +116,7 @@ export function TicketQueuePage() {
                   </select>
                 </div>
                 <div className="flex gap-2">
-                  <button className="rounded-md bg-astra text-white px-3 py-1.5 text-sm">Submit for review</button>
+                  <button className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm">Submit for review</button>
                   <button type="button" onClick={() => setShowKbForm(false)} className="text-sm text-slate-500">
                     Cancel
                   </button>

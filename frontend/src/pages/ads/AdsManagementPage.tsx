@@ -48,7 +48,7 @@ export function AdsManagementPage() {
         </p>
       </div>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
+      <section className="bg-white rounded-lg shadow-clay p-5">
         <h2 className="font-semibold text-slate-700 mb-3">Create Ad</h2>
         <form onSubmit={handleCreate} className="flex flex-wrap gap-2 items-center">
           <input type="file" accept="image/*" required onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-sm" />
@@ -57,7 +57,7 @@ export function AdsManagementPage() {
             required
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <input
             placeholder="https://... link when clicked"
@@ -65,12 +65,12 @@ export function AdsManagementPage() {
             required
             value={form.linkUrl}
             onChange={(e) => setForm((f) => ({ ...f, linkUrl: e.target.value }))}
-            className="flex-1 min-w-[220px] rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="flex-1 min-w-[220px] rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <button
             type="submit"
             disabled={uploading}
-            className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+            className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm font-medium disabled:opacity-60"
           >
             {uploading ? "Uploading…" : "Create ad"}
           </button>
@@ -78,7 +78,7 @@ export function AdsManagementPage() {
         {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
       </section>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
+      <section className="bg-white rounded-lg shadow-clay p-5">
         <h2 className="font-semibold text-slate-700 mb-3">All Ads</h2>
         {isLoading && <p className="text-slate-400">Loading…</p>}
         <div className="space-y-2">

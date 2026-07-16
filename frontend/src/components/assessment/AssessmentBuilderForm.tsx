@@ -114,7 +114,7 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <label
             className="text-xs text-slate-500 flex items-center gap-1"
@@ -127,7 +127,7 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
               max={100}
               value={passPercentage}
               onChange={(e) => setPassPercentage(Number(e.target.value))}
-              className="w-16 rounded-md border border-slate-300 px-2 py-1"
+              className="w-16 rounded-md shadow-clay-inset px-2 py-1"
             />
           </label>
           <label
@@ -141,7 +141,7 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
               max={20}
               value={maxAttempts}
               onChange={(e) => setMaxAttempts(Number(e.target.value))}
-              className="w-16 rounded-md border border-slate-300 px-2 py-1"
+              className="w-16 rounded-md shadow-clay-inset px-2 py-1"
             />
           </label>
         </div>
@@ -164,12 +164,12 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
             required
             value={q.questionText}
             onChange={(e) => updateQuestion({ questionText: e.target.value })}
-            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <select
             value={q.type}
             onChange={(e) => setQuestionType(e.target.value as "mcq" | "true_false")}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md shadow-clay-inset px-2 py-1.5 text-sm"
           >
             <option value="mcq">MCQ</option>
             <option value="true_false">True/False</option>
@@ -191,7 +191,7 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
                 disabled={q.type === "true_false"}
                 value={o.optionText}
                 onChange={(e) => updateOption(oIndex, { optionText: e.target.value })}
-                className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm disabled:bg-slate-100"
+                className="flex-1 rounded-md shadow-clay-inset px-2 py-1 text-sm disabled:bg-slate-100"
               />
             </div>
           ))}
@@ -210,7 +210,7 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
           type="button"
           onClick={goBack}
           disabled={current === 0}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-40"
+          className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm disabled:opacity-40"
         >
           Back
         </button>
@@ -222,7 +222,7 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
           type="button"
           onClick={handleSave}
           disabled={createAssessment.isPending}
-          className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+          className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm font-medium disabled:opacity-60"
         >
           {createAssessment.isPending ? "Saving…" : "Save assessment"}
         </button>

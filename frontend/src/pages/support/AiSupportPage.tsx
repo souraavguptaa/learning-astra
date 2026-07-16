@@ -83,7 +83,7 @@ export function AiSupportPage() {
           placeholder={listening ? "Listening…" : "Ask a question…"}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm"
+          className="flex-1 rounded-md shadow-clay-inset px-4 py-2 text-sm"
         />
         {SpeechRecognitionCtor && (
           <button
@@ -100,7 +100,7 @@ export function AiSupportPage() {
         <button
           type="submit"
           disabled={ask.isPending || !query.trim()}
-          className="rounded-md bg-astra text-white px-5 py-2 text-sm font-medium disabled:opacity-60"
+          className="rounded-md bg-astra text-white shadow-clay-sm px-5 py-2 text-sm font-medium disabled:opacity-60"
         >
           {ask.isPending ? "Searching…" : "Ask"}
         </button>
@@ -111,7 +111,7 @@ export function AiSupportPage() {
       )}
 
       {result && (
-        <div className="bg-white rounded-lg border border-slate-200 p-5 space-y-4">
+        <div className="bg-white rounded-lg shadow-clay p-5 space-y-4">
           {result.confident ? (
             <>
               <div className="flex items-start justify-between gap-2">
@@ -154,7 +154,7 @@ export function AiSupportPage() {
               <p className="text-slate-600">{result.message}</p>
               <button
                 onClick={raiseTicket}
-                className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium"
+                className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm font-medium"
               >
                 Create a support ticket
               </button>

@@ -80,7 +80,7 @@ export function TrainingPlayerPage() {
           <p className="text-slate-400">Complete the previous item to unlock this one.</p>
         )}
         {activeEntry?.unlocked && isAssessmentItem && activeEntry.assessment && (
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-white rounded-lg shadow-clay p-4">
             <h2 className="font-semibold mb-3">{activeEntry.assessment.title}</h2>
             <AssessmentRunner
               assessmentId={activeEntry.assessment.id}
@@ -92,7 +92,7 @@ export function TrainingPlayerPage() {
           </div>
         )}
         {activeEntry?.unlocked && !isAssessmentItem && activeEntry.content && (
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-white rounded-lg shadow-clay p-4">
             <h2 className="font-semibold mb-3">{activeEntry.content.title}</h2>
             {!playback && <p className="text-slate-400 text-sm">Loading…</p>}
             {playback && activeEntry.content.type === "video" && (

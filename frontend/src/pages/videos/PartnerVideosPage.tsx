@@ -63,7 +63,7 @@ export function PartnerVideosPage() {
       </div>
 
       {canManage && (
-        <section className="bg-white rounded-lg border border-slate-200 p-5">
+        <section className="bg-white rounded-lg shadow-clay p-5">
           <h2 className="font-semibold text-slate-700 mb-3">Add Video</h2>
           <form onSubmit={handleCreate} className="flex flex-wrap gap-2">
             <input
@@ -71,19 +71,19 @@ export function PartnerVideosPage() {
               required
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <input
               placeholder="https://www.youtube.com/watch?v=..."
               required
               value={form.youtubeUrl}
               onChange={(e) => setForm((f) => ({ ...f, youtubeUrl: e.target.value }))}
-              className="flex-1 min-w-[240px] rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="flex-1 min-w-[240px] rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <button
               type="submit"
               disabled={createVideo.isPending}
-              className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+              className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm font-medium disabled:opacity-60"
             >
               Add video
             </button>
@@ -98,7 +98,7 @@ export function PartnerVideosPage() {
         {videos?.map((v) => {
           const videoId = extractYoutubeId(v.youtubeUrl);
           return (
-            <div key={v.id} className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div key={v.id} className="bg-white rounded-lg shadow-clay overflow-hidden">
               {videoId && <VideoCard title={v.title} videoId={videoId} />}
               <div className="p-3 flex items-center justify-between">
                 <span className="text-sm font-medium">{v.title}</span>

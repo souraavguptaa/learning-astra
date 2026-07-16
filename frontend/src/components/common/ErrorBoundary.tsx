@@ -18,7 +18,7 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
   render() {
     if (this.state.error) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-clay-bg px-4">
           <div className="max-w-md text-center space-y-3">
             <h1 className="text-xl font-bold text-slate-800">Something went wrong</h1>
             <p className="text-sm text-slate-500">
@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="rounded-md bg-astra text-white px-4 py-2 text-sm font-medium"
+              className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-2 text-sm font-medium"
             >
               Reload
             </button>

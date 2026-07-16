@@ -19,7 +19,7 @@ export function UserDashboard() {
       <h1 className="text-2xl font-bold text-slate-800">Welcome, {user?.name}</h1>
 
       {gamification && (
-        <div className="bg-white rounded-lg border border-slate-200 p-4 flex items-center gap-6">
+        <div className="bg-white rounded-lg shadow-clay p-4 flex items-center gap-6">
           <div>
             <div className="text-2xl font-bold text-astra">{gamification.totalPoints}</div>
             <div className="text-xs text-slate-400">points</div>

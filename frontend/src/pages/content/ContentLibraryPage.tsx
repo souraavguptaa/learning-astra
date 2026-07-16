@@ -172,7 +172,7 @@ export function ContentLibraryPage() {
         </div>
       )}
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
+      <section className="bg-white rounded-lg shadow-clay p-5">
         <h2 className="font-semibold text-slate-700 mb-3">Upload Content</h2>
         <form onSubmit={handleUpload} className="space-y-3">
           <div className="flex flex-wrap gap-2">
@@ -188,7 +188,7 @@ export function ContentLibraryPage() {
               required
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm flex-1 min-w-[180px]"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm flex-1 min-w-[180px]"
             />
           </div>
           <textarea
@@ -196,7 +196,7 @@ export function ContentLibraryPage() {
             required
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             rows={2}
           />
           <div className="flex flex-wrap gap-2 items-center">
@@ -205,12 +205,12 @@ export function ContentLibraryPage() {
               required
               value={form.topic}
               onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <select
               value={form.language}
               onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             >
               <option>Hindi</option>
               <option>English</option>
@@ -219,7 +219,7 @@ export function ContentLibraryPage() {
             <select
               value={form.masterTopicId}
               onChange={(e) => setForm((f) => ({ ...f, masterTopicId: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
               title="Groups the same lesson uploaded in different languages together, so a learner can switch language and land on the matching video/document. Leave as standalone if this content has no other-language versions."
             >
               <option value="">No master topic (standalone)</option>
@@ -233,7 +233,7 @@ export function ContentLibraryPage() {
               placeholder="New master topic name"
               value={newTopicTitle}
               onChange={(e) => setNewTopicTitle(e.target.value)}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <button
               type="button"
@@ -260,7 +260,7 @@ export function ContentLibraryPage() {
           <button
             type="submit"
             disabled={upload.isPending}
-            className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+            className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm font-medium disabled:opacity-60"
           >
             {upload.isPending ? `Uploading… ${uploadPct ?? 0}%` : "Upload"}
           </button>
@@ -275,7 +275,7 @@ export function ContentLibraryPage() {
         </form>
       </section>
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
+      <section className="bg-white rounded-lg shadow-clay p-5">
         <h2 className="font-semibold text-slate-700 mb-3">Library</h2>
         <table className="w-full text-sm">
           <thead>
@@ -377,14 +377,14 @@ export function ContentLibraryPage() {
                 required
                 value={editForm.title}
                 onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
-                className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
               />
               <textarea
                 placeholder="Description"
                 required
                 value={editForm.description}
                 onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
-                className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                 rows={2}
               />
               <div className="flex gap-2">
@@ -393,12 +393,12 @@ export function ContentLibraryPage() {
                   required
                   value={editForm.topic}
                   onChange={(e) => setEditForm((f) => ({ ...f, topic: e.target.value }))}
-                  className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                  className="flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                 />
                 <select
                   value={editForm.language}
                   onChange={(e) => setEditForm((f) => ({ ...f, language: e.target.value }))}
-                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+                  className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
                 >
                   <option>Hindi</option>
                   <option>English</option>
@@ -414,7 +414,7 @@ export function ContentLibraryPage() {
                 <button
                   type="submit"
                   disabled={updateContent.isPending}
-                  className="rounded-md bg-astra text-white px-4 py-1.5 text-sm font-medium disabled:opacity-60"
+                  className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm font-medium disabled:opacity-60"
                 >
                   {updateContent.isPending ? "Saving…" : "Save changes"}
                 </button>

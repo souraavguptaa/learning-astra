@@ -9,7 +9,7 @@ export function NpsPrompt({ trainingId }: { trainingId: string }) {
   if (!status || status.submitted) return null;
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 mt-4">
+    <div className="bg-white rounded-lg shadow-clay p-4 mt-4">
       <h3 className="font-semibold text-slate-700 mb-2">How likely are you to recommend this training?</h3>
       <div className="flex gap-1 mb-3">
         {Array.from({ length: 11 }, (_, i) => i).map((n) => (
@@ -27,7 +27,7 @@ export function NpsPrompt({ trainingId }: { trainingId: string }) {
       <button
         disabled={selected === null || submit.isPending}
         onClick={() => selected !== null && submit.mutate(selected)}
-        className="rounded-md bg-astra text-white px-4 py-1.5 text-sm disabled:opacity-50"
+        className="rounded-md bg-astra text-white shadow-clay-sm px-4 py-1.5 text-sm disabled:opacity-50"
       >
         Submit feedback
       </button>

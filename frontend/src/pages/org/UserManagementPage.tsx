@@ -98,7 +98,7 @@ export function UserManagementPage({
       )}
 
       {canManageFranchises && (
-        <section className="bg-white rounded-lg border border-slate-200 p-5">
+        <section className="bg-white rounded-lg shadow-clay p-5">
           <h2 className="font-semibold text-slate-700 mb-3">Franchises / Stores</h2>
           <form onSubmit={handleCreateFranchise} className="flex flex-wrap gap-2 mb-4">
             <input
@@ -106,24 +106,24 @@ export function UserManagementPage({
               required
               value={franchiseForm.name}
               onChange={(e) => setFranchiseForm((f) => ({ ...f, name: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <input
               placeholder="Code (optional)"
               value={franchiseForm.code}
               onChange={(e) => setFranchiseForm((f) => ({ ...f, code: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <input
               placeholder="Location (optional)"
               value={franchiseForm.location}
               onChange={(e) => setFranchiseForm((f) => ({ ...f, location: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             />
             <button
               type="submit"
               disabled={createFranchise.isPending}
-              className="rounded-md bg-astra text-white px-3 py-1.5 text-sm font-medium disabled:opacity-60"
+              className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm font-medium disabled:opacity-60"
             >
               Add franchise
             </button>
@@ -149,7 +149,7 @@ export function UserManagementPage({
         </section>
       )}
 
-      <section className="bg-white rounded-lg border border-slate-200 p-5">
+      <section className="bg-white rounded-lg shadow-clay p-5">
         <h2 className="font-semibold text-slate-700 mb-3">Create Account</h2>
         <form onSubmit={handleCreateUser} className="flex flex-wrap gap-2 mb-4">
           <input
@@ -157,7 +157,7 @@ export function UserManagementPage({
             required
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <input
             type="email"
@@ -165,12 +165,12 @@ export function UserManagementPage({
             required
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <select
             value={form.role}
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as UserRole }))}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           >
             {creatableRoles.map((r) => (
               <option key={r} value={r}>
@@ -182,7 +182,7 @@ export function UserManagementPage({
             <select
               value={form.franchiseId}
               onChange={(e) => setForm((f) => ({ ...f, franchiseId: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+              className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             >
               <option value="">No franchise</option>
               {franchises?.map((f) => (
@@ -196,12 +196,12 @@ export function UserManagementPage({
             placeholder="Location (optional)"
             value={form.location}
             onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <button
             type="submit"
             disabled={createUser.isPending}
-            className="rounded-md bg-astra text-white px-3 py-1.5 text-sm font-medium disabled:opacity-60"
+            className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm font-medium disabled:opacity-60"
           >
             Create account
           </button>
@@ -242,7 +242,7 @@ export function UserManagementPage({
                       value={u.franchiseId ?? ""}
                       disabled={setFranchise.isPending}
                       onChange={(e) => setFranchise.mutate({ id: u.id, franchiseId: e.target.value || null })}
-                      className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                      className="rounded-md shadow-clay-inset px-2 py-1 text-xs"
                     >
                       <option value="">No franchise</option>
                       {franchises?.map((f) => (

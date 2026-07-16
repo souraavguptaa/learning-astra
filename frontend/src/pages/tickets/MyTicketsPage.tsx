@@ -36,27 +36,27 @@ export function MyTicketsPage() {
     <div className="grid grid-cols-3 gap-6">
       <div className="col-span-1 space-y-4">
         <h1 className="text-xl font-bold text-slate-800">My Tickets</h1>
-        <form onSubmit={handleCreate} className="bg-white rounded-lg border border-slate-200 p-4 space-y-2">
+        <form onSubmit={handleCreate} className="bg-white rounded-lg shadow-clay p-4 space-y-2">
           <input
             placeholder="Subject"
             required
             value={form.subject}
             onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
           />
           <textarea
             placeholder="Describe your issue…"
             required
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
             rows={3}
           />
           <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-xs" />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             disabled={uploading}
-            className="w-full rounded-md bg-astra text-white py-1.5 text-sm font-medium disabled:opacity-60"
+            className="w-full rounded-md bg-astra text-white shadow-clay-sm py-1.5 text-sm font-medium disabled:opacity-60"
           >
             {uploading ? "Creating…" : "Create ticket"}
           </button>
@@ -81,7 +81,7 @@ export function MyTicketsPage() {
       <div className="col-span-2">
         {!selectedId && <p className="text-slate-400">Select a ticket to view the conversation.</p>}
         {selectedId && (
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-white rounded-lg shadow-clay p-4">
             <TicketThread ticketId={selectedId} />
           </div>
         )}

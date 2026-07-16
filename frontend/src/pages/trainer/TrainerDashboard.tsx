@@ -36,7 +36,7 @@ export function TrainerDashboard() {
           <Link
             key={link.to}
             to={link.to}
-            className="bg-white rounded-lg border border-slate-200 p-4 hover:border-astra transition-colors"
+            className="bg-white rounded-lg shadow-clay p-4 hover:border-astra transition-colors"
           >
             <div className="font-semibold text-slate-800">{link.label}</div>
             <div className="text-sm text-slate-500 mt-1">{link.description}</div>

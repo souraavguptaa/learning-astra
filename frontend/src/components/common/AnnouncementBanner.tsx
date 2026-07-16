@@ -40,7 +40,7 @@ export function AnnouncementBanner() {
         <button
           onClick={() => markRead.mutate(unread.id)}
           disabled={markRead.isPending}
-          className="w-full rounded-md bg-astra text-white py-2.5 text-sm font-medium disabled:opacity-60"
+          className="w-full rounded-md bg-astra text-white shadow-clay-sm py-2.5 text-sm font-medium disabled:opacity-60"
         >
           {markRead.isPending ? "…" : "I understand"}
         </button>
