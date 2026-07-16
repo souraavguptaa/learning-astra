@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useAddTicketMessage, useTicketDetail, type Attachment } from "../../features/ticket.js";
+import { useAuth } from "../../lib/authContext.js";
 import { AttachmentList } from "./AttachmentList.js";
+import { LearnerProfileModal } from "./LearnerProfileModal.js";
+
+const MANAGER_ROLES = ["super_admin", "admin", "trainer"];
 
 const STATUS_BADGE: Record<string, string> = {
   open: "bg-amber-50 text-amber-700",
@@ -9,12 +13,15 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 export function TicketThread({ ticketId, children }: { ticketId: string; children?: React.ReactNode }) {
+  const { user } = useAuth();
   const { data } = useTicketDetail(ticketId);
   const addMessage = useAddTicketMessage(ticketId);
   const [reply, setReply] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
 
   if (!data) return <p className="text-slate-400 text-sm">Loading…</p>;
   const { ticket, messages } = data;
+  const isManager = !!user && MANAGER_ROLES.includes(user.role);
 
   async function handleReply(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +35,15 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-semibold">{ticket.subject}</h3>
-          <p className="text-sm text-slate-500">{ticket.description}</p>
+          {isManager && ticket.requesterName && (
+            <p className="text-xs text-slate-500 mt-0.5">
+              Replying to <span className="font-medium">{ticket.requesterName}</span> ({ticket.requesterEmail}){" "}
+              <button onClick={() => setShowProfile(true)} className="text-astra hover:underline">
+                View learner profile →
+              </button>
+            </p>
+          )}
+          <p className="text-sm text-slate-500 mt-1">{ticket.description}</p>
           <AttachmentList attachments={ticket.attachments as Attachment[]} />
         </div>
         <span className={`px-2 py-0.5 rounded text-xs shrink-0 ${STATUS_BADGE[ticket.status]}`}>{ticket.status}</span>
@@ -53,13 +68,15 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
         <input
           value={reply}
           onChange={(e) => setReply(e.target.value)}
-          placeholder="Write a reply…"
+          placeholder={isManager && ticket.requesterName ? `Reply to ${ticket.requesterName}…` : "Write a reply…"}
           className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
         />
         <button className="rounded-md bg-astra text-white px-3 py-1.5 text-sm" disabled={addMessage.isPending}>
           Send
         </button>
       </form>
+
+      {showProfile && <LearnerProfileModal userId={ticket.userId} onClose={() => setShowProfile(false)} />}
     </div>
   );
 }

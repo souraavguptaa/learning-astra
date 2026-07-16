@@ -49,8 +49,13 @@ export async function listTicketQueue(status?: "open" | "in_progress" | "resolve
 }
 
 export async function getTicketDetail(ticketId: string) {
-  const [ticket] = await db.select().from(supportTickets).where(eq(supportTickets.id, ticketId)).limit(1);
-  if (!ticket) throw new ApiError(404, "Ticket not found");
+  const [row] = await db
+    .select({ ticket: supportTickets, requester: users })
+    .from(supportTickets)
+    .innerJoin(users, eq(supportTickets.userId, users.id))
+    .where(eq(supportTickets.id, ticketId))
+    .limit(1);
+  if (!row) throw new ApiError(404, "Ticket not found");
 
   const messages = await db
     .select({ message: ticketMessages, sender: users })
@@ -62,7 +67,7 @@ export async function getTicketDetail(ticketId: string) {
   const kb = await db.select().from(kbSubmissions).where(eq(kbSubmissions.ticketId, ticketId));
 
   return {
-    ticket,
+    ticket: { ...row.ticket, requesterName: row.requester.name, requesterEmail: row.requester.email, requesterRole: row.requester.role },
     messages: messages.map(({ message, sender }) => ({ ...message, senderName: sender.name, senderRole: sender.role })),
     kbSubmissions: kb,
   };

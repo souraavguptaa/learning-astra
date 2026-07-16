@@ -19,6 +19,7 @@ export interface Ticket {
   createdAt: string;
   requesterName?: string;
   requesterEmail?: string;
+  requesterRole?: string;
 }
 
 export interface TicketMessage {

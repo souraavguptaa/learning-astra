@@ -36,3 +36,30 @@ export function useTrainingCompletionReport(filter: { franchiseId?: string }) {
     queryFn: async () => (await api.get<TrainingCompletionRow[]>("/analytics/training-completion", { params: filter })).data,
   });
 }
+
+export interface UserLearningProgress {
+  user: { id: string; name: string; email: string; role: string; franchiseId: string | null };
+  trainings: {
+    trainingTitle: string;
+    isStandaloneAssessment: boolean;
+    completed: boolean;
+    completedAt: string | null;
+    startedAt: string | null;
+  }[];
+  assessments: {
+    title: string;
+    bestScore: string | null;
+    passed: boolean;
+    attemptsUsed: number;
+    lastAttemptedAt: string | null;
+  }[];
+  certificates: { certificateNumber: string; scorePercentage: string; issuedAt: string }[];
+}
+
+export function useUserProgress(userId: string | null) {
+  return useQuery({
+    queryKey: ["user-progress", userId],
+    queryFn: async () => (await api.get<UserLearningProgress>(`/analytics/users/${userId}/progress`)).data,
+    enabled: !!userId,
+  });
+}

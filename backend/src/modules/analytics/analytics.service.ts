@@ -1,6 +1,7 @@
-import { eq, inArray, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db/client.js";
-import { aiSearchQueries, assessmentResults, npsResponses, supportTickets, users } from "../../db/schema/index.js";
+import { aiSearchQueries, assessmentResults, assessments, certificates, npsResponses, supportTickets, users } from "../../db/schema/index.js";
+import { ApiError } from "../../middleware/errorHandler.js";
 
 // Expands training_assignments (which target a user, a whole role, or a whole franchise) into
 // concrete (training_id, user_id) pairs — the actual set of people a published training is
@@ -118,4 +119,62 @@ export async function getTrainingCompletionReport(filter: { franchiseId?: string
     completedAt: string | null;
     createdAt: string | null;
   }[];
+}
+
+// The "what has this learner actually done" view — pulled up from a support ticket so a trainer
+// can check someone's real progress instead of just taking their word for it.
+export async function getUserLearningProgress(userId: string) {
+  const [user] = await db
+    .select({ id: users.id, name: users.name, email: users.email, role: users.role, franchiseId: users.franchiseId })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  if (!user) throw new ApiError(404, "User not found");
+
+  const trainingsResult = await db.execute(sql`
+    WITH ${ASSIGNED_PAIRS_CTE}
+    SELECT
+      t.title AS "trainingTitle",
+      t.is_standalone_assessment AS "isStandaloneAssessment",
+      COALESCE(tp.completed, false) AS "completed",
+      tp.completed_at AS "completedAt",
+      tp.created_at AS "startedAt"
+    FROM assigned_pairs ap
+    JOIN trainings t ON t.id = ap.training_id AND t.status = 'published'
+    LEFT JOIN training_progress tp ON tp.training_id = ap.training_id AND tp.user_id = ap.user_id
+    WHERE ap.user_id = ${userId}
+    ORDER BY t.title
+  `);
+
+  const assessmentRows = await db
+    .select({
+      title: assessments.title,
+      bestScore: assessmentResults.bestScorePercentage,
+      passed: assessmentResults.passed,
+      attemptsUsed: assessmentResults.attemptsUsed,
+      lastAttemptedAt: assessmentResults.lastAttemptedAt,
+    })
+    .from(assessmentResults)
+    .innerJoin(assessments, eq(assessmentResults.assessmentId, assessments.id))
+    .where(eq(assessmentResults.userId, userId))
+    .orderBy(desc(assessmentResults.lastAttemptedAt));
+
+  const certRows = await db
+    .select({ certificateNumber: certificates.certificateNumber, scorePercentage: certificates.scorePercentage, issuedAt: certificates.issuedAt })
+    .from(certificates)
+    .where(eq(certificates.userId, userId))
+    .orderBy(desc(certificates.issuedAt));
+
+  return {
+    user,
+    trainings: trainingsResult.rows as {
+      trainingTitle: string;
+      isStandaloneAssessment: boolean;
+      completed: boolean;
+      completedAt: string | null;
+      startedAt: string | null;
+    }[],
+    assessments: assessmentRows,
+    certificates: certRows,
+  };
 }

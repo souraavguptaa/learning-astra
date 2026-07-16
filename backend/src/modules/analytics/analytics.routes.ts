@@ -51,3 +51,11 @@ analyticsRouter.get(
     res.json(rows);
   }),
 );
+
+analyticsRouter.get(
+  "/users/:userId/progress",
+  authorize("super_admin", "admin", "trainer"),
+  asyncHandler(async (req, res) => {
+    res.json(await analyticsService.getUserLearningProgress(req.params.userId));
+  }),
+);
