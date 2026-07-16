@@ -15,9 +15,14 @@ export default {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(300%)" },
         },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
       },
       animation: {
-        "loading-bar": "loading-bar 1s ease-in-out infinite",
+        "loading-bar": "loading-bar 1.2s linear infinite",
+        "fade-in": "fade-in 200ms ease-out",
       },
     },
   },
