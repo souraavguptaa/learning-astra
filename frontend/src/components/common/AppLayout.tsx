@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
 import { AnnouncementBanner } from "./AnnouncementBanner.js";
 import { ChangePasswordModal } from "./ChangePasswordModal.js";
+import { GlobalProgressBar } from "./GlobalProgressBar.js";
 import { NotificationBell } from "./NotificationBell.js";
 import { ThemeToggle } from "./ThemeToggle.js";
 
@@ -124,7 +125,10 @@ export function AppLayout() {
       <div className="flex-1 flex flex-col min-w-0 gap-4">
         <AnnouncementBanner />
         <header className="flex justify-between items-center px-8 py-3 bg-white rounded-xl shadow-clay-sm">
-          <span className="text-sm font-medium text-slate-500">{currentLabel}</span>
+          <span className="flex items-center gap-3 text-sm font-medium text-slate-500">
+            {currentLabel}
+            <GlobalProgressBar />
+          </span>
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <NotificationBell />

@@ -32,17 +32,12 @@ export default {
         "clay-inset": "var(--shadow-clay-inset)",
       },
       keyframes: {
-        "loading-bar": {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(300%)" },
-        },
         "fade-in": {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
       },
       animation: {
-        "loading-bar": "loading-bar 1.2s linear infinite",
         "fade-in": "fade-in 200ms ease-out",
       },
     },
