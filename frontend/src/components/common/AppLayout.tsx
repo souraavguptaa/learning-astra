@@ -72,7 +72,9 @@ export function AppLayout() {
   const { user, logout } = useAuth();
   const nav = user ? NAV_BY_ROLE[user.role] ?? [] : [];
   const location = useLocation();
-  const currentLabel = nav.find((item) => (item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)))?.label;
+  const currentLabel =
+    nav.find((item) => (item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)))?.label ??
+    (location.pathname.startsWith("/learning/") ? "Training" : "Learning Astra");
   const [showChangePassword, setShowChangePassword] = useState(false);
   const mustChangePassword = !!user?.mustChangePassword;
 

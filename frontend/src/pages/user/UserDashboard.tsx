@@ -88,7 +88,7 @@ export function UserDashboard() {
 
       <section>
         <h2 className="font-semibold text-slate-700 mb-2">Assigned Trainings</h2>
-        {notStarted.length === 0 && <p className="text-slate-400 text-sm">Nothing new assigned right now.</p>}
+        {!isLoading && notStarted.length === 0 && <p className="text-slate-400 text-sm">Nothing new assigned right now.</p>}
         <div className="space-y-2">
           {notStarted.map(({ training, isMandatory, dueAt }) => (
             <Link

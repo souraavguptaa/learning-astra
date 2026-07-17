@@ -17,17 +17,24 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
   const { data } = useTicketDetail(ticketId);
   const addMessage = useAddTicketMessage(ticketId);
   const [reply, setReply] = useState("");
+  const [replyError, setReplyError] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
 
   if (!data) return <p className="text-slate-400 text-sm">Loading…</p>;
   const { ticket, messages } = data;
   const isManager = !!user && MANAGER_ROLES.includes(user.role);
+  const isResolved = ticket.status === "resolved";
 
   async function handleReply(e: React.FormEvent) {
     e.preventDefault();
     if (!reply.trim()) return;
-    await addMessage.mutateAsync({ message: reply.trim() });
-    setReply("");
+    setReplyError(null);
+    try {
+      await addMessage.mutateAsync({ message: reply.trim() });
+      setReply("");
+    } catch {
+      setReplyError("Couldn't send your reply — check your connection and try again.");
+    }
   }
 
   return (
@@ -67,15 +74,33 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
         {messages.length === 0 && <p className="text-sm text-slate-400">No replies yet.</p>}
       </div>
 
+      {isResolved && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-sm text-emerald-800">
+          ✓ This ticket has been marked resolved.
+          {!isManager && " If you still need help, reply below and the team will take another look."}
+        </div>
+      )}
+
+      {replyError && <p className="text-sm text-red-600">{replyError}</p>}
+
       <form onSubmit={handleReply} className="flex gap-2">
         <input
           value={reply}
           onChange={(e) => setReply(e.target.value)}
-          placeholder={isManager && ticket.requesterName ? `Reply to ${ticket.requesterName}…` : "Write a reply…"}
-          className="flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
+          placeholder={
+            isResolved
+              ? "Resolved — reply only if you need more help…"
+              : isManager && ticket.requesterName
+                ? `Reply to ${ticket.requesterName}…`
+                : "Write a reply…"
+          }
+          className={`flex-1 rounded-md shadow-clay-inset px-3 py-1.5 text-sm ${isResolved ? "opacity-70" : ""}`}
         />
-        <button className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm" disabled={addMessage.isPending}>
-          Send
+        <button
+          className="rounded-md bg-astra text-white shadow-clay-sm px-3 py-1.5 text-sm disabled:opacity-60"
+          disabled={addMessage.isPending}
+        >
+          {addMessage.isPending ? "Sending…" : "Send"}
         </button>
       </form>
 

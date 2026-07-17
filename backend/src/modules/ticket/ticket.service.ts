@@ -95,6 +95,11 @@ export async function addMessage(
 
   const [ticket] = await db.select().from(supportTickets).where(eq(supportTickets.id, ticketId)).limit(1);
   if (ticket) {
+    // A requester replying to a resolved ticket reopens it — otherwise their follow-up sits
+    // invisibly on a "resolved" ticket no trainer is watching anymore.
+    if (senderId === ticket.userId && ticket.status === "resolved") {
+      await db.update(supportTickets).set({ status: "open", resolvedAt: null }).where(eq(supportTickets.id, ticketId));
+    }
     const recipientId = senderId === ticket.userId ? ticket.assignedTrainerId : ticket.userId;
     if (recipientId) {
       await notify(recipientId, "ticket_reply", "New Ticket Reply", `New reply on "${ticket.subject}".`, `/tickets`);

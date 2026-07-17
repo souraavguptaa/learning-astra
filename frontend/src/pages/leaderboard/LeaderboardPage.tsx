@@ -12,10 +12,14 @@ export function LeaderboardPage() {
         {user?.role === "employee" ? "Employees" : "Franchise Owners & Operators"} ranked by points earned.
       </p>
       {isLoading && <p className="text-slate-400">Loading…</p>}
+      {!isLoading && leaderboard?.length === 0 && (
+        <p className="text-slate-400 text-sm">No points earned yet — complete a training to get on the board.</p>
+      )}
+      {!!leaderboard?.length && (
       <div className="bg-white rounded-lg shadow-clay divide-y divide-slate-100">
-        {leaderboard?.map((entry, idx) => (
+        {leaderboard.map((entry, idx) => (
           <div key={entry.userId} className="flex items-center gap-3 px-4 py-3">
-            <span className="w-6 text-center font-bold text-slate-400">{idx + 1}</span>
+            <span className="w-6 text-center font-bold text-slate-400">{idx < 3 ? ["🥇", "🥈", "🥉"][idx] : idx + 1}</span>
             <span className={`flex-1 ${entry.userId === user?.id ? "font-semibold text-astra" : ""}`}>
               {entry.name}
               {entry.userId === user?.id && " (you)"}
@@ -24,6 +28,7 @@ export function LeaderboardPage() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

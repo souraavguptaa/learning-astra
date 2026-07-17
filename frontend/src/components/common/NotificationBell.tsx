@@ -85,6 +85,7 @@ export function NotificationBell() {
           </span>
         )}
       </button>
+      {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
       {open && (
         <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
