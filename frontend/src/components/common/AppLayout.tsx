@@ -84,7 +84,10 @@ export function AppLayout() {
       <aside className="w-60 shrink-0 bg-white rounded-xl shadow-clay flex flex-col">
         <Link to="/" className="block px-5 py-4 hover:bg-slate-50 rounded-t-xl">
           <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-7 w-auto mb-1" />
-          <div className="font-bold text-astra">Learning Astra</div>
+          <div className="font-bold text-astra flex items-center gap-1.5">
+            <img src="/images/learning-astra-logo.png" alt="" className="h-5 w-5 rounded-full" />
+            Learning Astra
+          </div>
           <div className="text-xs text-slate-400">SastaSundar Learning Dashboard</div>
         </Link>
         <nav className="flex-1 py-3 px-2 space-y-1">

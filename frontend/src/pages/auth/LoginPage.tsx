@@ -43,7 +43,10 @@ export function LoginPage() {
       <div className="w-full max-w-sm bg-white rounded-xl shadow-clay p-8 space-y-6">
         <div className="text-center space-y-1">
           <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-10 w-auto mx-auto mb-2" />
-          <h1 className="text-2xl font-bold text-astra">Learning Astra</h1>
+          <h1 className="text-2xl font-bold text-astra flex items-center justify-center gap-2">
+            <img src="/images/learning-astra-logo.png" alt="" className="h-7 w-7 rounded-full" />
+            Learning Astra
+          </h1>
           <p className="text-sm text-slate-500">SastaSundar Learning Dashboard</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
