@@ -72,7 +72,10 @@ trainingRouter.delete(
   "/:id",
   authorize(...MANAGERS),
   asyncHandler(async (req, res) => {
-    await trainingService.deleteTraining(req.params.id);
+    // ?force=true bypasses the learner-progress/certificate guard — only super_admin can use it;
+    // silently ignored for anyone else so a trainer/admin can never trigger it by guessing the param.
+    const force = req.query.force === "true" && req.user!.role === "super_admin";
+    await trainingService.deleteTraining(req.params.id, { force });
     res.json({ success: true });
   }),
 );

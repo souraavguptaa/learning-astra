@@ -9,6 +9,7 @@ import { QuickAssignModal } from "../../components/trainingBuilder/QuickAssignMo
 import { SortableItemRow } from "../../components/trainingBuilder/SortableItemRow.js";
 import { useContentList } from "../../features/content.js";
 import { useNpsReport } from "../../features/nps.js";
+import { useAuth } from "../../lib/authContext.js";
 import {
   useAddTrainingItem,
   useBumpVersion,
@@ -26,6 +27,8 @@ type Tab = "build" | "assign";
 
 export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "assessment" }) {
   const noun = kind === "assessment" ? "Assessment" : "Training";
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === "super_admin";
   const { data: trainings } = useTrainings(kind);
   const { data: contentList } = useContentList();
   const createTraining = useCreateTraining();
@@ -114,10 +117,33 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
     if (!window.confirm(`Delete "${detail.training.title}"? This can't be undone.`)) return;
     setPublishError(null);
     try {
-      await deleteTraining.mutateAsync(selectedId);
+      await deleteTraining.mutateAsync({ trainingId: selectedId });
       setSelectedId(null);
+      return;
     } catch (err) {
-      setPublishError(isAxiosError(err) && err.response?.data?.error ? err.response.data.error : "Could not delete. Please try again.");
+      const message = isAxiosError(err) && err.response?.data?.error ? err.response.data.error : "Could not delete. Please try again.";
+      const blockedByGuard = isAxiosError(err) && err.response?.status === 400 && message.includes("learner progress");
+
+      if (blockedByGuard && isSuperAdmin) {
+        const typed = window.prompt(
+          `"${detail.training.title}" has real learner progress and/or certificates. Force-deleting it permanently destroys ` +
+            `that progress and any certificates already earned from it — this cannot be undone.\n\n` +
+            `Type DELETE to confirm.`,
+        );
+        if (typed === "DELETE") {
+          try {
+            await deleteTraining.mutateAsync({ trainingId: selectedId, force: true });
+            setSelectedId(null);
+            return;
+          } catch (err2) {
+            setPublishError(isAxiosError(err2) && err2.response?.data?.error ? err2.response.data.error : "Could not force-delete. Please try again.");
+            return;
+          }
+        }
+        return;
+      }
+
+      setPublishError(message);
     }
   }
 

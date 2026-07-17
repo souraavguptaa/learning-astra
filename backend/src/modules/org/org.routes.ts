@@ -85,6 +85,14 @@ orgRouter.patch(
   }),
 );
 
+orgRouter.delete(
+  "/users/:id",
+  authorize("super_admin"),
+  asyncHandler(async (req, res) => {
+    res.json(await orgService.deleteUser(req.user!.sub, req.params.id));
+  }),
+);
+
 orgRouter.post(
   "/users/:id/reset-password",
   authorize("super_admin", "admin"),

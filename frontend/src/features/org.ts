@@ -75,6 +75,14 @@ export function useSetUserFranchise() {
   });
 }
 
+export function useDeleteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => api.delete(`/org/users/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+  });
+}
+
 export function useResetPassword() {
   return useMutation({
     mutationFn: async (id: string) =>

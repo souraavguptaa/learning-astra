@@ -1,8 +1,10 @@
 import { useState } from "react";
-import type { UserRole } from "../../lib/authContext.js";
+import { isAxiosError } from "axios";
+import { useAuth, type UserRole } from "../../lib/authContext.js";
 import {
   useCreateFranchise,
   useCreateUser,
+  useDeleteUser,
   useFranchises,
   useResetPassword,
   useSetUserActive,
@@ -28,6 +30,8 @@ export function UserManagementPage({
   creatableRoles: UserRole[];
   canManageFranchises: boolean;
 }) {
+  const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.role === "super_admin";
   const { data: users, isLoading: usersLoading } = useUsers();
   const { data: franchises } = useFranchises();
   const createUser = useCreateUser();
@@ -35,6 +39,7 @@ export function UserManagementPage({
   const setActive = useSetUserActive();
   const setFranchise = useSetUserFranchise();
   const resetPassword = useResetPassword();
+  const deleteUser = useDeleteUser();
 
   const [form, setForm] = useState({
     name: "",
@@ -45,6 +50,7 @@ export function UserManagementPage({
   });
   const [franchiseForm, setFranchiseForm] = useState({ name: "", code: "", location: "" });
   const [lastCreated, setLastCreated] = useState<{ email: string; tempPassword: string } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
@@ -78,6 +84,20 @@ export function UserManagementPage({
     const verb = currentlyActive ? "Deactivate" : "Activate";
     if (!window.confirm(`${verb} ${name}'s account?`)) return;
     setActive.mutate({ id, isActive: !currentlyActive });
+  }
+
+  async function handleDeleteUser(id: string, name: string, email: string) {
+    setDeleteError(null);
+    const typed = window.prompt(
+      `Permanently delete ${name}'s account (${email})? This destroys their training progress, ` +
+        `certificates, and tickets too — it cannot be undone.\n\nType the email to confirm: ${email}`,
+    );
+    if (typed !== email) return;
+    try {
+      await deleteUser.mutateAsync(id);
+    } catch (err) {
+      setDeleteError(isAxiosError(err) && err.response?.data?.error ? err.response.data.error : "Could not delete this account. Please try again.");
+    }
   }
 
   return (
@@ -211,6 +231,7 @@ export function UserManagementPage({
             {(createUser.error as any)?.response?.data?.error ?? "Failed to create account"}
           </p>
         )}
+        {deleteError && <p className="text-sm text-red-500 mb-3">{deleteError}</p>}
 
         <table className="w-full text-sm">
           <thead>
@@ -270,6 +291,15 @@ export function UserManagementPage({
                   <button className="text-astra hover:underline" onClick={() => handleResetPassword(u.id)}>
                     Reset password
                   </button>
+                  {isSuperAdmin && u.id !== currentUser?.id && (
+                    <button
+                      className="text-red-500 hover:underline"
+                      disabled={deleteUser.isPending}
+                      onClick={() => handleDeleteUser(u.id, u.name, u.email)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

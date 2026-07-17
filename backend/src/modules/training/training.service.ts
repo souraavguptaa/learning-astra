@@ -46,15 +46,19 @@ export async function createTraining(
 // Blocked (rather than cascading) once anyone has real progress or an earned certificate on this
 // training — certificates.trainingId cascades on delete, so an unguarded delete would silently
 // destroy a learner's already-issued proof-of-completion. Untouched drafts/test trainings delete cleanly.
-export async function deleteTraining(trainingId: string) {
-  const [progressRow] = await db.select({ id: trainingProgress.id }).from(trainingProgress).where(eq(trainingProgress.trainingId, trainingId)).limit(1);
-  if (progressRow) {
-    throw new ApiError(400, "This training has learner progress or certificates and can't be deleted. Unassign it instead if it shouldn't be active anymore.");
+export async function deleteTraining(trainingId: string, options?: { force?: boolean }) {
+  if (!options?.force) {
+    const [progressRow] = await db.select({ id: trainingProgress.id }).from(trainingProgress).where(eq(trainingProgress.trainingId, trainingId)).limit(1);
+    if (progressRow) {
+      throw new ApiError(400, "This training has learner progress or certificates and can't be deleted. Unassign it instead if it shouldn't be active anymore.");
+    }
+    const [cert] = await db.select({ id: certificates.id }).from(certificates).where(eq(certificates.trainingId, trainingId)).limit(1);
+    if (cert) {
+      throw new ApiError(400, "This training has learner progress or certificates and can't be deleted. Unassign it instead if it shouldn't be active anymore.");
+    }
   }
-  const [cert] = await db.select({ id: certificates.id }).from(certificates).where(eq(certificates.trainingId, trainingId)).limit(1);
-  if (cert) {
-    throw new ApiError(400, "This training has learner progress or certificates and can't be deleted. Unassign it instead if it shouldn't be active anymore.");
-  }
+  // force=true (super_admin only, set at the route) skips the guard above — the training,
+  // everyone's progress on it, and any certificates earned from it are all cascade-deleted.
 
   const assessmentRows = await db.select({ id: assessments.id }).from(assessments).where(eq(assessments.trainingId, trainingId));
   const deleted = await db.delete(trainings).where(eq(trainings.id, trainingId)).returning();

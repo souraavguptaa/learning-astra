@@ -156,7 +156,8 @@ export function useCreateTraining() {
 export function useDeleteTraining() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (trainingId: string) => api.delete(`/trainings/${trainingId}`),
+    mutationFn: async ({ trainingId, force }: { trainingId: string; force?: boolean }) =>
+      api.delete(`/trainings/${trainingId}`, { params: force ? { force: "true" } : undefined }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["trainings"] }),
   });
 }

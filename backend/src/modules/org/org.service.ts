@@ -84,6 +84,18 @@ export async function setUserActive(userId: string, isActive: boolean) {
   return safeUser;
 }
 
+// Hard delete — cascades to the user's own progress/certificates/tickets/notifications, while
+// anything they merely *created* (content, trainings, franchises) is kept and just loses its
+// creator reference (schema uses onDelete: set null for those FKs, cascade for the user's own data).
+export async function deleteUser(requesterId: string, userId: string) {
+  if (requesterId === userId) {
+    throw new ApiError(400, "You can't delete your own account — there's no one left to undo it if that's a mistake.");
+  }
+  const [deleted] = await db.delete(users).where(eq(users.id, userId)).returning();
+  if (!deleted) throw new ApiError(404, "User not found");
+  return { id: deleted.id };
+}
+
 export async function resetPassword(userId: string) {
   const tempPassword = generateTempPassword();
   const [user] = await db
