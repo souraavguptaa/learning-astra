@@ -90,9 +90,9 @@ export function UserManagementPage({
     setDeleteError(null);
     const typed = window.prompt(
       `Permanently delete ${name}'s account (${email})? This destroys their training progress, ` +
-        `certificates, and tickets too — it cannot be undone.\n\nType the email to confirm: ${email}`,
+        `certificates, and tickets too — it cannot be undone.\n\nType DELETE to confirm.`,
     );
-    if (typed !== email) return;
+    if (typed !== "DELETE") return;
     try {
       await deleteUser.mutateAsync(id);
     } catch (err) {
