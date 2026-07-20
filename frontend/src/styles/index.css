@@ -19,6 +19,10 @@
   --shadow-clay-sm: 0 1px 6px rgba(10, 10, 10, 0.05);
   --shadow-clay-inset: inset 0 0 0 1px var(--border-default);
   --shadow-clay-hover: 0 4px 16px rgba(10, 10, 10, 0.1);
+  --field-bg: #ffffff;
+  --field-text: #0f172a;
+  --field-placeholder: #94a3b8;
+  color-scheme: light;
 }
 
 :root.dark {
@@ -33,6 +37,10 @@
   --shadow-clay-sm: 0 2px 10px rgba(0, 0, 0, 0.22);
   --shadow-clay-inset: inset 0 0 0 1px var(--border-default);
   --shadow-clay-hover: 0 10px 24px rgba(4, 8, 15, 0.3);
+  --field-bg: #121212;
+  --field-text: #f5f5f5;
+  --field-placeholder: #82828c;
+  color-scheme: dark;
 }
 
 @layer base {
@@ -69,6 +77,34 @@
   }
   button:not(:disabled):active {
     transform: scale(0.97);
+  }
+
+  /* Root cause of "dark mode text is unreadable": every text/number/email/password/search input,
+     select, and textarea across the app (74 usages) styles itself with only shadow-clay-inset — a
+     box-shadow, not a background or text color. With no explicit color, form fields fell back to
+     the browser's own default styling, completely disconnected from the .dark class toggle (and
+     from the OS-level color-scheme the browser guesses at). One rule here fixes every field in the
+     app at once instead of touching each of the 74 call sites — same fix-the-choke-point approach
+     as the .shadow-clay border rule above. */
+  input,
+  select,
+  textarea {
+    background-color: var(--field-bg);
+    color: var(--field-text);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--field-placeholder);
+    opacity: 1;
+  }
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 0.6;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--astra);
   }
 }
 
@@ -285,12 +321,38 @@
   .dark .text-slate-300 {
     color: #82828c;
   }
+  /* :hover pseudo-class variants generate a distinct selector from the base color class in
+     Tailwind, so the base overrides above don't cover them — several "icon button, darkens on
+     hover" patterns (modal close buttons, row-actions trigger) go invisible-on-hover in dark mode
+     without these. */
+  .dark .hover\:text-slate-600:hover,
+  .dark .hover\:text-slate-700:hover {
+    color: #e4e4e7;
+  }
+  .dark .border-slate-50,
   .dark .border-slate-100,
   .dark .border-slate-200 {
     border-color: var(--border-default);
   }
   .dark .border-slate-300 {
     border-color: var(--border-strong);
+  }
+  /* divide-* renders as a border on `> * + *`, a different selector than border-*, so it needs its
+     own override — otherwise table/list row dividers stay barely-visible light gray in dark mode. */
+  .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--border-default);
+  }
+  /* Opacity-modifier utilities (bg-blue-50/50 etc.) compile to their own selector too — distinct
+     from the plain bg-blue-50 override below, so each one actually used in the app needs listing. */
+  .dark .bg-blue-50\/50 {
+    background-color: rgba(27, 150, 255, 0.08);
+  }
+  .dark .bg-amber-50\/60 {
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+  .dark .bg-slate-400\/50 {
+    background-color: rgba(255, 255, 255, 0.15);
   }
 
   /* Status colors (success/danger/warning/info badges and banners) — the light pastel background

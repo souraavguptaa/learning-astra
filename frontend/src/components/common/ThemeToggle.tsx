@@ -14,7 +14,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       onClick={toggleTheme}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`relative inline-flex items-center w-12 h-7 rounded-pill shrink-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-astra ${
+      className={`inline-flex items-center w-12 h-7 rounded-pill shrink-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-astra ${
         isDark ? "bg-astra" : "bg-slate-200"
       } ${className}`}
     >

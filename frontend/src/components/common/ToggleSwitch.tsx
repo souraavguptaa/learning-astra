@@ -20,7 +20,7 @@ export function ToggleSwitch({
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex items-center w-10 h-6 rounded-pill shrink-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-astra disabled:opacity-50 ${
+      className={`inline-flex items-center w-10 h-6 rounded-pill shrink-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-astra disabled:opacity-50 ${
         checked ? "bg-astra" : "bg-slate-300"
       }`}
     >
