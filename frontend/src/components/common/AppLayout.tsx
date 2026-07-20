@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../../lib/authContext.js";
+import { useAuth, type UserRole } from "../../lib/authContext.js";
+import { AdPopup } from "./AdPopup.js";
 import { AnnouncementBanner } from "./AnnouncementBanner.js";
 import { ChangePasswordModal } from "./ChangePasswordModal.js";
 import { GlobalProgressBar } from "./GlobalProgressBar.js";
@@ -145,6 +146,10 @@ const NAV_BY_ROLE: Record<string, NavSection[]> = {
   ],
 };
 
+// Ads only ever targeted the learner home screen (per AdsManagementPage's own copy) — same
+// audience as before, just rendered once at the shell level instead of embedded in one page.
+const LEARNER_ROLES: UserRole[] = ["franchise_owner", "operator", "employee"];
+
 function flattenNav(sections: NavSection[]): NavItem[] {
   return sections.flatMap((s) => s.items);
 }
@@ -211,6 +216,7 @@ export function AppLayout() {
   const { user, logout } = useAuth();
   const sections = user ? NAV_BY_ROLE[user.role] ?? [] : [];
   const flatNav = flattenNav(sections);
+  const showAds = !!user && LEARNER_ROLES.includes(user.role);
   const location = useLocation();
   const currentItem = flatNav.find((item) =>
     item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path),
@@ -316,12 +322,16 @@ export function AppLayout() {
             <NotificationBell />
           </div>
         </header>
-        <main className="flex-1 p-4 md:p-8 overflow-x-auto">
+        <main className={`flex-1 p-4 md:p-8 overflow-x-auto ${showAds ? "pb-24 md:pb-28" : ""}`}>
           <div key={location.pathname} className="page-enter">
             <Outlet />
           </div>
         </main>
       </div>
+
+      {/* Rendered once at the shell level (not per-page) so it's a persistent site-wide bottom
+          banner instead of only appearing on the learner dashboard. */}
+      {showAds && <AdPopup />}
     </div>
   );
 }
