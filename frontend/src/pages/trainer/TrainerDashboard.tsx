@@ -1,3 +1,4 @@
+import { AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
 import { useOverdueAssignments } from "../../features/training.js";
@@ -20,7 +21,9 @@ export function TrainerDashboard() {
 
       {overdue && overdue.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="font-semibold text-red-700 mb-2">⚠️ {overdue.length} overdue mandatory assignment{overdue.length === 1 ? "" : "s"}</h2>
+          <h2 className="font-semibold text-red-700 mb-2 flex items-center gap-1.5">
+            <AlertTriangle className="w-4 h-4" /> {overdue.length} overdue mandatory assignment{overdue.length === 1 ? "" : "s"}
+          </h2>
           <ul className="text-sm text-red-800 space-y-1">
             {overdue.map((o) => (
               <li key={`${o.userId}-${o.trainingId}`}>

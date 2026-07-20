@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useUserProgress } from "../../features/analytics.js";
 
 /** Opened from a support ticket so a trainer/admin can check what this person has actually
@@ -11,7 +12,7 @@ export function LearnerProfileModal({ userId, onClose }: { userId: string; onClo
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-semibold">{data ? data.user.name : "Learner profile"}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 

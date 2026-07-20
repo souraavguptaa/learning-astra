@@ -1,3 +1,4 @@
+import { Paperclip } from "lucide-react";
 import { api } from "../../lib/api.js";
 import type { Attachment } from "../../features/ticket.js";
 
@@ -17,7 +18,7 @@ export function AttachmentList({ attachments }: { attachments?: Attachment[] }) 
           onClick={() => open(a.fileKey)}
           className="text-xs text-astra underline flex items-center gap-1"
         >
-          📎 {a.fileName}
+          <Paperclip className="w-3.5 h-3.5" /> {a.fileName}
         </button>
       ))}
     </div>

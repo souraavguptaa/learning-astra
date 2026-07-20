@@ -1,3 +1,4 @@
+import { CheckCircle2 } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import {
   useContentList,
@@ -164,8 +165,8 @@ export function ContentLibraryPage() {
         </div>
       )}
       {success && (
-        <div className="rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
-          ✓ {success}
+        <div className="rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 flex items-center gap-1.5">
+          <CheckCircle2 className="w-4 h-4 shrink-0" /> {success}
           <button className="ml-3 underline" onClick={() => setSuccess(null)}>
             dismiss
           </button>

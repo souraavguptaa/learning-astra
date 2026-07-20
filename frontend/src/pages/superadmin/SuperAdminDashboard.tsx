@@ -1,3 +1,4 @@
+import { Bot, CheckCircle2, HelpCircle, MessageSquare, Target, Ticket, TrendingUp, Users, type LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
 import { useAnalyticsOverview, type AnalyticsOverview } from "../../features/analytics.js";
@@ -5,7 +6,7 @@ import { useAnalyticsOverview, type AnalyticsOverview } from "../../features/ana
 type Tile = {
   key: keyof AnalyticsOverview;
   label: string;
-  icon: string;
+  icon: LucideIcon;
   suffix?: string;
   to?: string;
   /** Flags this metric red/amber when non-zero — for things that mean "needs attention", not "good". */
@@ -13,14 +14,14 @@ type Tile = {
 };
 
 const TILES: Tile[] = [
-  { key: "totalUsers", label: "Total Users", icon: "👥", to: "/users" },
-  { key: "activeUsers", label: "Active Users", icon: "✅", to: "/users" },
-  { key: "trainingCompletionRate", label: "Training Completion", icon: "📈", suffix: "%" },
-  { key: "assessmentPassRate", label: "Assessment Pass Rate", icon: "🎯", suffix: "%" },
-  { key: "averageNps", label: "Average NPS", icon: "💬" },
-  { key: "aiSupportQueries", label: "AI Support Queries", icon: "🤖" },
-  { key: "unansweredQueries", label: "Unanswered Queries", icon: "❓", attentionWhenPositive: true },
-  { key: "openTickets", label: "Open Tickets", icon: "🎫", to: "/tickets", attentionWhenPositive: true },
+  { key: "totalUsers", label: "Total Users", icon: Users, to: "/users" },
+  { key: "activeUsers", label: "Active Users", icon: CheckCircle2, to: "/users" },
+  { key: "trainingCompletionRate", label: "Training Completion", icon: TrendingUp, suffix: "%" },
+  { key: "assessmentPassRate", label: "Assessment Pass Rate", icon: Target, suffix: "%" },
+  { key: "averageNps", label: "Average NPS", icon: MessageSquare },
+  { key: "aiSupportQueries", label: "AI Support Queries", icon: Bot },
+  { key: "unansweredQueries", label: "Unanswered Queries", icon: HelpCircle, attentionWhenPositive: true },
+  { key: "openTickets", label: "Open Tickets", icon: Ticket, to: "/tickets", attentionWhenPositive: true },
 ];
 
 export function SuperAdminDashboard() {
@@ -49,7 +50,7 @@ export function SuperAdminDashboard() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xl">{tile.icon}</span>
+                  <tile.icon className="w-5 h-5 text-astra" />
                   {needsAttention && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
                 </div>
                 <div className={`text-2xl font-bold mt-2 ${needsAttention ? "text-red-600" : "text-astra"}`}>

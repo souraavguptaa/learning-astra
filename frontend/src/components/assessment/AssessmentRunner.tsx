@@ -1,3 +1,4 @@
+import { CheckCircle2, PartyPopper, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useAssessmentForUser, useSubmitAssessment, type AssessmentSubmitResult } from "../../features/assessment.js";
 
@@ -26,7 +27,9 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
   if (alreadyPassed && !result) {
     return (
       <div className="text-center py-8">
-        <p className="text-emerald-600 font-medium text-lg">✓ You already passed this quiz</p>
+        <p className="text-emerald-600 font-medium text-lg inline-flex items-center gap-1.5">
+          <CheckCircle2 className="w-5 h-5" /> You already passed this quiz
+        </p>
         <p className="text-sm text-slate-500">Best score: {existingResult?.bestScorePercentage}%</p>
       </div>
     );
@@ -39,8 +42,14 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
           <p className={`text-2xl font-bold ${result.passed ? "text-emerald-600" : "text-red-600"}`}>
             {result.scorePercentage}%
           </p>
-          <p className="text-sm text-slate-600">
-            {result.passed ? "Passed! 🎉" : `Not passed (need ${assessment.passPercentage}%)`}
+          <p className="text-sm text-slate-600 inline-flex items-center gap-1.5">
+            {result.passed ? (
+              <>
+                <PartyPopper className="w-4 h-4" /> Passed!
+              </>
+            ) : (
+              `Not passed (need ${assessment.passPercentage}%)`
+            )}
           </p>
           {result.certificate && <p className="text-xs text-emerald-700 mt-1">Certificate issued — check My Certificates.</p>}
         </div>
@@ -50,8 +59,13 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
             return (
               <div key={q.id} className={`p-2 rounded text-sm ${b?.isCorrect ? "bg-emerald-50" : "bg-red-50"}`}>
                 <div className="font-medium">{q.questionText}</div>
-                <div className="text-xs text-slate-500">
-                  {b?.isCorrect ? "✓ Correct" : "✗ Incorrect"} — correct answer:{" "}
+                <div className="text-xs text-slate-500 inline-flex items-center gap-1">
+                  {b?.isCorrect ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  ) : (
+                    <XCircle className="w-3.5 h-3.5 text-red-600" />
+                  )}
+                  {b?.isCorrect ? "Correct" : "Incorrect"} — correct answer:{" "}
                   {q.options.find((o) => o.id === b?.correctOptionId)?.optionText}
                 </div>
               </div>

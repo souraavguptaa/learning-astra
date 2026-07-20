@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { CheckCircle2, Lock, Play } from "lucide-react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AssessmentRunner } from "../../components/assessment/AssessmentRunner.js";
@@ -62,7 +63,15 @@ export function TrainingPlayerPage() {
                 activeItemId === item.id ? "border-astra bg-blue-50" : "border-slate-200 bg-white"
               } ${!unlocked ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              <span>{complete ? "✅" : unlocked ? "▶️" : "🔒"}</span>
+              <span>
+                {complete ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                ) : unlocked ? (
+                  <Play className="w-4 h-4 text-astra" />
+                ) : (
+                  <Lock className="w-4 h-4 text-slate-400" />
+                )}
+              </span>
               <span className="flex-1">
                 {idx + 1}. {item.itemType === "assessment" ? (assessment?.title ?? "Quiz") : (content?.title ?? "Untitled")}
               </span>

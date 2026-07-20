@@ -1,3 +1,4 @@
+import { Bell, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
@@ -78,7 +79,7 @@ export function NotificationBell() {
   return (
     <div className="relative">
       <button onClick={() => setOpen((o) => !o)} className="relative text-slate-500 hover:text-astra">
-        🔔
+        <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -117,11 +118,13 @@ export function NotificationBell() {
         <div className="fixed top-16 right-6 w-80 bg-white border border-astra rounded-lg shadow-2xl z-[200] p-3">
           <div className="flex items-start justify-between gap-2">
             <button onClick={() => handleClick(toast.id, toast.deepLink)} className="text-left flex-1">
-              <div className="font-medium text-sm">🔔 {toast.title}</div>
+              <div className="font-medium text-sm inline-flex items-center gap-1.5">
+                <Bell className="w-4 h-4" /> {toast.title}
+              </div>
               <div className="text-xs text-slate-500 mt-0.5">{toast.message}</div>
             </button>
-            <button onClick={() => setToast(null)} className="text-slate-400 hover:text-slate-600 text-sm shrink-0">
-              ✕
+            <button onClick={() => setToast(null)} className="text-slate-400 hover:text-slate-600 shrink-0">
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>

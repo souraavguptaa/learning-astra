@@ -1,3 +1,4 @@
+import { Mic, Paperclip, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAskSupport, type SupportAskResult } from "../../features/support.js";
@@ -94,7 +95,7 @@ export function AiSupportPage() {
               listening ? "bg-red-500 text-white border-red-500 animate-pulse" : "border-slate-300 text-slate-600"
             }`}
           >
-            🎤
+            <Mic className="w-4 h-4" />
           </button>
         )}
         <button
@@ -120,9 +121,9 @@ export function AiSupportPage() {
                   <button
                     onClick={() => speak(result.answer!)}
                     title="Listen"
-                    className="shrink-0 text-slate-400 hover:text-astra text-lg"
+                    className="shrink-0 text-slate-400 hover:text-astra"
                   >
-                    🔊
+                    <Volume2 className="w-[18px] h-[18px]" />
                   </button>
                 )}
               </div>
@@ -140,9 +141,9 @@ export function AiSupportPage() {
                             window.open(m.deepLink, "_blank");
                           }
                         }}
-                        className="text-xs bg-blue-50 text-astra px-2 py-1 rounded hover:underline"
+                        className="text-xs bg-blue-50 text-astra px-2 py-1 rounded hover:underline inline-flex items-center gap-1"
                       >
-                        📎 {m.title}
+                        <Paperclip className="w-3 h-3" /> {m.title}
                       </Link>
                     ))}
                   </div>

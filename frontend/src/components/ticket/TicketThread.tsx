@@ -1,3 +1,4 @@
+import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { useAddTicketMessage, useTicketDetail, type Attachment } from "../../features/ticket.js";
 import { useAuth } from "../../lib/authContext.js";
@@ -75,9 +76,12 @@ export function TicketThread({ ticketId, children }: { ticketId: string; childre
       </div>
 
       {isResolved && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-sm text-emerald-800">
-          ✓ This ticket has been marked resolved.
-          {!isManager && " If you still need help, reply below and the team will take another look."}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-sm text-emerald-800 flex items-start gap-1.5">
+          <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            This ticket has been marked resolved.
+            {!isManager && " If you still need help, reply below and the team will take another look."}
+          </span>
         </div>
       )}
 

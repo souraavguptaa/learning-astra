@@ -1,3 +1,4 @@
+import { CheckCircle2, Lock, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../lib/authContext.js";
 import { useVideoProgress } from "./useVideoProgress.js";
@@ -121,7 +122,7 @@ export function VideoPlayer({ contentId, src, onComplete }: { contentId: string;
           onClick={togglePlay}
           className="w-8 h-8 flex items-center justify-center rounded-full bg-astra text-white text-sm"
         >
-          {isPlaying ? "❚❚" : "▶"}
+          {isPlaying ? <Pause className="w-4 h-4" fill="currentColor" /> : <Play className="w-4 h-4" fill="currentColor" />}
         </button>
         <span className="text-xs text-slate-500 w-24 tabular-nums">
           {formatTime(currentTime)} / {formatTime(duration)}
@@ -139,8 +140,16 @@ export function VideoPlayer({ contentId, src, onComplete }: { contentId: string;
           )}
           <div className="absolute inset-y-0 left-0 bg-astra rounded" style={{ width: `${progressRatio * 100}%` }} />
         </div>
-        {!completed && <span className="text-xs text-slate-400">🔒 1x, no skip</span>}
-        {completed && <span className="text-xs text-emerald-600">✓ Completed</span>}
+        {!completed && (
+          <span className="text-xs text-slate-400 inline-flex items-center gap-1">
+            <Lock className="w-3.5 h-3.5" /> 1x, no skip
+          </span>
+        )}
+        {completed && (
+          <span className="text-xs text-emerald-600 inline-flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Completed
+          </span>
+        )}
       </div>
     </div>
   );

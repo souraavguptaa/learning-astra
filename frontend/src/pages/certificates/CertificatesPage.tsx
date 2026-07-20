@@ -1,3 +1,4 @@
+import { Award } from "lucide-react";
 import { useCertificateDownloadUrl, useMyCertificates } from "../../features/assessment.js";
 
 export function CertificatesPage() {
@@ -17,7 +18,7 @@ export function CertificatesPage() {
       <div className="grid grid-cols-2 gap-4">
         {certificates?.map((c) => (
           <div key={c.id} className="hover-lift bg-white rounded-lg shadow-clay p-5">
-            <div className="text-3xl mb-2">🏅</div>
+            <Award className="w-8 h-8 mb-2 text-astra" />
             <div className="font-semibold text-slate-800 leading-snug">{c.trainingTitle}</div>
             <div className="flex items-center gap-2 mt-2 text-sm">
               <span className="bg-emerald-50 text-emerald-700 rounded-full px-2 py-0.5 text-xs font-medium">

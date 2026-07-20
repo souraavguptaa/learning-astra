@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api.js";
 import { useActiveAds, type Ad } from "../../features/promo.js";
@@ -36,8 +37,8 @@ export function AdPopup() {
 
   return (
     <div className="fixed bottom-6 right-6 w-72 bg-white border border-slate-200 rounded-lg shadow-2xl z-[150] overflow-hidden">
-      <button onClick={() => setVisible(false)} className="absolute top-1 right-1 bg-black/40 text-white rounded-full w-5 h-5 text-xs leading-5">
-        ✕
+      <button onClick={() => setVisible(false)} className="absolute top-1 right-1 bg-black/40 text-white rounded-full w-5 h-5 flex items-center justify-center">
+        <X className="w-3 h-3" />
       </button>
       <a href={current.linkUrl} target="_blank" rel="noopener noreferrer" onClick={() => setVisible(false)}>
         {imageUrl && <img src={imageUrl} alt={current.title} className="w-full h-36 object-cover" />}

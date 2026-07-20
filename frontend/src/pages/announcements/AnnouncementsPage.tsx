@@ -1,3 +1,4 @@
+import { Paperclip } from "lucide-react";
 import { useState } from "react";
 import { useFranchises } from "../../features/org.js";
 import {
@@ -23,8 +24,8 @@ function AttachmentLink({ fileKey }: { fileKey: string | null }) {
     window.open(data.url, "_blank");
   }
   return (
-    <button onClick={open} className="text-xs text-astra underline mt-1">
-      📎 View attachment
+    <button onClick={open} className="text-xs text-astra underline mt-1 inline-flex items-center gap-1">
+      <Paperclip className="w-3.5 h-3.5" /> View attachment
     </button>
   );
 }

@@ -1,3 +1,4 @@
+import { BookOpen, CheckCircle2, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AdPopup } from "../../components/common/AdPopup.js";
 import { useMyGamification } from "../../features/gamification.js";
@@ -67,7 +68,7 @@ export function UserDashboard() {
                 className="hover-lift flex items-center justify-between gap-3 bg-white shadow-clay-sm rounded-lg p-4"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-xl shrink-0">▶️</span>
+                  <Play className="w-5 h-5 shrink-0 text-astra" />
                   <div className="min-w-0">
                     <div className="font-medium truncate">{training.title}</div>
                     <span
@@ -97,7 +98,7 @@ export function UserDashboard() {
               className="hover-lift flex items-center justify-between gap-3 bg-white shadow-clay-sm rounded-lg p-4"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-xl shrink-0">📘</span>
+                <BookOpen className="w-5 h-5 shrink-0 text-astra" />
                 <div className="min-w-0">
                   <div className="font-medium truncate">{training.title}</div>
                   <span
@@ -125,7 +126,7 @@ export function UserDashboard() {
                 to={`/learning/${training.id}`}
                 className="hover-lift flex items-center gap-3 bg-white shadow-clay-sm rounded-lg p-4 opacity-70"
               >
-                <span className="text-lg text-emerald-600">✓</span>
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                 <div className="font-medium truncate">{training.title}</div>
               </Link>
             ))}

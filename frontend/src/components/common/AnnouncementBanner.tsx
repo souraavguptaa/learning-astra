@@ -1,3 +1,4 @@
+import { Megaphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api.js";
 import { useMarkAnnouncementRead, useMyAnnouncements } from "../../features/announcement.js";
@@ -28,7 +29,7 @@ export function AnnouncementBanner() {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-6">
       <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl">
-        <div className="text-3xl mb-2">📢</div>
+        <Megaphone className="w-8 h-8 mb-2 text-astra" />
         <h2 className="text-2xl font-bold text-slate-800 mb-2">{unread.title}</h2>
         <p className="text-slate-600 whitespace-pre-wrap mb-4">{unread.body}</p>
         {imageUrl && (

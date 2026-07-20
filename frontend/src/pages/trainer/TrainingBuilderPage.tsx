@@ -1,5 +1,6 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { isAxiosError } from "axios";
@@ -222,8 +223,8 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
         {detail && (
           <div className="space-y-4">
             {justSaved && (
-              <div className="rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-800">
-                ✓ {justSaved}
+              <div className="rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-800 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" /> {justSaved}
               </div>
             )}
             {publishError && (
