@@ -3,34 +3,55 @@
 @tailwind utilities;
 
 :root {
-  /* Premium enterprise palette modeled on Salesforce Lightning: confident enterprise blue
-     primary, deep navy for emphasis, cool gray-blue page background, white cards with crisp
-     subtle shadows. Token names kept as-is so no component file needed to change. */
-  --astra: #0176d3;
-  --astra-dark: #032d60;
-  --astra-soft: #eaf5fe;
-  --clay-bg: #f3f6f9;
-  --shadow-clay: 0 1px 2px rgba(3, 45, 96, 0.06), 0 8px 24px -10px rgba(3, 45, 96, 0.14);
-  --shadow-clay-sm: 0 1px 2px rgba(3, 45, 96, 0.07), 0 3px 8px -3px rgba(3, 45, 96, 0.1);
-  --shadow-clay-inset: inset 0 0 0 1px rgba(3, 45, 96, 0.14);
-  --shadow-clay-hover: 0 2px 4px rgba(3, 45, 96, 0.08), 0 16px 32px -12px rgba(3, 45, 96, 0.22);
+  /* Bento design system (TypeUI), light variant. Bento's own palette is dark-first (#0a0a0a
+     canvas everywhere) so the light values below are derived to keep the same premium-editorial
+     language — warm accent, hairline borders, flat bordered cards — while meeting WCAG text
+     contrast on a light canvas. --astra is deepened from the raw brand orange (#F9A474, used
+     verbatim for filled buttons/badges) since the raw tint fails 4.5:1 as text on white. Token
+     names kept as-is so no component file needed to change. */
+  --astra: #b1550f;
+  --astra-dark: #7a3a08;
+  --astra-soft: #fdeee3;
+  --clay-bg: #fafaf9;
+  --border-default: rgba(10, 10, 10, 0.08);
+  --border-strong: rgba(10, 10, 10, 0.16);
+  --shadow-clay: 0 2px 10px rgba(10, 10, 10, 0.05), 0 10px 24px -10px rgba(10, 10, 10, 0.08);
+  --shadow-clay-sm: 0 1px 6px rgba(10, 10, 10, 0.05);
+  --shadow-clay-inset: inset 0 0 0 1px var(--border-default);
+  --shadow-clay-hover: 0 4px 16px rgba(10, 10, 10, 0.1);
 }
 
 :root.dark {
-  --astra: #4bb0ff;
-  --astra-dark: #1b96ff;
-  --astra-soft: rgba(27, 150, 255, 0.14);
-  --clay-bg: #0b1420;
-  --shadow-clay: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
-  --shadow-clay-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 3px 8px -3px rgba(0, 0, 0, 0.4);
-  --shadow-clay-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  --shadow-clay-hover: 0 2px 4px rgba(0, 0, 0, 0.4), 0 16px 32px -12px rgba(0, 0, 0, 0.6);
+  /* Bento native values, per colors.md/shadows.md in the installed design skill. */
+  --astra: #f9a474;
+  --astra-dark: #ffd9bb;
+  --astra-soft: rgba(249, 164, 116, 0.14);
+  --clay-bg: #0a0a0a;
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --shadow-clay: 0 18px 40px rgba(2, 6, 14, 0.42);
+  --shadow-clay-sm: 0 2px 10px rgba(0, 0, 0, 0.22);
+  --shadow-clay-inset: inset 0 0 0 1px var(--border-default);
+  --shadow-clay-hover: 0 10px 24px rgba(4, 8, 15, 0.3);
 }
 
 @layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  h1, h2, h3, h4 {
+    font-family: "Inter Tight", "Inter", system-ui, sans-serif;
+  }
   body {
     background-color: var(--clay-bg);
     transition: background-color 200ms ease;
+  }
+  /* Bento cards are flat (bg = canvas) and rely on a hairline border for definition instead of
+     heavy shadows — see cards.md. Every existing bg-white/shadow-clay card across the app picks
+     this up for free since both classes are already applied together everywhere. */
+  .shadow-clay,
+  .shadow-clay-sm {
+    border: 1px solid var(--border-default);
   }
   /* A slight press-down on click reads as "alive" and costs nothing since it's scoped to
      interactive elements. */
@@ -92,47 +113,52 @@
    of adding dark: variants to every file — every existing bg-white, text-slate-N, and
    border-slate-N usage across ~40 components adapts automatically. */
 @layer utilities {
+  /* Bento wants cards flush with the #0a0a0a canvas (definition from the border added to
+     .shadow-clay above, not from tone). Plain bg-white boxes with no shadow-clay companion class
+     get a hair of elevation instead of literal #0a0a0a so they don't disappear into the page. */
   .dark .bg-white {
-    background-color: #1e293b;
+    background-color: #121212;
   }
   .dark .bg-slate-50 {
-    background-color: rgba(51, 65, 85, 0.4);
+    background-color: rgba(255, 255, 255, 0.04);
   }
   .dark .bg-slate-100,
   .dark .bg-slate-200 {
-    background-color: #334155;
+    background-color: rgba(255, 255, 255, 0.08);
   }
   .dark .hover\:bg-slate-50:hover {
-    background-color: rgba(51, 65, 85, 0.6);
+    background-color: rgba(255, 255, 255, 0.06);
   }
   .dark .hover\:bg-slate-100:hover,
   .dark .hover\:bg-slate-200:hover {
-    background-color: #475569;
+    background-color: rgba(255, 255, 255, 0.1);
   }
   .dark .text-slate-800 {
-    color: #f1f5f9;
+    color: #f5f5f5;
   }
   .dark .text-slate-700 {
-    color: #e2e8f0;
+    color: #e4e4e7;
   }
   .dark .text-slate-600 {
-    color: #cbd5e1;
+    color: #a1a1aa;
   }
   .dark .text-slate-500 {
-    color: #94a3b8;
+    color: #a1a1aa;
   }
   .dark .text-slate-400 {
-    color: #64748b;
+    /* Lightened from Bento's raw text.muted (#71717a, 3.9:1) — that fails 4.5:1 for the small-text
+       metadata this token is used for across the app. */
+    color: #82828c;
   }
   .dark .text-slate-300 {
-    color: #475569;
+    color: #82828c;
   }
   .dark .border-slate-100,
   .dark .border-slate-200 {
-    border-color: #334155;
+    border-color: var(--border-default);
   }
   .dark .border-slate-300 {
-    border-color: #475569;
+    border-color: var(--border-strong);
   }
 
   /* Status colors (success/danger/warning/info badges and banners) — the light pastel background

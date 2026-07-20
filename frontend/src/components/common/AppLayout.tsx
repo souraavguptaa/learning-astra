@@ -81,23 +81,23 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen flex bg-clay-bg gap-4 p-4">
-      <aside className="w-60 shrink-0 bg-white rounded-xl shadow-clay flex flex-col">
+      <aside className="w-64 shrink-0 bg-white rounded-xl shadow-clay flex flex-col">
         <Link to="/" className="block px-5 py-4 hover:bg-slate-50 rounded-t-xl">
           <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-7 w-auto mb-1" />
-          <div className="font-bold text-astra flex items-center gap-1.5">
+          <div className="font-display font-semibold text-astra flex items-center gap-1.5">
             <img src="/images/learning-astra-logo.png" alt="" className="h-5 w-5 rounded-full" />
             Learning Astra
           </div>
           <div className="text-xs text-slate-400">SastaSundar Learning Dashboard</div>
         </Link>
-        <nav className="flex-1 py-3 px-2 space-y-1">
+        <nav className="flex-1 py-3 px-3 space-y-1">
           {nav.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === "/"}
               className={({ isActive }) =>
-                `block px-4 py-2 rounded-lg text-sm ${
+                `block px-4 py-2 rounded-pill text-sm transition-colors ${
                   isActive
                     ? "bg-astra-soft text-astra-dark font-medium"
                     : "text-slate-600 hover:bg-slate-100 hover:text-astra"
@@ -110,7 +110,9 @@ export function AppLayout() {
         </nav>
         <div className="px-5 py-4 text-sm">
           <div className="font-medium text-slate-700">{user?.name}</div>
-          <div className="text-xs text-slate-400 mb-2 capitalize">{user?.role.replace("_", " ")}</div>
+          <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">
+            {user?.role.replace("_", " ")}
+          </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowChangePassword(true)} className="text-xs text-astra hover:underline">
               Change password
