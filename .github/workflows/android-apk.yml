@@ -1,0 +1,51 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/android-apk.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - run: npm run build --workspace=frontend
+
+      - run: npx cap sync android
+        working-directory: frontend
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - run: chmod +x gradlew && ./gradlew assembleDebug
+        working-directory: frontend/android
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: learning-astra-debug-apk
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+
+      # Stable download link that doesn't change between builds — replaces the previous
+      # "android-latest" release each run so franchise owners always get the newest APK
+      # from the same URL, no reinstall-with-a-new-link needed.
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Android build (latest)
+          body: Auto-built from the latest push to main. Debug-signed, for internal sideload install only.
+          files: frontend/android/app/build/outputs/apk/debug/app-debug.apk
