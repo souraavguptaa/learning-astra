@@ -1,7 +1,7 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CheckCircle2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { CheckCircle2, Search, Send } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { AssessmentBuilderForm } from "../../components/assessment/AssessmentBuilderForm.js";
@@ -44,6 +44,14 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
   const [justSaved, setJustSaved] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [listSearch, setListSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "draft" | "published">("all");
+
+  const visibleTrainings = useMemo(() => {
+    const q = listSearch.trim().toLowerCase();
+    return (trainings ?? [])
+      .filter((t) => (statusFilter === "all" ? true : t.status === statusFilter))
+      .filter((t) => !q || t.title.toLowerCase().includes(q));
+  }, [trainings, listSearch, statusFilter]);
 
   const { data: detail } = useTrainingDetail(selectedId);
   const addItem = useAddTrainingItem(selectedId ?? "");
@@ -157,23 +165,28 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
     <div className="grid grid-cols-3 gap-6">
       <div className="col-span-1 space-y-4">
         <h1 className="text-xl font-bold text-slate-800">{kind === "assessment" ? "Assessments" : "Trainings"}</h1>
-        <form onSubmit={handleCreate} className="bg-white rounded-lg shadow-clay p-4 space-y-2">
-          <input
-            placeholder="Title"
-            required
-            value={form.title}
-            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
-          />
-          <textarea
-            placeholder={`Description / notes for this ${noun.toLowerCase()}`}
-            required
-            value={form.description}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
-            rows={2}
-          />
-          <button disabled={createTraining.isPending} className="w-full rounded-md bg-astra text-white shadow-clay-sm py-1.5 text-sm font-medium disabled:opacity-60">
+        <form onSubmit={handleCreate} className="bg-white rounded-lg shadow-clay p-4 space-y-3">
+          <label className="block">
+            <span className="block text-xs font-medium text-slate-600 mb-1">Title</span>
+            <input
+              required
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              className="w-full rounded-md shadow-clay-inset px-3 h-11 text-sm"
+            />
+          </label>
+          <label className="block">
+            <span className="block text-xs font-medium text-slate-600 mb-1">Description</span>
+            <textarea
+              placeholder={`Notes for this ${noun.toLowerCase()}`}
+              required
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              className="w-full rounded-md shadow-clay-inset px-3 py-2 text-sm"
+              rows={2}
+            />
+          </label>
+          <button disabled={createTraining.isPending} className="w-full rounded-md bg-astra text-white shadow-clay-sm h-11 text-sm font-medium disabled:opacity-60">
             {createTraining.isPending ? "Creating…" : `Create ${noun.toLowerCase()}`}
           </button>
         </form>
@@ -182,36 +195,63 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
           recreate it.
         </p>
         {trainings && trainings.length > 5 && (
-          <input
-            placeholder={`Search ${kind === "assessment" ? "assessments" : "trainings"}…`}
-            value={listSearch}
-            onChange={(e) => setListSearch(e.target.value)}
-            className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
-          />
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              placeholder={`Search ${kind === "assessment" ? "assessments" : "trainings"}…`}
+              value={listSearch}
+              onChange={(e) => setListSearch(e.target.value)}
+              className="w-full rounded-md shadow-clay-inset pl-9 pr-3 py-1.5 text-sm"
+            />
+          </div>
+        )}
+        {trainings && trainings.length > 5 && (
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-slate-500 mr-0.5">Show:</span>
+            {(["all", "draft", "published"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-2.5 py-1 rounded-pill capitalize ${
+                  statusFilter === s ? "bg-astra-soft text-astra-dark font-medium" : "text-slate-500 hover:bg-slate-100"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         )}
         <div className="space-y-1">
-          {trainings
-            ?.filter((t) => t.title.toLowerCase().includes(listSearch.toLowerCase()))
-            .map((t) => (
+          {visibleTrainings.map((t) => (
             <div
               key={t.id}
-              className={`rounded text-sm border ${selectedId === t.id ? "border-astra bg-blue-50" : "border-slate-200 bg-white"}`}
+              className={`flex items-center gap-2 rounded-md border pl-3 pr-2 py-2 text-sm ${
+                selectedId === t.id ? "border-astra bg-astra-soft" : "border-black/[0.06] dark:border-white/10 bg-white"
+              }`}
             >
-              <button onClick={() => setSelectedId(t.id)} className="w-full text-left px-3 py-2">
-                <div className="font-medium">{t.title}</div>
-                <div className="text-xs text-slate-400">
-                  {t.status} · v{t.versionMajor}.{t.versionMinor}
+              <button onClick={() => setSelectedId(t.id)} className="flex-1 min-w-0 text-left">
+                <div className="font-medium truncate">{t.title}</div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className={`rounded-pill px-1.5 py-0.5 text-[10px] font-medium ${
+                      t.status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {t.status}
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    v{t.versionMajor}.{t.versionMinor}
+                  </span>
                 </div>
               </button>
               {t.status === "published" && (
-                <div className="px-3 pb-2">
-                  <button
-                    onClick={() => setQuickAssign({ id: t.id, title: t.title })}
-                    className="text-xs text-astra hover:underline"
-                  >
-                    Assign →
-                  </button>
-                </div>
+                <button
+                  onClick={() => setQuickAssign({ id: t.id, title: t.title })}
+                  title="Assign"
+                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-astra hover:bg-white"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
               )}
             </div>
           ))}
@@ -301,19 +341,25 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                       </button>
                     </div>
                   </div>
-                  <form onSubmit={handleSaveDetails} className="space-y-2">
-                    <input
-                      value={editForm.title}
-                      onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
-                      className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-lg font-bold"
-                    />
-                    <textarea
-                      value={editForm.description}
-                      onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
-                      placeholder="Add any information trainees should know about this training…"
-                      className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
-                      rows={3}
-                    />
+                  <form onSubmit={handleSaveDetails} className="space-y-3">
+                    <label className="block">
+                      <span className="block text-xs font-medium text-slate-500 mb-1">Title</span>
+                      <input
+                        value={editForm.title}
+                        onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                        className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-lg font-bold"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="block text-xs font-medium text-slate-500 mb-1">Description</span>
+                      <textarea
+                        value={editForm.description}
+                        onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                        placeholder="Add any information trainees should know about this training…"
+                        className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
+                        rows={3}
+                      />
+                    </label>
                     <div className="flex items-center gap-4">
                       <button
                         type="submit"

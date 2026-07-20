@@ -1,4 +1,4 @@
-import { Paperclip } from "lucide-react";
+import { Megaphone, Paperclip } from "lucide-react";
 import { useState } from "react";
 import { useFranchises } from "../../features/org.js";
 import {
@@ -145,11 +145,11 @@ function ManagerView() {
         </div>
       </form>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {announcements?.map((a) => (
-          <div key={a.id} className="bg-white rounded-lg shadow-clay p-4">
+          <div key={a.id} className="bg-white rounded-xl shadow-clay overflow-hidden">
             {editingId === a.id ? (
-              <form onSubmit={handleSaveEdit} className="space-y-2">
+              <form onSubmit={handleSaveEdit} className="space-y-2 p-4">
                 <input
                   value={editForm.title}
                   onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
@@ -171,35 +171,45 @@ function ManagerView() {
                 </div>
               </form>
             ) : (
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="font-medium">{a.title}</div>
-                  <div className="text-sm text-slate-600">{a.body}</div>
-                  <AttachmentLink fileKey={a.attachmentFileKey} />
-                  <div className="text-xs text-slate-400 mt-1">
-                    {a.targetType === "all" ? "Everyone" : a.targetType === "role" ? `Role: ${a.targetRole}` : "Specific franchise"}
+              <>
+                {/* Header row: icon-shape badge + title, per cards.md — then a divider before the
+                    body, matching the widget-shell header/divider/body/divider/footer rhythm. */}
+                <div className="flex items-start gap-3 px-4 py-3">
+                  <span className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-astra-soft text-astra-dark shrink-0">
+                    <Megaphone className="w-4 h-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium">{a.title}</div>
+                    <div className="text-sm text-slate-600 mt-0.5">{a.body}</div>
+                    <AttachmentLink fileKey={a.attachmentFileKey} />
                   </div>
                 </div>
-                <div className="flex gap-2 text-xs">
-                  <button onClick={() => setStatusId(statusId === a.id ? null : a.id)} className="text-astra">
-                    Read status
-                  </button>
-                  <button onClick={() => openEdit(a)} className="text-astra">
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Remove the announcement "${a.title}"?`)) del.mutate(a.id);
-                    }}
-                    className="text-red-500"
-                  >
-                    Remove
-                  </button>
+                <div className="border-t border-black/[0.06] dark:border-white/10" />
+                <div className="flex items-center justify-between gap-2 px-4 py-2 text-xs">
+                  <span className="text-slate-400">
+                    {a.targetType === "all" ? "Everyone" : a.targetType === "role" ? `Role: ${a.targetRole}` : "Specific franchise"}
+                  </span>
+                  <div className="flex gap-3">
+                    <button onClick={() => setStatusId(statusId === a.id ? null : a.id)} className="text-astra">
+                      Read status
+                    </button>
+                    <button onClick={() => openEdit(a)} className="text-astra">
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Remove the announcement "${a.title}"?`)) del.mutate(a.id);
+                      }}
+                      className="text-red-500"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
             {statusId === a.id && readStatus && (
-              <div className="mt-2 text-xs text-slate-500 border-t border-slate-100 pt-2">
+              <div className="text-xs text-slate-500 border-t border-black/[0.06] dark:border-white/10 px-4 py-2">
                 Read by {readStatus.filter((r) => r.readAt).length} / {readStatus.length}
               </div>
             )}
@@ -217,13 +227,22 @@ function EndUserView() {
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-slate-800">Announcements</h1>
       {announcements?.length === 0 && <p className="text-slate-400">No announcements right now.</p>}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {announcements?.map((a) => (
-          <div key={a.id} className="bg-white rounded-lg shadow-clay p-4">
-            <div className="font-medium">{a.title}</div>
-            <div className="text-sm text-slate-600">{a.body}</div>
-            <AttachmentLink fileKey={a.attachmentFileKey} />
-            <div className="text-xs text-slate-400 mt-1">{new Date(a.createdAt).toLocaleString()}</div>
+          <div key={a.id} className="bg-white rounded-xl shadow-clay overflow-hidden">
+            <div className="flex items-start gap-3 px-4 py-3">
+              <span className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-astra-soft text-astra-dark shrink-0">
+                <Megaphone className="w-4 h-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium">{a.title}</div>
+                <div className="text-sm text-slate-600 mt-0.5">{a.body}</div>
+                <AttachmentLink fileKey={a.attachmentFileKey} />
+              </div>
+            </div>
+            <div className="border-t border-black/[0.06] dark:border-white/10 px-4 py-2 text-xs text-slate-400">
+              {new Date(a.createdAt).toLocaleString()}
+            </div>
           </div>
         ))}
       </div>

@@ -1,5 +1,6 @@
-import { CheckCircle2 } from "lucide-react";
-import { lazy, Suspense, useState } from "react";
+import { CheckCircle2, Search } from "lucide-react";
+import { lazy, Suspense, useMemo, useState } from "react";
+import { RowActionsMenu } from "../../components/common/RowActionsMenu.js";
 import {
   useContentList,
   useContentPlaybackUrl,
@@ -57,8 +58,17 @@ export function ContentLibraryPage() {
   const updateContent = useUpdateContent(editingItem?.id ?? "");
   const deleteContent = useDeleteContent();
   const retryConversion = useRetryConversion();
+  const [librarySearch, setLibrarySearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | ContentItem["status"]>("all");
 
   const { data: playback } = useContentPlaybackUrl(previewId);
+
+  const visibleContent = useMemo(() => {
+    const q = librarySearch.trim().toLowerCase();
+    return (content ?? [])
+      .filter((c) => (statusFilter === "all" ? true : c.status === statusFilter))
+      .filter((c) => !q || c.title.toLowerCase().includes(q) || c.topic.toLowerCase().includes(q));
+  }, [content, librarySearch, statusFilter]);
 
   function toggleRole(role: UserRole) {
     setSelectedRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
@@ -278,67 +288,78 @@ export function ContentLibraryPage() {
 
       <section className="bg-white rounded-lg shadow-clay p-5">
         <h2 className="font-semibold text-slate-700 mb-3">Library</h2>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-slate-500 border-b border-slate-200">
-              <th className="py-1.5">Title</th>
-              <th className="py-1.5">Type</th>
-              <th className="py-1.5">Topic</th>
-              <th className="py-1.5">Language</th>
-              <th className="py-1.5">Status</th>
-              <th className="py-1.5">Preview</th>
-              <th className="py-1.5">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={7} className="py-3 text-slate-400">
-                  Loading…
-                </td>
+
+        <div className="relative mb-3">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            placeholder="Search by title or topic…"
+            value={librarySearch}
+            onChange={(e) => setLibrarySearch(e.target.value)}
+            className="w-full rounded-md shadow-clay-inset pl-9 pr-3 py-1.5 text-sm"
+          />
+        </div>
+        <div className="flex items-center gap-1 mb-3 text-sm">
+          <span className="text-slate-500 mr-1">Show only:</span>
+          {(["all", "ready", "processing", "failed"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-3 py-1 rounded-pill capitalize ${
+                statusFilter === s ? "bg-astra-soft text-astra-dark font-medium" : "text-slate-500 hover:bg-slate-100"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-md border border-black/[0.06] dark:border-white/10 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-slate-500 bg-slate-50">
+                <th className="py-2 px-3 font-medium">Title</th>
+                <th className="py-2 px-3 font-medium">Type</th>
+                <th className="py-2 px-3 font-medium">Topic</th>
+                <th className="py-2 px-3 font-medium">Language</th>
+                <th className="py-2 px-3 font-medium">Status</th>
+                <th className="py-2 px-3 font-medium w-9" />
               </tr>
-            )}
-            {content?.map((c) => (
-              <tr key={c.id} className="border-b border-slate-100">
-                <td className="py-1.5">{c.title}</td>
-                <td className="py-1.5 uppercase text-xs text-slate-500">{c.type}</td>
-                <td className="py-1.5">{c.topic}</td>
-                <td className="py-1.5">{c.language}</td>
-                <td className="py-1.5">
-                  <span className={`px-2 py-0.5 rounded text-xs ${STATUS_BADGE[c.status]}`}>{c.status}</span>
-                </td>
-                <td className="py-1.5">
-                  {c.status === "ready" && (
-                    <button className="text-astra hover:underline" onClick={() => setPreviewId(c.id)}>
-                      Preview
-                    </button>
-                  )}
-                </td>
-                <td className="py-1.5 space-x-2">
-                  {c.status === "failed" && (
-                    <button
-                      className="text-amber-600 hover:underline"
-                      disabled={retryConversion.isPending}
-                      onClick={() => handleRetryConversion(c)}
-                    >
-                      {retryConversion.isPending ? "Retrying…" : "Retry"}
-                    </button>
-                  )}
-                  <button className="text-astra hover:underline" onClick={() => openEdit(c)}>
-                    Edit
-                  </button>
-                  <button
-                    className="text-red-500 hover:underline"
-                    disabled={deleteContent.isPending}
-                    onClick={() => handleDelete(c)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isLoading && (
+                <tr>
+                  <td colSpan={6} className="py-3 px-3 text-slate-400">
+                    Loading…
+                  </td>
+                </tr>
+              )}
+              {visibleContent.map((c) => (
+                <tr key={c.id}>
+                  <td className="py-2 px-3 whitespace-nowrap max-w-[260px] truncate">{c.title}</td>
+                  <td className="py-2 px-3 uppercase text-xs text-slate-500 whitespace-nowrap">{c.type}</td>
+                  <td className="py-2 px-3 whitespace-nowrap max-w-[160px] truncate">{c.topic}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">{c.language}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    <span className={`rounded-pill px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[c.status]}`}>{c.status}</span>
+                  </td>
+                  <td className="py-1 px-1 text-right">
+                    <RowActionsMenu
+                      actions={[
+                        ...(c.status === "ready" ? [{ label: "Preview", onClick: () => setPreviewId(c.id) }] : []),
+                        ...(c.status === "failed" ? [{ label: "Retry conversion", onClick: () => handleRetryConversion(c) }] : []),
+                        { label: "Edit", onClick: () => openEdit(c) },
+                        { label: "Delete", danger: true, disabled: deleteContent.isPending, onClick: () => handleDelete(c) },
+                      ]}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-2 text-xs text-slate-400">
+          {visibleContent.length} of {content?.length ?? 0} items
+        </div>
       </section>
 
       {previewId && (

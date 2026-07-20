@@ -6,10 +6,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Glassmorphism design system calls for "Google Sans" uniformly (not embeddable via
-        // Google Fonts — it's Google's proprietary product font). Inter is the closest freely
-        // licensed stand-in and is already loaded in index.html.
+        // Bento design system: Inter Tight for display/headings, Inter for body — see
+        // typography.md in .claude/skills/typeui-design-system/SKILL.md.
         sans: ['"Inter"', "system-ui", "sans-serif"],
+        display: ['"Inter Tight"', '"Inter"', "system-ui", "sans-serif"],
       },
       colors: {
         // Values come from CSS custom properties (defined in index.css, swapped under .dark) so
@@ -29,28 +29,20 @@ export default {
         },
       },
       borderRadius: {
-        // Glassmorphism radius.md scale: base 20 (buttons/cards/inputs/modals — the product
-        // default), default 12 (badges/tooltips/dropdown items/small controls), sm 8 (checkboxes/
-        // tiny elements), full 9999 (pills/avatars, already Tailwind's built-in rounded-full).
-        sm: "8px",
-        DEFAULT: "20px",
-        md: "12px",
-        lg: "20px",
-        xl: "20px",
+        // Bento radius.md scale: xs 10 / sm 14 / md 18 / lg 24 / xl 32 / pill 9999.
+        xs: "10px",
+        sm: "14px",
+        DEFAULT: "18px",
+        md: "18px",
+        lg: "24px",
+        xl: "32px",
         pill: "9999px",
       },
       boxShadow: {
-        // clay/clay-sm/clay-inset are var-driven so they swap per-theme, see index.css. The rest
-        // are shadows.md's static elevation scale (doesn't vary by theme).
+        // Full values (not just color) swap per-theme, see index.css.
         clay: "var(--shadow-clay)",
         "clay-sm": "var(--shadow-clay-sm)",
         "clay-inset": "var(--shadow-clay-inset)",
-        "2xs": "0 1px 2px rgba(0, 0, 0, 0.05)",
-        xs: "0 2px 8px rgba(0, 0, 0, 0.08)",
-        md: "0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-        lg: "0 12px 40px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
-        xl: "0 20px 50px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)",
-        "2xl": "0 25px 60px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
       },
       keyframes: {
         "fade-in": {
