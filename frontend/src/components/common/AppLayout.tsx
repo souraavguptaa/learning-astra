@@ -194,13 +194,15 @@ function NavGroup({ section, isActiveSection, onNavigate }: { section: NavSectio
         {section.heading}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "" : "-rotate-90"}`} />
       </button>
-      {open && (
+      {/* Smooth height animation via grid-template-rows 0fr→1fr (see .accordion-panel in
+          index.css) instead of the old instant {open && ...} show/hide. */}
+      <div className={`accordion-panel ${open ? "open" : ""}`}>
         <div className="space-y-0.5 mb-1">
           {section.items.map((item) => (
             <NavRow key={item.path} item={item} onNavigate={onNavigate} />
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

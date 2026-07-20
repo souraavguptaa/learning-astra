@@ -24,8 +24,8 @@ export function ChangePasswordModal({ onClose, forced }: { onClose?: () => void;
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[150] p-6">
-      <div className="bg-white rounded-lg max-w-sm w-full p-5">
+    <div className="modal-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-[150] p-6">
+      <div className="modal-panel bg-white rounded-lg max-w-sm w-full p-5">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-semibold">{forced ? "Set a new password to continue" : "Change Password"}</h3>
           {!forced && (

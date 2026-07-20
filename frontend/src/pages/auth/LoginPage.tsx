@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Spinner } from "../../components/common/Spinner.js";
 import { ThemeToggle } from "../../components/common/ThemeToggle.js";
 import { useAuth } from "../../lib/authContext.js";
 
@@ -38,9 +39,19 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-clay-bg flex items-center justify-center px-4 relative">
+    <div className="min-h-screen bg-clay-bg flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Ambient drifting blobs — slow, decorative depth for an otherwise single-viewport page
+          (no scrollable hero content here for true scroll-tied parallax). */}
+      <div
+        aria-hidden="true"
+        className="drift-slow absolute -top-24 -left-24 w-72 h-72 rounded-full bg-astra/10 blur-3xl pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="drift-slow-reverse absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-astra/10 blur-3xl pointer-events-none"
+      />
       <ThemeToggle className="absolute top-4 right-4" />
-      <div className="w-full max-w-sm bg-white rounded-xl shadow-clay p-8 space-y-6">
+      <div className="modal-panel relative w-full max-w-sm bg-white rounded-xl shadow-clay p-8 space-y-6">
         <div className="text-center space-y-1">
           <img src="/images/sastasundar-logo.png" alt="SastaSundar" className="h-10 w-auto mx-auto mb-2" />
           <h1 className="text-2xl font-bold text-astra flex items-center justify-center gap-2">
@@ -79,8 +90,9 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-md bg-astra hover:bg-astra-dark text-white py-2 font-medium disabled:opacity-60"
+            className="w-full rounded-md bg-astra hover:bg-astra-dark text-white py-2 font-medium disabled:opacity-60 inline-flex items-center justify-center gap-2"
           >
+            {submitting && <Spinner className="w-4 h-4" />}
             {submitting ? "Signing in…" : "Sign in"}
           </button>
         </form>

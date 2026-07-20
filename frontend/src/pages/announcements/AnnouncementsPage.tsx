@@ -1,5 +1,6 @@
 import { Megaphone, Paperclip } from "lucide-react";
 import { useState } from "react";
+import { useInView } from "../../hooks/useInView.js";
 import { useFranchises } from "../../features/org.js";
 import {
   uploadAnnouncementAttachment,
@@ -146,8 +147,12 @@ function ManagerView() {
       </form>
 
       <div className="space-y-3">
-        {announcements?.map((a) => (
-          <div key={a.id} className="bg-white rounded-xl shadow-clay overflow-hidden">
+        {announcements?.map((a, i) => (
+          <div
+            key={a.id}
+            style={{ animationDelay: `${Math.min(i, 8) * 40}ms`, animationFillMode: "backwards" }}
+            className="page-enter bg-white rounded-xl shadow-clay overflow-hidden"
+          >
             {editingId === a.id ? (
               <form onSubmit={handleSaveEdit} className="space-y-2 p-4">
                 <input
@@ -220,6 +225,31 @@ function ManagerView() {
   );
 }
 
+function AnnouncementCard({ a, index }: { a: Announcement; index: number }) {
+  const { ref, inView } = useInView<HTMLDivElement>();
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: inView ? `${Math.min(index, 8) * 50}ms` : "0ms" }}
+      className={`reveal ${inView ? "in-view" : ""} bg-white rounded-xl shadow-clay overflow-hidden`}
+    >
+      <div className="flex items-start gap-3 px-4 py-3">
+        <span className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-astra-soft text-astra-dark shrink-0">
+          <Megaphone className="w-4 h-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium">{a.title}</div>
+          <div className="text-sm text-slate-600 mt-0.5">{a.body}</div>
+          <AttachmentLink fileKey={a.attachmentFileKey} />
+        </div>
+      </div>
+      <div className="border-t border-black/[0.06] dark:border-white/10 px-4 py-2 text-xs text-slate-400">
+        {new Date(a.createdAt).toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
 function EndUserView() {
   const { data: announcements } = useMyAnnouncements();
 
@@ -228,22 +258,8 @@ function EndUserView() {
       <h1 className="text-2xl font-bold text-slate-800">Announcements</h1>
       {announcements?.length === 0 && <p className="text-slate-400">No announcements right now.</p>}
       <div className="space-y-3">
-        {announcements?.map((a) => (
-          <div key={a.id} className="bg-white rounded-xl shadow-clay overflow-hidden">
-            <div className="flex items-start gap-3 px-4 py-3">
-              <span className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-astra-soft text-astra-dark shrink-0">
-                <Megaphone className="w-4 h-4" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="font-medium">{a.title}</div>
-                <div className="text-sm text-slate-600 mt-0.5">{a.body}</div>
-                <AttachmentLink fileKey={a.attachmentFileKey} />
-              </div>
-            </div>
-            <div className="border-t border-black/[0.06] dark:border-white/10 px-4 py-2 text-xs text-slate-400">
-              {new Date(a.createdAt).toLocaleString()}
-            </div>
-          </div>
+        {announcements?.map((a, i) => (
+          <AnnouncementCard key={a.id} a={a} index={i} />
         ))}
       </div>
     </div>

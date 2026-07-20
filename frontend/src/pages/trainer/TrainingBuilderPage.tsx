@@ -1,6 +1,8 @@
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CheckCircle2, Search, Send } from "lucide-react";
+import { Search, Send } from "lucide-react";
+import { AnimatedCheck } from "../../components/common/AnimatedCheck.js";
+import { ToggleSwitch } from "../../components/common/ToggleSwitch.js";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { isAxiosError } from "axios";
@@ -264,7 +266,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
           <div className="space-y-4">
             {justSaved && (
               <div className="rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-800 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> {justSaved}
+                <AnimatedCheck size={16} /> {justSaved}
               </div>
             )}
             {publishError && (
@@ -368,17 +370,17 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                       >
                         {updateTraining.isPending ? "Saving…" : "Save details"}
                       </button>
-                      <label
-                        className="text-xs text-slate-500 flex items-center gap-1"
+                      <div
+                        className="text-xs text-slate-500 flex items-center gap-2"
                         title="Asks each learner to rate this training 0–10 after they finish, so you can see how well it landed"
                       >
-                        <input
-                          type="checkbox"
+                        <ToggleSwitch
                           checked={detail.training.npsEnabled}
-                          onChange={(e) => updateTraining.mutate({ npsEnabled: e.target.checked })}
+                          onChange={(checked) => updateTraining.mutate({ npsEnabled: checked })}
+                          label="Collect NPS feedback"
                         />
                         Collect NPS feedback (a satisfaction rating from learners)
-                      </label>
+                      </div>
                     </div>
                   </form>
                 </section>

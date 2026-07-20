@@ -32,12 +32,12 @@ export function RowActionsMenu({ actions }: { actions: RowAction[] }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label="Row actions"
-        className="w-9 h-9 flex items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        className="w-9 h-9 flex items-center justify-center rounded-md text-slate-400 transition-transform hover:bg-slate-100 hover:text-slate-600 hover:scale-105"
       >
         <MoreVertical className="w-4 h-4" />
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 w-44 bg-white border border-black/[0.06] dark:border-white/10 rounded-md shadow-lg z-30 p-1">
+        <div className="menu-pop absolute right-0 mt-1 w-44 bg-white border border-black/[0.06] dark:border-white/10 rounded-md shadow-lg z-30 p-1">
           {actions.map((a) => (
             <button
               key={a.label}

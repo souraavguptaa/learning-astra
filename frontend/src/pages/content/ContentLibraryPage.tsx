@@ -1,5 +1,6 @@
-import { CheckCircle2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { lazy, Suspense, useMemo, useState } from "react";
+import { AnimatedCheck } from "../../components/common/AnimatedCheck.js";
 import { RowActionsMenu } from "../../components/common/RowActionsMenu.js";
 import {
   useContentList,
@@ -176,7 +177,7 @@ export function ContentLibraryPage() {
       )}
       {success && (
         <div className="rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 flex items-center gap-1.5">
-          <CheckCircle2 className="w-4 h-4 shrink-0" /> {success}
+          <AnimatedCheck size={16} className="shrink-0" /> {success}
           <button className="ml-3 underline" onClick={() => setSuccess(null)}>
             dismiss
           </button>
@@ -363,8 +364,8 @@ export function ContentLibraryPage() {
       </section>
 
       {previewId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-auto p-5">
+        <div className="modal-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+          <div className="modal-panel bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-auto p-5">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-semibold">Preview</h3>
               <button className="text-slate-500" onClick={() => setPreviewId(null)}>
@@ -385,8 +386,8 @@ export function ContentLibraryPage() {
       )}
 
       {editingItem && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-          <div className="bg-white rounded-lg max-w-lg w-full p-5">
+        <div className="modal-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+          <div className="modal-panel bg-white rounded-lg max-w-lg w-full p-5">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-semibold">Edit "{editingItem.title}"</h3>
               <button className="text-slate-500" onClick={() => setEditingItem(null)}>

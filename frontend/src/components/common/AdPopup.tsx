@@ -36,7 +36,7 @@ export function AdPopup() {
   if (!visible || !current) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 w-72 bg-white border border-slate-200 rounded-lg shadow-2xl z-[150] overflow-hidden">
+    <div className="modal-panel fixed bottom-6 right-6 w-72 bg-white border border-slate-200 rounded-lg shadow-2xl z-[150] overflow-hidden">
       <button onClick={() => setVisible(false)} className="absolute top-1 right-1 bg-black/40 text-white rounded-full w-5 h-5 flex items-center justify-center">
         <X className="w-3 h-3" />
       </button>

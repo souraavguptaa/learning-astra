@@ -98,13 +98,145 @@
     }
   }
 
+  /* Scroll reveal — element fades/slides up once as it enters the viewport (useInView hook adds
+     .in-view). One-shot: re-triggering on every scroll direction change reads as jittery. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 500ms ease-out, transform 500ms ease-out;
+  }
+  .reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Accordion expand/collapse — grid-template-rows 0fr→1fr animates height without measuring
+     pixel heights in JS. Needs a min-h-0 inner wrapper (overflow-hidden) — see AppLayout's
+     NavGroup for the two-element structure this pairs with. */
+  .accordion-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 220ms ease;
+  }
+  .accordion-panel.open {
+    grid-template-rows: 1fr;
+  }
+  .accordion-panel > div {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* Dropdown / popover pop-in — RowActionsMenu and similar small anchored menus. */
+  .menu-pop {
+    animation: menu-pop 140ms ease-out;
+    transform-origin: top right;
+  }
+  @keyframes menu-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* Modal pop-in — backdrop fades (reuses fade-in below), panel fades + scales up slightly. */
+  .modal-backdrop {
+    animation: fade-in 150ms ease-out;
+  }
+  .modal-panel {
+    animation: modal-pop 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes modal-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* Success checkmark — circle stroke draws in, then the check stroke draws in after it, then a
+     small settle-pop. Stroke color/opacity come from currentColor so it inherits emerald/etc. */
+  .animated-check {
+    color: #059669;
+    overflow: visible;
+  }
+  .animated-check-circle {
+    stroke: currentColor;
+    stroke-dasharray: 151;
+    stroke-dashoffset: 151;
+    animation: check-circle 420ms cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+  .animated-check-mark {
+    stroke: currentColor;
+    stroke-dasharray: 36;
+    stroke-dashoffset: 36;
+    animation: check-mark 280ms cubic-bezier(0.65, 0, 0.45, 1) 380ms forwards;
+  }
+  @keyframes check-circle {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes check-mark {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Ambient drift for the login page's decorative background blobs — not scroll-tied parallax
+     (there's no scrollable hero content on a single-viewport login card), just slow depth motion. */
+  .drift-slow {
+    animation: drift 22s ease-in-out infinite;
+  }
+  .drift-slow-reverse {
+    animation: drift 26s ease-in-out infinite reverse;
+  }
+  @keyframes drift {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(24px, -18px) scale(1.06);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hover-lift,
     .hover-lift:hover,
-    .page-enter {
+    .page-enter,
+    .reveal,
+    .accordion-panel,
+    .menu-pop,
+    .modal-backdrop,
+    .modal-panel,
+    .animated-check-circle,
+    .animated-check-mark,
+    .drift-slow,
+    .drift-slow-reverse {
       transition: none;
       transform: none;
       animation: none;
+    }
+    .reveal {
+      opacity: 1;
+    }
+    .animated-check-circle,
+    .animated-check-mark {
+      stroke-dashoffset: 0;
     }
   }
 }

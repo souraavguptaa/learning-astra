@@ -7,8 +7,8 @@ export function LearnerProfileModal({ userId, onClose }: { userId: string; onClo
   const { data, isLoading } = useUserProgress(userId);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={onClose}>
-      <div className="bg-white rounded-lg max-w-lg w-full p-5 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-backdrop fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={onClose}>
+      <div className="modal-panel bg-white rounded-lg max-w-lg w-full p-5 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-semibold">{data ? data.user.name : "Learner profile"}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">

@@ -1,5 +1,6 @@
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { Spinner } from "./Spinner.js";
 
 /** A small spinner + "Loading…" label shown next to the page title whenever the user is actually
  * waiting on something — covers every page load, button click, and file upload in one place.
@@ -33,7 +34,7 @@ export function GlobalProgressBar() {
 
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 animate-fade-in">
-      <span className="w-3.5 h-3.5 rounded-full border-2 border-slate-200 border-t-astra animate-spin" />
+      <Spinner className="w-3.5 h-3.5" />
       Loading…
     </span>
   );

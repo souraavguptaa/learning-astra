@@ -1,6 +1,7 @@
 import { CheckCircle2, PartyPopper, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useAssessmentForUser, useSubmitAssessment, type AssessmentSubmitResult } from "../../features/assessment.js";
+import { AnimatedCheck } from "../common/AnimatedCheck.js";
 
 export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: string; onPassed: () => void }) {
   const { data, refetch } = useAssessmentForUser(assessmentId);
@@ -39,6 +40,7 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
     return (
       <div className="space-y-4">
         <div className={`text-center py-4 rounded ${result.passed ? "bg-emerald-50" : "bg-red-50"}`}>
+          {result.passed && <AnimatedCheck size={48} className="mx-auto mb-1" />}
           <p className={`text-2xl font-bold ${result.passed ? "text-emerald-600" : "text-red-600"}`}>
             {result.scorePercentage}%
           </p>
