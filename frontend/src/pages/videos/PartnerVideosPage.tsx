@@ -94,7 +94,7 @@ export function PartnerVideosPage() {
 
       {isLoading && <p className="text-slate-400">Loading…</p>}
       {videos?.length === 0 && <p className="text-slate-400">No videos yet.</p>}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {videos?.map((v) => {
           const videoId = extractYoutubeId(v.youtubeUrl);
           return (

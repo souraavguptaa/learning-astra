@@ -20,8 +20,8 @@ export function TicketQueuePage() {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      <div className="col-span-1 space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-1 space-y-4">
         <h1 className="text-xl font-bold text-slate-800">Support Tickets</h1>
         <select
           value={statusFilter}
@@ -50,7 +50,7 @@ export function TicketQueuePage() {
           ))}
         </div>
       </div>
-      <div className="col-span-2">
+      <div className="lg:col-span-2">
         {!selectedId && <p className="text-slate-400">Select a ticket.</p>}
         {selectedId && (
           <div className="bg-white rounded-lg shadow-clay p-4 space-y-4">

@@ -33,8 +33,8 @@ export function MyTicketsPage() {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      <div className="col-span-1 space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-1 space-y-4">
         <h1 className="text-xl font-bold text-slate-800">My Tickets</h1>
         <form onSubmit={handleCreate} className="bg-white rounded-lg shadow-clay p-4 space-y-2">
           <input
@@ -78,7 +78,7 @@ export function MyTicketsPage() {
           ))}
         </div>
       </div>
-      <div className="col-span-2">
+      <div className="lg:col-span-2">
         {!selectedId && <p className="text-slate-400">Select a ticket to view the conversation.</p>}
         {selectedId && (
           <div className="bg-white rounded-lg shadow-clay p-4">

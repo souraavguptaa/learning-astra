@@ -48,8 +48,8 @@ export function TrainingPlayerPage() {
   const allItemsComplete = data.items.length > 0 && data.items.every((entry) => isItemComplete(entry));
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      <div className="col-span-1 space-y-2">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-1 space-y-2">
         <h1 className="text-lg font-bold text-slate-800 mb-2">{data.training.title}</h1>
         {data.items.map((entry, idx) => {
           const { item, content, assessment, unlocked } = entry;
@@ -80,7 +80,7 @@ export function TrainingPlayerPage() {
         })}
       </div>
 
-      <div className="col-span-2">
+      <div className="lg:col-span-2">
         {data.items.length === 0 && (
           <p className="text-slate-400">This training doesn't have any content yet. Check back later or contact your trainer.</p>
         )}
