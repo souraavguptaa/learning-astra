@@ -4,7 +4,6 @@ import {
   BookOpen,
   ChevronDown,
   ClipboardCheck,
-  Clock,
   FileSearch,
   GraduationCap,
   Image as ImageIcon,
@@ -26,7 +25,6 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth, type UserRole } from "../../lib/authContext.js";
 import { AdPopup } from "./AdPopup.js";
 import { AnnouncementBanner } from "./AnnouncementBanner.js";
-import { AttendanceWidget } from "./AttendanceWidget.js";
 import { ChangePasswordModal } from "./ChangePasswordModal.js";
 import { GlobalProgressBar } from "./GlobalProgressBar.js";
 import { NotificationBell } from "./NotificationBell.js";
@@ -66,13 +64,7 @@ const NAV_BY_ROLE: Record<string, NavSection[]> = {
         { label: "Partner Videos", path: "/videos", icon: Video },
       ],
     },
-    {
-      heading: "Insights",
-      items: [
-        { label: "Reports", path: "/reports", icon: BarChart3 },
-        { label: "Login Hours", path: "/attendance", icon: Clock },
-      ],
-    },
+    { heading: "Insights", items: [{ label: "Reports", path: "/reports", icon: BarChart3 }] },
   ],
   admin: [
     { items: [{ label: "Overview", path: "/", icon: LayoutDashboard }] },
@@ -94,7 +86,6 @@ const NAV_BY_ROLE: Record<string, NavSection[]> = {
         { label: "Partner Videos", path: "/videos", icon: Video },
       ],
     },
-    { heading: "Insights", items: [{ label: "Login Hours", path: "/attendance", icon: Clock }] },
   ],
   trainer: [
     { items: [{ label: "Overview", path: "/", icon: LayoutDashboard }] },
@@ -158,10 +149,6 @@ const NAV_BY_ROLE: Record<string, NavSection[]> = {
 // Ads only ever targeted the learner home screen (per AdsManagementPage's own copy) — same
 // audience as before, just rendered once at the shell level instead of embedded in one page.
 const LEARNER_ROLES: UserRole[] = ["franchise_owner", "operator", "employee"];
-
-// Franchise owners/operators run their own store, not SastaSundar staff — matches the backend's
-// ATTENDANCE_TRACKED_ROLES in attendance.service.ts.
-const ATTENDANCE_ROLES: UserRole[] = ["trainer", "admin", "employee"];
 
 function flattenNav(sections: NavSection[]): NavItem[] {
   return sections.flatMap((s) => s.items);
@@ -230,7 +217,6 @@ export function AppLayout() {
   const sections = user ? NAV_BY_ROLE[user.role] ?? [] : [];
   const flatNav = flattenNav(sections);
   const showAds = !!user && LEARNER_ROLES.includes(user.role);
-  const showAttendance = !!user && ATTENDANCE_ROLES.includes(user.role);
   const location = useLocation();
   const currentItem = flatNav.find((item) =>
     item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path),
@@ -332,7 +318,6 @@ export function AppLayout() {
             </span>
           </span>
           <div className="flex items-center gap-4 shrink-0">
-            {showAttendance && <AttendanceWidget />}
             <ThemeToggle />
             <NotificationBell />
           </div>
