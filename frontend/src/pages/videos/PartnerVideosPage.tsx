@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Spinner } from "../../components/common/Spinner.js";
 import { useAuth } from "../../lib/authContext.js";
 import {
   extractYoutubeId,
@@ -97,14 +98,23 @@ export function PartnerVideosPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {videos?.map((v) => {
           const videoId = extractYoutubeId(v.youtubeUrl);
+          const deleting = deleteVideo.isPending && deleteVideo.variables === v.id;
           return (
-            <div key={v.id} className="bg-white rounded-lg shadow-clay overflow-hidden">
+            <div
+              key={v.id}
+              className={`bg-white rounded-lg shadow-clay overflow-hidden transition-opacity ${deleting ? "opacity-50" : ""}`}
+            >
               {videoId && <VideoCard title={v.title} videoId={videoId} />}
               <div className="p-3 flex items-center justify-between">
                 <span className="text-sm font-medium">{v.title}</span>
                 {canManage && (
-                  <button onClick={() => deleteVideo.mutate(v.id)} className="text-red-500 text-xs hover:underline">
-                    Delete
+                  <button
+                    onClick={() => deleteVideo.mutate(v.id)}
+                    disabled={deleting}
+                    className="text-red-500 text-xs hover:underline disabled:opacity-60 inline-flex items-center gap-1"
+                  >
+                    {deleting && <Spinner className="w-3 h-3" />}
+                    {deleting ? "Deleting…" : "Delete"}
                   </button>
                 )}
               </div>

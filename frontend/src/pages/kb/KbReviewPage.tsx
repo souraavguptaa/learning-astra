@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Spinner } from "../../components/common/Spinner.js";
 import { usePendingKbSubmissions, useReviewKbSubmission } from "../../features/ticket.js";
 
 export function KbReviewPage() {
@@ -21,8 +22,9 @@ export function KbReviewPage() {
       <div className="space-y-3">
         {submissions?.map((s) => {
           const edit = editing[s.id];
+          const pending = review.isPending && review.variables?.id === s.id;
           return (
-            <div key={s.id} className="bg-white rounded-lg shadow-clay p-4 space-y-2">
+            <div key={s.id} className={`bg-white rounded-lg shadow-clay p-4 space-y-2 transition-opacity ${pending ? "opacity-50" : ""}`}>
               <div className="text-xs text-slate-400">
                 From ticket "{s.ticketSubject}" · submitted by {s.trainerName}
               </div>
@@ -55,21 +57,26 @@ export function KbReviewPage() {
                   <>
                     <button
                       onClick={() => review.mutate({ id: s.id, action: "approve" })}
-                      className="rounded-md bg-emerald-600 text-white px-3 py-1.5 text-sm"
+                      disabled={pending}
+                      className="rounded-md bg-emerald-600 text-white px-3 py-1.5 text-sm disabled:opacity-60 inline-flex items-center gap-1.5"
                     >
-                      Approve
+                      {pending && <Spinner className="w-3.5 h-3.5" />}
+                      {pending ? "Approving…" : "Approve"}
                     </button>
                     <button
                       onClick={() => startEdit(s.id, s.proposedContent)}
-                      className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
+                      disabled={pending}
+                      className="rounded-md shadow-clay-inset px-3 py-1.5 text-sm disabled:opacity-60"
                     >
                       Edit & Approve
                     </button>
                     <button
                       onClick={() => review.mutate({ id: s.id, action: "reject" })}
-                      className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm"
+                      disabled={pending}
+                      className="rounded-md border border-red-300 text-red-600 px-3 py-1.5 text-sm disabled:opacity-60 inline-flex items-center gap-1.5"
                     >
-                      Reject
+                      {pending && <Spinner className="w-3.5 h-3.5" />}
+                      {pending ? "Rejecting…" : "Reject"}
                     </button>
                   </>
                 )}
@@ -77,13 +84,16 @@ export function KbReviewPage() {
                   <>
                     <button
                       onClick={() => review.mutate({ id: s.id, action: "edit_approve", editedContent: edit })}
-                      className="rounded-md bg-emerald-600 text-white px-3 py-1.5 text-sm"
+                      disabled={pending}
+                      className="rounded-md bg-emerald-600 text-white px-3 py-1.5 text-sm disabled:opacity-60 inline-flex items-center gap-1.5"
                     >
-                      Save & Approve
+                      {pending && <Spinner className="w-3.5 h-3.5" />}
+                      {pending ? "Saving…" : "Save & Approve"}
                     </button>
                     <button
                       onClick={() => setEditing((prev) => { const { [s.id]: _, ...rest } = prev; return rest; })}
-                      className="text-sm text-slate-500"
+                      disabled={pending}
+                      className="text-sm text-slate-500 disabled:opacity-60"
                     >
                       Cancel edit
                     </button>

@@ -334,27 +334,32 @@ export function ContentLibraryPage() {
                   </td>
                 </tr>
               )}
-              {visibleContent.map((c) => (
-                <tr key={c.id}>
-                  <td className="py-2 px-3 whitespace-nowrap max-w-[260px] truncate">{c.title}</td>
-                  <td className="py-2 px-3 uppercase text-xs text-slate-500 whitespace-nowrap">{c.type}</td>
-                  <td className="py-2 px-3 whitespace-nowrap max-w-[160px] truncate">{c.topic}</td>
-                  <td className="py-2 px-3 whitespace-nowrap">{c.language}</td>
-                  <td className="py-2 px-3 whitespace-nowrap">
-                    <span className={`rounded-pill px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[c.status]}`}>{c.status}</span>
-                  </td>
-                  <td className="py-1 px-1 text-right">
-                    <RowActionsMenu
-                      actions={[
-                        ...(c.status === "ready" ? [{ label: "Preview", onClick: () => setPreviewId(c.id) }] : []),
-                        ...(c.status === "failed" ? [{ label: "Retry conversion", onClick: () => handleRetryConversion(c) }] : []),
-                        { label: "Edit", onClick: () => openEdit(c) },
-                        { label: "Delete", danger: true, disabled: deleteContent.isPending, onClick: () => handleDelete(c) },
-                      ]}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {visibleContent.map((c) => {
+                const deleting = deleteContent.isPending && deleteContent.variables === c.id;
+                const retrying = retryConversion.isPending && retryConversion.variables === c.id;
+                return (
+                  <tr key={c.id} className={`transition-opacity ${deleting ? "opacity-50" : ""}`}>
+                    <td className="py-2 px-3 whitespace-nowrap max-w-[260px] truncate">{c.title}</td>
+                    <td className="py-2 px-3 uppercase text-xs text-slate-500 whitespace-nowrap">{c.type}</td>
+                    <td className="py-2 px-3 whitespace-nowrap max-w-[160px] truncate">{c.topic}</td>
+                    <td className="py-2 px-3 whitespace-nowrap">{c.language}</td>
+                    <td className="py-2 px-3 whitespace-nowrap">
+                      <span className={`rounded-pill px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[c.status]}`}>{c.status}</span>
+                    </td>
+                    <td className="py-1 px-1 text-right">
+                      <RowActionsMenu
+                        pending={deleting || retrying}
+                        actions={[
+                          ...(c.status === "ready" ? [{ label: "Preview", onClick: () => setPreviewId(c.id) }] : []),
+                          ...(c.status === "failed" ? [{ label: "Retry conversion", onClick: () => handleRetryConversion(c) }] : []),
+                          { label: "Edit", onClick: () => openEdit(c) },
+                          { label: "Delete", danger: true, disabled: deleting, onClick: () => handleDelete(c) },
+                        ]}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

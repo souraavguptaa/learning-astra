@@ -1,5 +1,6 @@
 import { Megaphone, Paperclip } from "lucide-react";
 import { useState } from "react";
+import { Spinner } from "../../components/common/Spinner.js";
 import { useInView } from "../../hooks/useInView.js";
 import { useFranchises } from "../../features/org.js";
 import {
@@ -147,11 +148,13 @@ function ManagerView() {
       </form>
 
       <div className="space-y-3">
-        {announcements?.map((a, i) => (
+        {announcements?.map((a, i) => {
+          const removing = del.isPending && del.variables === a.id;
+          return (
           <div
             key={a.id}
             style={{ animationDelay: `${Math.min(i, 8) * 40}ms`, animationFillMode: "backwards" }}
-            className="page-enter bg-white rounded-xl shadow-clay overflow-hidden"
+            className={`page-enter bg-white rounded-xl shadow-clay overflow-hidden transition-opacity ${removing ? "opacity-50" : ""}`}
           >
             {editingId === a.id ? (
               <form onSubmit={handleSaveEdit} className="space-y-2 p-4">
@@ -205,9 +208,11 @@ function ManagerView() {
                       onClick={() => {
                         if (window.confirm(`Remove the announcement "${a.title}"?`)) del.mutate(a.id);
                       }}
-                      className="text-red-500"
+                      disabled={removing}
+                      className="text-red-500 disabled:opacity-60 inline-flex items-center gap-1"
                     >
-                      Remove
+                      {removing && <Spinner className="w-3 h-3" />}
+                      {removing ? "Removing…" : "Remove"}
                     </button>
                   </div>
                 </div>
@@ -219,7 +224,8 @@ function ManagerView() {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

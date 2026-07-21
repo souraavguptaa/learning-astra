@@ -327,7 +327,16 @@ export function UserManagementPage({
                 </tr>
               )}
               {visibleUsers.map((u) => (
-                <tr key={u.id}>
+                <tr
+                  key={u.id}
+                  className={`transition-opacity ${
+                    (setActive.isPending && setActive.variables?.id === u.id) ||
+                    (resetPassword.isPending && resetPassword.variables === u.id) ||
+                    (deleteUser.isPending && deleteUser.variables === u.id)
+                      ? "opacity-50"
+                      : ""
+                  }`}
+                >
                   <td className="py-2 px-3 whitespace-nowrap max-w-[200px] truncate">{u.name}</td>
                   <td className="py-2 px-3 whitespace-nowrap max-w-[220px] truncate">{u.email}</td>
                   <td className="py-2 px-3 whitespace-nowrap">{ROLE_LABELS[u.role]}</td>
@@ -361,6 +370,11 @@ export function UserManagementPage({
                   </td>
                   <td className="py-1 px-1 text-right">
                     <RowActionsMenu
+                      pending={
+                        (setActive.isPending && setActive.variables?.id === u.id) ||
+                        (resetPassword.isPending && resetPassword.variables === u.id) ||
+                        (deleteUser.isPending && deleteUser.variables === u.id)
+                      }
                       actions={[
                         { label: u.isActive ? "Deactivate" : "Activate", onClick: () => handleToggleActive(u.id, u.name, u.isActive) },
                         { label: "Reset password", onClick: () => handleResetPassword(u.id) },

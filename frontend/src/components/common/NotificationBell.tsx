@@ -92,8 +92,12 @@ export function NotificationBell() {
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
             <span className="text-sm font-medium">Notifications</span>
             {unreadCount > 0 && (
-              <button onClick={() => markAllRead.mutate()} className="text-xs text-astra">
-                Mark all read
+              <button
+                onClick={() => markAllRead.mutate()}
+                disabled={markAllRead.isPending}
+                className="text-xs text-astra disabled:opacity-60"
+              >
+                {markAllRead.isPending ? "Marking…" : "Mark all read"}
               </button>
             )}
           </div>

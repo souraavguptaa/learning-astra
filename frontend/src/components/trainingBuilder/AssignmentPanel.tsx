@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Spinner } from "../common/Spinner.js";
 import { useFranchises, useUsers } from "../../features/org.js";
 import { useAssignTraining, useRemoveAssignment, useTrainingDetail } from "../../features/training.js";
 import type { UserRole } from "../../lib/authContext.js";
@@ -176,18 +177,29 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
       </form>
       <ul className="mt-3 text-sm space-y-1">
         {detail.assignments.length === 0 && <li className="text-slate-400">Not assigned to anyone yet.</li>}
-        {detail.assignments.map((a) => (
-          <li key={a.id} className="flex items-center justify-between bg-slate-50 rounded px-2 py-1">
-            <span>
-              {describeAssignment(a)}
-              {a.isMandatory && <span className="ml-2 text-[10px] text-red-500">mandatory</span>}
-              {a.dueAt && <span className="ml-2 text-[10px] text-slate-400">due {new Date(a.dueAt).toLocaleString("en-IN")}</span>}
-            </span>
-            <button onClick={() => removeAssignment.mutate(a.id)} className="text-red-500 text-xs hover:underline">
-              Remove
-            </button>
-          </li>
-        ))}
+        {detail.assignments.map((a) => {
+          const removing = removeAssignment.isPending && removeAssignment.variables === a.id;
+          return (
+            <li
+              key={a.id}
+              className={`flex items-center justify-between bg-slate-50 rounded px-2 py-1 transition-opacity ${removing ? "opacity-50" : ""}`}
+            >
+              <span>
+                {describeAssignment(a)}
+                {a.isMandatory && <span className="ml-2 text-[10px] text-red-500">mandatory</span>}
+                {a.dueAt && <span className="ml-2 text-[10px] text-slate-400">due {new Date(a.dueAt).toLocaleString("en-IN")}</span>}
+              </span>
+              <button
+                onClick={() => removeAssignment.mutate(a.id)}
+                disabled={removing}
+                className="text-red-500 text-xs hover:underline disabled:opacity-60 disabled:no-underline inline-flex items-center gap-1"
+              >
+                {removing && <Spinner className="w-3 h-3" />}
+                {removing ? "Removing…" : "Remove"}
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

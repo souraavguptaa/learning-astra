@@ -397,6 +397,7 @@ export function TrainingBuilderPage({ kind = "course" }: { kind?: "course" | "as
                             content={content}
                             assessment={assessment}
                             onRemove={() => removeItem.mutate(item.id)}
+                            removing={removeItem.isPending && removeItem.variables === item.id}
                           />
                         ))}
                       </div>

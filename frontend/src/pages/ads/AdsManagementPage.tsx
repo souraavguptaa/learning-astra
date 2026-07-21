@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Spinner } from "../../components/common/Spinner.js";
 import { api } from "../../lib/api.js";
 import { useAllAds, useCreateAd, useDeleteAd, useSetAdActive, uploadAdImage } from "../../features/promo.js";
 
@@ -82,35 +83,46 @@ export function AdsManagementPage() {
         <h2 className="font-semibold text-slate-700 mb-3">All Ads</h2>
         {isLoading && <p className="text-slate-400">Loading…</p>}
         <div className="space-y-2">
-          {ads?.map((ad) => (
-            <div key={ad.id} className="flex items-center justify-between bg-slate-50 rounded px-3 py-2 text-sm">
-              <div>
-                <button onClick={() => openImage(ad.imageFileKey)} className="font-medium text-astra hover:underline">
-                  {ad.title}
-                </button>
-                <div className="text-xs text-slate-400">{ad.linkUrl}</div>
+          {ads?.map((ad) => {
+            const togglingActive = setActive.isPending && setActive.variables?.id === ad.id;
+            const deleting = deleteAd.isPending && deleteAd.variables === ad.id;
+            return (
+              <div
+                key={ad.id}
+                className={`flex items-center justify-between bg-slate-50 rounded px-3 py-2 text-sm transition-opacity ${deleting ? "opacity-50" : ""}`}
+              >
+                <div>
+                  <button onClick={() => openImage(ad.imageFileKey)} className="font-medium text-astra hover:underline">
+                    {ad.title}
+                  </button>
+                  <div className="text-xs text-slate-400">{ad.linkUrl}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={ad.isActive ? "text-emerald-600 text-xs" : "text-slate-400 text-xs"}>
+                    {ad.isActive ? "Active" : "Inactive"}
+                  </span>
+                  <button
+                    onClick={() => setActive.mutate({ id: ad.id, isActive: !ad.isActive })}
+                    disabled={togglingActive}
+                    className="text-astra text-xs hover:underline disabled:opacity-60 inline-flex items-center gap-1"
+                  >
+                    {togglingActive && <Spinner className="w-3 h-3" />}
+                    {togglingActive ? "…" : ad.isActive ? "Deactivate" : "Activate"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Delete the ad "${ad.title}"? This can't be undone.`)) deleteAd.mutate(ad.id);
+                    }}
+                    disabled={deleting}
+                    className="text-red-500 text-xs hover:underline disabled:opacity-60 inline-flex items-center gap-1"
+                  >
+                    {deleting && <Spinner className="w-3 h-3" />}
+                    {deleting ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className={ad.isActive ? "text-emerald-600 text-xs" : "text-slate-400 text-xs"}>
-                  {ad.isActive ? "Active" : "Inactive"}
-                </span>
-                <button
-                  onClick={() => setActive.mutate({ id: ad.id, isActive: !ad.isActive })}
-                  className="text-astra text-xs hover:underline"
-                >
-                  {ad.isActive ? "Deactivate" : "Activate"}
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Delete the ad "${ad.title}"? This can't be undone.`)) deleteAd.mutate(ad.id);
-                  }}
-                  className="text-red-500 text-xs hover:underline"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {ads?.length === 0 && <p className="text-slate-400 text-sm">No ads yet.</p>}
         </div>
       </section>
