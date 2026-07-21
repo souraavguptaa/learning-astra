@@ -2,6 +2,7 @@ import { CheckCircle2, PartyPopper, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useAssessmentForUser, useSubmitAssessment, type AssessmentSubmitResult } from "../../features/assessment.js";
 import { AnimatedCheck } from "../common/AnimatedCheck.js";
+import { QuestionImage } from "./QuestionImage.js";
 
 export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: string; onPassed: () => void }) {
   const { data, refetch } = useAssessmentForUser(assessmentId);
@@ -61,6 +62,7 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
             return (
               <div key={q.id} className={`p-2 rounded text-sm ${b?.isCorrect ? "bg-emerald-50" : "bg-red-50"}`}>
                 <div className="font-medium">{q.questionText}</div>
+                {q.imageFileKey && <QuestionImage fileKey={q.imageFileKey} className="max-h-40 rounded-md border border-slate-200 my-1.5" />}
                 <div className="text-xs text-slate-500 inline-flex items-center gap-1">
                   {b?.isCorrect ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -106,6 +108,7 @@ export function AssessmentRunner({ assessmentId, onPassed }: { assessmentId: str
           <div className="font-medium text-sm mb-2">
             {idx + 1}. {q.questionText}
           </div>
+          {q.imageFileKey && <QuestionImage fileKey={q.imageFileKey} className="max-h-56 rounded-md border border-slate-200 mb-2" />}
           <div className="space-y-1">
             {q.options.map((o) => (
               <label key={o.id} className="flex items-center gap-2 text-sm">

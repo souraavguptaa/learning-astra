@@ -1,5 +1,7 @@
+import { ImagePlus, X } from "lucide-react";
 import { useState } from "react";
-import { useCreateAssessment, type AssessmentQuestionInput } from "../../features/assessment.js";
+import { uploadAssessmentQuestionImage, useCreateAssessment, type AssessmentQuestionInput } from "../../features/assessment.js";
+import { QuestionImage } from "./QuestionImage.js";
 
 function emptyQuestion(): AssessmentQuestionInput {
   return {
@@ -9,7 +11,24 @@ function emptyQuestion(): AssessmentQuestionInput {
       { optionText: "", isCorrect: true },
       { optionText: "", isCorrect: false },
     ],
+    imageFileKey: null,
   };
+}
+
+function QuestionImagePreview({ fileKey, onRemove }: { fileKey: string; onRemove: () => void }) {
+  return (
+    <div className="relative inline-block">
+      <QuestionImage fileKey={fileKey} className="max-h-40 rounded-md border border-slate-200" />
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label="Remove image"
+        className="absolute -top-2 -right-2 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center"
+      >
+        <X className="w-3 h-3" />
+      </button>
+    </div>
+  );
 }
 
 export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: string; onDone: () => void }) {
@@ -20,8 +39,23 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
   const [questions, setQuestions] = useState<AssessmentQuestionInput[]>([emptyQuestion()]);
   const [current, setCurrent] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const q = questions[current];
+
+  async function handleImageSelect(file: File | undefined) {
+    if (!file) return;
+    setUploadingImage(true);
+    setError(null);
+    try {
+      const imageFileKey = await uploadAssessmentQuestionImage(file);
+      updateQuestion({ imageFileKey });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Image upload failed. Please try again.");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
 
   function updateQuestion(patch: Partial<AssessmentQuestionInput>) {
     setQuestions((qs) => qs.map((x, i) => (i === current ? { ...x, ...patch } : x)));
@@ -175,6 +209,27 @@ export function AssessmentBuilderForm({ trainingId, onDone }: { trainingId: stri
               <option value="true_false">True/False</option>
             </select>
           </label>
+        </div>
+
+        <div>
+          <span className="block text-xs font-medium text-slate-600 mb-1.5">
+            Image <span className="font-normal text-slate-400">(optional)</span>
+          </span>
+          {q.imageFileKey ? (
+            <QuestionImagePreview fileKey={q.imageFileKey} onRemove={() => updateQuestion({ imageFileKey: null })} />
+          ) : (
+            <label className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-slate-300 text-slate-500 px-3 py-2 text-xs cursor-pointer hover:border-astra hover:text-astra">
+              <ImagePlus className="w-4 h-4" />
+              {uploadingImage ? "Uploading…" : "Add an image to this question"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingImage}
+                onChange={(e) => handleImageSelect(e.target.files?.[0])}
+              />
+            </label>
+          )}
         </div>
 
         {/* Options list: item gap in the 10-14px range per lists.md, instead of the previous

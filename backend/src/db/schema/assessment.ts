@@ -30,6 +30,7 @@ export const assessmentQuestions = pgTable("assessment_questions", {
   questionText: text("question_text").notNull(),
   type: assessmentQuestionTypeEnum("type").notNull(),
   questionOrder: integer("question_order").notNull(),
+  imageFileKey: text("image_file_key"),
 });
 
 export const assessmentOptions = pgTable("assessment_options", {

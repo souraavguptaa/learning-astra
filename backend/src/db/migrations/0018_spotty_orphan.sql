@@ -1,0 +1,1 @@
+ALTER TABLE "assessment_questions" ADD COLUMN "image_file_key" text;

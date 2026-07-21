@@ -1,10 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../lib/api.js";
+import { api, uploadToR2 } from "../lib/api.js";
 
 export interface AssessmentQuestionInput {
   questionText: string;
   type: "mcq" | "true_false";
   options: { optionText: string; isCorrect: boolean }[];
+  imageFileKey?: string | null;
+}
+
+/** Shared by both the in-training Quiz builder and the standalone Assessment builder — same form,
+ * same optional per-question image. */
+export async function uploadAssessmentQuestionImage(file: File): Promise<string> {
+  const { data } = await api.post<{ uploadUrl: string; fileKey: string }>("/assessments/questions/upload-url", {
+    filename: file.name,
+    contentType: file.type || "application/octet-stream",
+  });
+  await uploadToR2(data.uploadUrl, file);
+  return data.fileKey;
 }
 
 export function useCreateAssessment(trainingId: string) {
@@ -22,7 +34,13 @@ export function useCreateAssessment(trainingId: string) {
 
 export interface AssessmentForUser {
   assessment: { id: string; title: string; passPercentage: number; maxAttempts: number };
-  questions: { id: string; questionText: string; type: string; options: { id: string; optionText: string }[] }[];
+  questions: {
+    id: string;
+    questionText: string;
+    type: string;
+    imageFileKey: string | null;
+    options: { id: string; optionText: string }[];
+  }[];
   result: { attemptsUsed: number; bestScorePercentage: string | null; passed: boolean } | null;
 }
 

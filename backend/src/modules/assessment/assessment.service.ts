@@ -1,6 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "../../db/client.js";
-import { assessmentOptions, assessmentQuestions, assessmentResults, assessments } from "../../db/schema/index.js";
+import { assessmentOptions, assessmentQuestions, assessmentResults, assessments, trainings } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
 import { generateCertificate } from "../certificate/certificate.service.js";
 import { awardPoints, checkAndAwardBadges } from "../gamification/gamification.service.js";
@@ -12,6 +12,7 @@ interface QuestionInput {
   questionText: string;
   type: "mcq" | "true_false";
   options: { optionText: string; isCorrect: boolean }[];
+  imageFileKey?: string | null;
 }
 
 export async function createAssessment(
@@ -44,7 +45,13 @@ export async function createAssessment(
     }
     const [question] = await db
       .insert(assessmentQuestions)
-      .values({ assessmentId: assessment.id, questionText: q.questionText, type: q.type, questionOrder: qIndex })
+      .values({
+        assessmentId: assessment.id,
+        questionText: q.questionText,
+        type: q.type,
+        questionOrder: qIndex,
+        imageFileKey: q.imageFileKey ?? null,
+      })
       .returning();
 
     for (let oIndex = 0; oIndex < q.options.length; oIndex++) {
@@ -105,6 +112,7 @@ export async function getAssessmentForUser(assessmentId: string, userId: string)
     id: q.id,
     questionText: q.questionText,
     type: q.type,
+    imageFileKey: q.imageFileKey,
     options: q.options.map((o) => ({ id: o.id, optionText: o.optionText })),
   }));
 
@@ -190,15 +198,32 @@ export async function submitAttempt(
   let certificate = null;
   if (wasNewlyPassed) {
     await advanceTrainingProgressForAssessment(userId, assessmentId);
-    certificate = await generateCertificate(userId, assessment.trainingId, assessmentId, scorePercentage);
+
+    // A "quiz" added mid-training (+ Add quiz in the builder) and a standalone "Assessment"
+    // (created from the Assessments section) are the exact same assessments row shape — the only
+    // signal distinguishing them is whether the parent training was created as a standalone
+    // assessment. Certificates only make sense for the latter; a quiz is just a checkpoint between
+    // training content and shouldn't mint one.
+    const [parentTraining] = await db
+      .select({ isStandaloneAssessment: trainings.isStandaloneAssessment })
+      .from(trainings)
+      .where(eq(trainings.id, assessment.trainingId))
+      .limit(1);
+    const isRealAssessment = parentTraining?.isStandaloneAssessment ?? false;
+
+    if (isRealAssessment) {
+      certificate = await generateCertificate(userId, assessment.trainingId, assessmentId, scorePercentage);
+    }
     await awardPoints(userId, 30, "assessment_passed", "assessment", assessmentId);
     await checkAndAwardBadges(userId);
     await notify(
       userId,
       "assessment_passed",
-      "Assessment Passed",
-      `You passed "${assessment.title}" with a score of ${scorePercentage}%.`,
-      `/certificates`,
+      isRealAssessment ? "Assessment Passed" : "Quiz Passed",
+      isRealAssessment
+        ? `You passed "${assessment.title}" with a score of ${scorePercentage}%.`
+        : `You passed the "${assessment.title}" quiz with a score of ${scorePercentage}%.`,
+      isRealAssessment ? `/certificates` : `/learning/${assessment.trainingId}`,
     );
   }
 

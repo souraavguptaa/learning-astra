@@ -4,6 +4,7 @@ import { authenticate } from "../../middleware/authenticate.js";
 import { authorize } from "../../middleware/authorize.js";
 import { validateBody } from "../../middleware/validate.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import { buildFileKey, getUploadUrl } from "../../services/r2Service.js";
 import * as assessmentService from "./assessment.service.js";
 
 export const assessmentRouter = Router();
@@ -17,6 +18,7 @@ const questionSchema = z.object({
   questionText: z.string().min(1),
   type: z.enum(["mcq", "true_false"]),
   options: z.array(optionSchema).min(2),
+  imageFileKey: z.string().min(1).optional().nullable(),
 });
 
 const createAssessmentSchema = z.object({
@@ -34,6 +36,22 @@ assessmentRouter.post(
   validateBody(createAssessmentSchema),
   asyncHandler(async (req, res) => {
     res.status(201).json(await assessmentService.createAssessment(req.user!.sub, req.body));
+  }),
+);
+
+const uploadUrlSchema = z.object({ filename: z.string().min(1), contentType: z.string().min(1) });
+
+// Same-shape helper as the ads upload-url endpoint — trainers attach an optional image per
+// question in both the Quiz (in-training) and Assessment (standalone) builders, which share this
+// one form component.
+assessmentRouter.post(
+  "/questions/upload-url",
+  authorize(...MANAGERS),
+  validateBody(uploadUrlSchema),
+  asyncHandler(async (req, res) => {
+    const fileKey = buildFileKey("assessment-questions", req.body.filename);
+    const uploadUrl = await getUploadUrl(fileKey, req.body.contentType);
+    res.json({ uploadUrl, fileKey });
   }),
 );
 

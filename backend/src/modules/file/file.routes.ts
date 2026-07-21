@@ -15,7 +15,12 @@ fileRouter.get(
   "/download-url",
   asyncHandler(async (req, res) => {
     const key = req.query.key as string | undefined;
-    const isAllowed = !!key && (key.startsWith("tickets/") || key.startsWith("announcements/") || key.startsWith("ads/"));
+    const isAllowed =
+      !!key &&
+      (key.startsWith("tickets/") ||
+        key.startsWith("announcements/") ||
+        key.startsWith("ads/") ||
+        key.startsWith("assessment-questions/"));
     if (!isAllowed) {
       throw new ApiError(400, "Invalid file key");
     }
