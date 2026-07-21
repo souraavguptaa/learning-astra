@@ -100,9 +100,14 @@ export async function addMessage(
     if (senderId === ticket.userId && ticket.status === "resolved") {
       await db.update(supportTickets).set({ status: "open", resolvedAt: null }).where(eq(supportTickets.id, ticketId));
     }
-    const recipientId = senderId === ticket.userId ? ticket.assignedTrainerId : ticket.userId;
+    const requesterReplied = senderId === ticket.userId;
+    const recipientId = requesterReplied ? ticket.assignedTrainerId : ticket.userId;
     if (recipientId) {
-      await notify(recipientId, "ticket_reply", "New Ticket Reply", `New reply on "${ticket.subject}".`, `/tickets`);
+      // The requester's own view lives at /my-tickets, not the trainer queue at /tickets —
+      // sending a learner to /tickets gets them silently bounced home by ProtectedRoute's role
+      // check, which looked like the notification "did nothing" when clicked.
+      const deepLink = requesterReplied ? "/tickets" : "/my-tickets";
+      await notify(recipientId, "ticket_reply", "New Ticket Reply", `New reply on "${ticket.subject}".`, deepLink);
     }
   }
 
