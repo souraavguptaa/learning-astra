@@ -21,15 +21,19 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth, type UserRole } from "../../lib/authContext.js";
 import { AdPopup } from "./AdPopup.js";
 import { AnnouncementBanner } from "./AnnouncementBanner.js";
 import { ChangePasswordModal } from "./ChangePasswordModal.js";
 import { GlobalProgressBar } from "./GlobalProgressBar.js";
+import { LanguageSwitcher } from "./LanguageSwitcher.js";
 import { NotificationBell } from "./NotificationBell.js";
 import { ThemeToggle } from "./ThemeToggle.js";
 
+// `label`/`heading` hold i18n keys (resolved via t() at render time), not literal text — see
+// locales in src/i18n/locales/.
 type NavItem = { label: string; path: string; icon: LucideIcon };
 type NavSection = { heading?: string; items: NavItem[] };
 
@@ -39,109 +43,109 @@ type NavSection = { heading?: string; items: NavItem[] };
 // those would just be chrome for chrome's sake.
 const NAV_BY_ROLE: Record<string, NavSection[]> = {
   super_admin: [
-    { items: [{ label: "Overview", path: "/", icon: LayoutDashboard }] },
-    { heading: "People", items: [{ label: "Users & Org", path: "/users", icon: Users }] },
+    { items: [{ label: "nav.overview", path: "/", icon: LayoutDashboard }] },
+    { heading: "nav.headingPeople", items: [{ label: "nav.usersOrg", path: "/users", icon: Users }] },
     {
-      heading: "Learning",
+      heading: "nav.headingLearning",
       items: [
-        { label: "Content", path: "/content", icon: BookOpen },
-        { label: "Trainings", path: "/trainings", icon: GraduationCap },
-        { label: "Assessments", path: "/assessments", icon: ClipboardCheck },
+        { label: "nav.content", path: "/content", icon: BookOpen },
+        { label: "nav.trainings", path: "/trainings", icon: GraduationCap },
+        { label: "nav.assessments", path: "/assessments", icon: ClipboardCheck },
       ],
     },
     {
-      heading: "Support",
+      heading: "nav.headingSupport",
       items: [
-        { label: "Tickets", path: "/tickets", icon: Ticket },
-        { label: "KB Review", path: "/kb-review", icon: FileSearch },
+        { label: "nav.tickets", path: "/tickets", icon: Ticket },
+        { label: "nav.kbReview", path: "/kb-review", icon: FileSearch },
       ],
     },
     {
-      heading: "Engagement",
+      heading: "nav.headingEngagement",
       items: [
-        { label: "Announcements", path: "/announcements", icon: Megaphone },
-        { label: "Ads", path: "/ads", icon: ImageIcon },
-        { label: "Partner Videos", path: "/videos", icon: Video },
+        { label: "nav.announcements", path: "/announcements", icon: Megaphone },
+        { label: "nav.ads", path: "/ads", icon: ImageIcon },
+        { label: "nav.partnerVideos", path: "/videos", icon: Video },
       ],
     },
-    { heading: "Insights", items: [{ label: "Reports", path: "/reports", icon: BarChart3 }] },
+    { heading: "nav.headingInsights", items: [{ label: "nav.reports", path: "/reports", icon: BarChart3 }] },
   ],
   admin: [
-    { items: [{ label: "Overview", path: "/", icon: LayoutDashboard }] },
-    { heading: "People", items: [{ label: "Users & Org", path: "/users", icon: Users }] },
+    { items: [{ label: "nav.overview", path: "/", icon: LayoutDashboard }] },
+    { heading: "nav.headingPeople", items: [{ label: "nav.usersOrg", path: "/users", icon: Users }] },
     {
-      heading: "Learning",
+      heading: "nav.headingLearning",
       items: [
-        { label: "Content", path: "/content", icon: BookOpen },
-        { label: "Trainings", path: "/trainings", icon: GraduationCap },
-        { label: "Assessments", path: "/assessments", icon: ClipboardCheck },
+        { label: "nav.content", path: "/content", icon: BookOpen },
+        { label: "nav.trainings", path: "/trainings", icon: GraduationCap },
+        { label: "nav.assessments", path: "/assessments", icon: ClipboardCheck },
       ],
     },
-    { heading: "Support", items: [{ label: "Tickets", path: "/tickets", icon: Ticket }] },
+    { heading: "nav.headingSupport", items: [{ label: "nav.tickets", path: "/tickets", icon: Ticket }] },
     {
-      heading: "Engagement",
+      heading: "nav.headingEngagement",
       items: [
-        { label: "Announcements", path: "/announcements", icon: Megaphone },
-        { label: "Ads", path: "/ads", icon: ImageIcon },
-        { label: "Partner Videos", path: "/videos", icon: Video },
+        { label: "nav.announcements", path: "/announcements", icon: Megaphone },
+        { label: "nav.ads", path: "/ads", icon: ImageIcon },
+        { label: "nav.partnerVideos", path: "/videos", icon: Video },
       ],
     },
-    { heading: "Insights", items: [{ label: "Reports", path: "/reports", icon: BarChart3 }] },
+    { heading: "nav.headingInsights", items: [{ label: "nav.reports", path: "/reports", icon: BarChart3 }] },
   ],
   trainer: [
-    { items: [{ label: "Overview", path: "/", icon: LayoutDashboard }] },
+    { items: [{ label: "nav.overview", path: "/", icon: LayoutDashboard }] },
     {
-      heading: "Learning",
+      heading: "nav.headingLearning",
       items: [
-        { label: "Content", path: "/content", icon: BookOpen },
-        { label: "Trainings", path: "/trainings", icon: GraduationCap },
-        { label: "Assessments", path: "/assessments", icon: ClipboardCheck },
+        { label: "nav.content", path: "/content", icon: BookOpen },
+        { label: "nav.trainings", path: "/trainings", icon: GraduationCap },
+        { label: "nav.assessments", path: "/assessments", icon: ClipboardCheck },
       ],
     },
-    { heading: "Support", items: [{ label: "Tickets", path: "/tickets", icon: Ticket }] },
+    { heading: "nav.headingSupport", items: [{ label: "nav.tickets", path: "/tickets", icon: Ticket }] },
     {
-      heading: "Engagement",
+      heading: "nav.headingEngagement",
       items: [
-        { label: "Announcements", path: "/announcements", icon: Megaphone },
-        { label: "Partner Videos", path: "/videos", icon: Video },
+        { label: "nav.announcements", path: "/announcements", icon: Megaphone },
+        { label: "nav.partnerVideos", path: "/videos", icon: Video },
       ],
     },
   ],
   franchise_owner: [
     {
       items: [
-        { label: "My Learning", path: "/", icon: LayoutDashboard },
-        { label: "AI Support", path: "/support", icon: LifeBuoy },
-        { label: "My Tickets", path: "/my-tickets", icon: Ticket },
-        { label: "Certificates", path: "/certificates", icon: Award },
-        { label: "Partner Videos", path: "/videos", icon: Video },
-        { label: "Announcements", path: "/announcements", icon: Megaphone },
+        { label: "nav.myLearning", path: "/", icon: LayoutDashboard },
+        { label: "nav.aiSupport", path: "/support", icon: LifeBuoy },
+        { label: "nav.myTickets", path: "/my-tickets", icon: Ticket },
+        { label: "nav.certificates", path: "/certificates", icon: Award },
+        { label: "nav.partnerVideos", path: "/videos", icon: Video },
+        { label: "nav.announcements", path: "/announcements", icon: Megaphone },
       ],
     },
   ],
   operator: [
     {
       items: [
-        { label: "My Learning", path: "/", icon: LayoutDashboard },
-        { label: "AI Support", path: "/support", icon: LifeBuoy },
-        { label: "My Tickets", path: "/my-tickets", icon: Ticket },
-        { label: "Certificates", path: "/certificates", icon: Award },
-        { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
-        { label: "Partner Videos", path: "/videos", icon: Video },
-        { label: "Announcements", path: "/announcements", icon: Megaphone },
+        { label: "nav.myLearning", path: "/", icon: LayoutDashboard },
+        { label: "nav.aiSupport", path: "/support", icon: LifeBuoy },
+        { label: "nav.myTickets", path: "/my-tickets", icon: Ticket },
+        { label: "nav.certificates", path: "/certificates", icon: Award },
+        { label: "nav.leaderboard", path: "/leaderboard", icon: Trophy },
+        { label: "nav.partnerVideos", path: "/videos", icon: Video },
+        { label: "nav.announcements", path: "/announcements", icon: Megaphone },
       ],
     },
   ],
   employee: [
     {
       items: [
-        { label: "My Learning", path: "/", icon: LayoutDashboard },
-        { label: "AI Support", path: "/support", icon: LifeBuoy },
-        { label: "My Tickets", path: "/my-tickets", icon: Ticket },
-        { label: "Certificates", path: "/certificates", icon: Award },
-        { label: "Leaderboard", path: "/leaderboard", icon: Trophy },
-        { label: "Partner Videos", path: "/videos", icon: Video },
-        { label: "Announcements", path: "/announcements", icon: Megaphone },
+        { label: "nav.myLearning", path: "/", icon: LayoutDashboard },
+        { label: "nav.aiSupport", path: "/support", icon: LifeBuoy },
+        { label: "nav.myTickets", path: "/my-tickets", icon: Ticket },
+        { label: "nav.certificates", path: "/certificates", icon: Award },
+        { label: "nav.leaderboard", path: "/leaderboard", icon: Trophy },
+        { label: "nav.partnerVideos", path: "/videos", icon: Video },
+        { label: "nav.announcements", path: "/announcements", icon: Megaphone },
       ],
     },
   ],
@@ -156,6 +160,7 @@ function flattenNav(sections: NavSection[]): NavItem[] {
 }
 
 function NavRow({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+  const { t } = useTranslation();
   return (
     <NavLink
       to={item.path}
@@ -170,12 +175,13 @@ function NavRow({ item, onNavigate }: { item: NavItem; onNavigate: () => void })
       }
     >
       <item.icon className="w-4 h-4 shrink-0" />
-      <span className="truncate">{item.label}</span>
+      <span className="truncate">{t(item.label)}</span>
     </NavLink>
   );
 }
 
 function NavGroup({ section, isActiveSection, onNavigate }: { section: NavSection; isActiveSection: boolean; onNavigate: () => void }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(true);
 
   if (!section.heading) {
@@ -197,7 +203,7 @@ function NavGroup({ section, isActiveSection, onNavigate }: { section: NavSectio
           isActiveSection ? "text-astra" : "text-slate-400"
         }`}
       >
-        {section.heading}
+        {t(section.heading)}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "" : "-rotate-90"}`} />
       </button>
       {/* Smooth height animation via grid-template-rows 0fr→1fr (see .accordion-panel in
@@ -214,6 +220,7 @@ function NavGroup({ section, isActiveSection, onNavigate }: { section: NavSectio
 }
 
 export function AppLayout() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const sections = user ? NAV_BY_ROLE[user.role] ?? [] : [];
   const flatNav = flattenNav(sections);
@@ -222,7 +229,7 @@ export function AppLayout() {
   const currentItem = flatNav.find((item) =>
     item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path),
   );
-  const currentLabel = currentItem?.label ?? (location.pathname.startsWith("/learning/") ? "Training" : "Learning Astra");
+  const currentLabel = currentItem ? t(currentItem.label) : location.pathname.startsWith("/learning/") ? t("common.training") : "Learning Astra";
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const mustChangePassword = !!user?.mustChangePassword;
@@ -274,9 +281,12 @@ export function AppLayout() {
         {/* Secondary utility group — same icon+label row pattern as primary nav, distinct
             category (account controls), separated by the divider above. */}
         <div className="px-3 py-3 space-y-2">
-          <div className="px-3 py-1.5">
-            <div className="text-sm font-medium text-slate-700 truncate">{user?.name}</div>
-            <div className="text-[11px] uppercase tracking-wide text-slate-400">{user?.role.replace("_", " ")}</div>
+          <div className="px-3 py-1.5 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-slate-700 truncate">{user?.name}</div>
+              <div className="text-[11px] uppercase tracking-wide text-slate-400">{user?.role.replace("_", " ")}</div>
+            </div>
+            <LanguageSwitcher direction="up" />
           </div>
           <div className="space-y-0.5">
             <button
@@ -284,18 +294,18 @@ export function AppLayout() {
               className="w-full flex items-center gap-3 pl-3 pr-4 py-2 rounded-md text-sm text-slate-600 hover:bg-slate-100 hover:text-astra"
             >
               <KeyRound className="w-4 h-4 shrink-0" />
-              Change password
+              {t("common.changePassword")}
             </button>
             <button
               onClick={() => logout()}
               className="w-full flex items-center gap-3 pl-3 pr-4 py-2 rounded-md text-sm text-red-500 hover:bg-red-50"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              Sign out
+              {t("common.signOut")}
             </button>
           </div>
         </div>
-        <div className="px-5 py-3 text-[10px] text-slate-300">Created by Sourav Gupta</div>
+        <div className="px-5 py-3 text-[10px] text-slate-300">{t("common.createdBy")}</div>
       </aside>
 
       {(showChangePassword || mustChangePassword) && (

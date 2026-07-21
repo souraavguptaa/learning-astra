@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./app/App.js";
 import { ErrorBoundary } from "./components/common/ErrorBoundary.js";
 import { ThemeProvider } from "./lib/themeContext.js";
+import "./i18n/index.js";
 import "./styles/index.css";
 
 if (import.meta.env.DEV) import("./reticle-dev.js");
