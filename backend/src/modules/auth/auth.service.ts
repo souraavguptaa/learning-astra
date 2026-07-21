@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import { refreshTokens, users } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
+import * as attendanceService from "../attendance/attendance.service.js";
 import { hashPassword, verifyPassword } from "../../utils/password.js";
 import {
   refreshTokenExpiryDate,
@@ -37,6 +38,9 @@ export async function login(email: string, password: string) {
     throw new ApiError(401, "Invalid email or password");
   }
   const tokens = await issueTokens(user);
+  if (attendanceService.isAttendanceTracked(user.role)) {
+    await attendanceService.clockIn(user.id);
+  }
   return {
     ...tokens,
     user: {

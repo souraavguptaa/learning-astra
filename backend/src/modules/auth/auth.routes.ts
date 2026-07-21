@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authenticate } from "../../middleware/authenticate.js";
 import { validateBody } from "../../middleware/validate.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import * as attendanceService from "../attendance/attendance.service.js";
 import * as authService from "./auth.service.js";
 
 export const authRouter = Router();
@@ -41,6 +42,7 @@ authRouter.post(
   authenticate,
   asyncHandler(async (req, res) => {
     await authService.logout(req.user!.sub);
+    await attendanceService.clockOut(req.user!.sub);
     res.json({ success: true });
   }),
 );

@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { announcementRouter } from "./modules/announcement/announcement.routes.js";
 import { analyticsRouter } from "./modules/analytics/analytics.routes.js";
 import { assessmentRouter } from "./modules/assessment/assessment.routes.js";
+import { attendanceRouter } from "./modules/attendance/attendance.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { certificateRouter } from "./modules/certificate/certificate.routes.js";
 import { contentRouter } from "./modules/content/content.routes.js";
@@ -29,6 +30,7 @@ export function createApp() {
 
   app.use("/api/health", healthRouter);
   app.use("/api/auth", authRouter);
+  app.use("/api/attendance", attendanceRouter);
   app.use("/api/org", orgRouter);
   app.use("/api/content", contentRouter);
   app.use("/api/trainings", trainingRouter);

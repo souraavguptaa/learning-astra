@@ -1,4 +1,5 @@
 export * from "./assessment.js";
+export * from "./attendance.js";
 export * from "./content.js";
 export * from "./gamification.js";
 export * from "./notification.js";

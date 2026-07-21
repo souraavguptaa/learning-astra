@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "../lib/authContext.js";
 import { AdminDashboard } from "../pages/admin/AdminDashboard.js";
 import { AdsManagementPage } from "../pages/ads/AdsManagementPage.js";
 import { AnnouncementsPage } from "../pages/announcements/AnnouncementsPage.js";
+import { AttendancePage } from "../pages/attendance/AttendancePage.js";
 import { LoginPage } from "../pages/auth/LoginPage.js";
 import { CertificatesPage } from "../pages/certificates/CertificatesPage.js";
 import { ContentLibraryPage } from "../pages/content/ContentLibraryPage.js";
@@ -160,6 +161,14 @@ export function App() {
             element={
               <ProtectedRoute roles={["super_admin"]}>
                 <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="attendance"
+            element={
+              <ProtectedRoute roles={["super_admin", "admin"]}>
+                <AttendancePage />
               </ProtectedRoute>
             }
           />
