@@ -258,6 +258,7 @@ export function useTrainingForUser(trainingId: string | null) {
             progress: (ContentProgress & { passed?: undefined }) | (AssessmentResultSummary & { completed?: undefined }) | null;
             unlocked: boolean;
           }[];
+          requiresRecompletion: boolean;
         }>(`/trainings/${trainingId}/for-user`)
       ).data,
     enabled: !!trainingId,

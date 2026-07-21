@@ -370,21 +370,38 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
 export async function getTrainingForUser(userId: string, trainingId: string) {
   const { training, items } = await getTrainingDetail(trainingId);
 
+  // A trainer's "major update" (bumpVersion) marks trainingProgress.requiresRecompletion but
+  // never touches the per-item contentProgress/assessmentResults rows — those are what the
+  // unlock cascade below actually reads. Left as-is, every item still shows completed from the
+  // old version, so the whole training reads as unlocked/finished and a learner can jump straight
+  // to the last item without redoing anything, defeating the point of forcing recompletion.
+  // Treating every item as not-yet-done while recompletion is pending re-locks the sequence from
+  // item 1, same as a first-time run — advanceTrainingProgress already clears the flag correctly
+  // once the last item is genuinely completed again.
+  const [progressRow] = await db
+    .select({ requiresRecompletion: trainingProgress.requiresRecompletion })
+    .from(trainingProgress)
+    .where(and(eq(trainingProgress.userId, userId), eq(trainingProgress.trainingId, trainingId)))
+    .limit(1);
+  const needsRecompletion = progressRow?.requiresRecompletion ?? false;
+
   const contentIds = items.map((i) => i.item.contentId).filter((id): id is string => !!id);
-  const contentProgressRows = contentIds.length
-    ? await db
-        .select()
-        .from(contentProgress)
-        .where(and(eq(contentProgress.userId, userId), inArray(contentProgress.contentId, contentIds)))
-    : [];
+  const contentProgressRows =
+    contentIds.length && !needsRecompletion
+      ? await db
+          .select()
+          .from(contentProgress)
+          .where(and(eq(contentProgress.userId, userId), inArray(contentProgress.contentId, contentIds)))
+      : [];
 
   const assessmentIds = items.map((i) => i.item.assessmentId).filter((id): id is string => !!id);
-  const assessmentResultRows = assessmentIds.length
-    ? await db
-        .select()
-        .from(assessmentResults)
-        .where(and(eq(assessmentResults.userId, userId), inArray(assessmentResults.assessmentId, assessmentIds)))
-    : [];
+  const assessmentResultRows =
+    assessmentIds.length && !needsRecompletion
+      ? await db
+          .select()
+          .from(assessmentResults)
+          .where(and(eq(assessmentResults.userId, userId), inArray(assessmentResults.assessmentId, assessmentIds)))
+      : [];
 
   let previousCompleted = true;
   const itemsWithState = items.map(({ item, content, assessment }) => {
@@ -397,7 +414,7 @@ export async function getTrainingForUser(userId: string, trainingId: string) {
     return { item, content, assessment, progress, unlocked };
   });
 
-  return { training, items: itemsWithState };
+  return { training, items: itemsWithState, requiresRecompletion: needsRecompletion };
 }
 
 async function advanceTrainingProgress(

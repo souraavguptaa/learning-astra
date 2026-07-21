@@ -51,6 +51,11 @@ export function TrainingPlayerPage() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-1 space-y-2">
         <h1 className="text-lg font-bold text-slate-800 mb-2">{data.training.title}</h1>
+        {data.requiresRecompletion && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 mb-1">
+            This training was updated since you last completed it — please go through it again from the start.
+          </div>
+        )}
         {data.items.map((entry, idx) => {
           const { item, content, assessment, unlocked } = entry;
           const complete = isItemComplete(entry);
