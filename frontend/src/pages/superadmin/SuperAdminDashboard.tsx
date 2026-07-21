@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AnalyticsSection } from "../../components/analytics/AnalyticsSection.js";
 import { useAuth } from "../../lib/authContext.js";
 import { useAnalyticsOverview, type AnalyticsOverview } from "../../features/analytics.js";
 
@@ -149,6 +150,8 @@ export function SuperAdminDashboard() {
           <CtaTile tile={CTA_TILE} value={data[CTA_TILE.key]} hasValue={data[CTA_TILE.key] !== null && data[CTA_TILE.key] !== undefined} />
         </div>
       )}
+
+      <AnalyticsSection />
     </div>
   );
 }

@@ -63,3 +63,70 @@ export function useUserProgress(userId: string | null) {
     enabled: !!userId,
   });
 }
+
+export interface TrendPoint {
+  period: string;
+  completions: number;
+  quizPasses: number;
+  activeLearners: number;
+}
+
+export function useAnalyticsTrends(params: { from?: string; to?: string; granularity: "day" | "month" }) {
+  return useQuery({
+    queryKey: ["analytics-trends", params],
+    queryFn: async () => (await api.get<TrendPoint[]>("/analytics/trends", { params })).data,
+  });
+}
+
+export interface SegmentRow {
+  role: "franchise_owner" | "operator" | "employee";
+  learnerCount: number;
+  totalWatchHours: number;
+  completionRate: number | null;
+  quizPassRate: number | null;
+}
+
+export function useAnalyticsSegments() {
+  return useQuery({
+    queryKey: ["analytics-segments"],
+    queryFn: async () => (await api.get<SegmentRow[]>("/analytics/segments")).data,
+  });
+}
+
+export interface TrainerPerformanceRow {
+  trainerId: string;
+  trainerName: string;
+  trainingsCreated: number;
+  totalAssigned: number;
+  totalCompleted: number;
+  completionRate: number | null;
+  quizPassRate: number | null;
+}
+
+export function useTrainerPerformance() {
+  return useQuery({
+    queryKey: ["analytics-trainers"],
+    queryFn: async () => (await api.get<TrainerPerformanceRow[]>("/analytics/trainers")).data,
+  });
+}
+
+export interface TrainingPerformanceRow {
+  trainingId: string;
+  title: string;
+  trainerName: string;
+  assignedCount: number;
+  startedCount: number;
+  completedCount: number;
+  completionRate: number | null;
+  quizAttemptedCount: number;
+  quizAttemptRate: number | null;
+  quizPassedCount: number;
+  quizPassRate: number | null;
+}
+
+export function useTrainingPerformance() {
+  return useQuery({
+    queryKey: ["analytics-trainings"],
+    queryFn: async () => (await api.get<TrainingPerformanceRow[]>("/analytics/trainings")).data,
+  });
+}

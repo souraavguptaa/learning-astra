@@ -9,11 +9,52 @@ export const analyticsRouter = Router();
 
 analyticsRouter.use(authenticate);
 
+// Admin already has write access to users/content/trainings for the whole org — read-only
+// analytics visibility is strictly lower-risk than that, so it gets the same access as super_admin
+// everywhere in this router rather than being locked out of the dashboard it needs to do its job.
 analyticsRouter.get(
   "/overview",
-  authorize("super_admin"),
+  authorize("super_admin", "admin"),
   asyncHandler(async (_req, res) => {
     res.json(await analyticsService.getOverview());
+  }),
+);
+
+analyticsRouter.get(
+  "/trends",
+  authorize("super_admin", "admin"),
+  asyncHandler(async (req, res) => {
+    res.json(
+      await analyticsService.getTrends({
+        from: req.query.from ? new Date(req.query.from as string) : undefined,
+        to: req.query.to ? new Date(req.query.to as string) : undefined,
+        granularity: req.query.granularity === "month" ? "month" : "day",
+      }),
+    );
+  }),
+);
+
+analyticsRouter.get(
+  "/segments",
+  authorize("super_admin", "admin"),
+  asyncHandler(async (_req, res) => {
+    res.json(await analyticsService.getSegments());
+  }),
+);
+
+analyticsRouter.get(
+  "/trainers",
+  authorize("super_admin", "admin"),
+  asyncHandler(async (_req, res) => {
+    res.json(await analyticsService.getTrainerPerformance());
+  }),
+);
+
+analyticsRouter.get(
+  "/trainings",
+  authorize("super_admin", "admin"),
+  asyncHandler(async (_req, res) => {
+    res.json(await analyticsService.getTrainingPerformance());
   }),
 );
 

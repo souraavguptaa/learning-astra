@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { AnalyticsSection } from "../../components/analytics/AnalyticsSection.js";
 import { useAuth } from "../../lib/authContext.js";
 
 const QUICK_LINKS = [
@@ -21,6 +22,8 @@ export function AdminDashboard() {
           </Link>
         ))}
       </div>
+
+      <AnalyticsSection />
     </div>
   );
 }

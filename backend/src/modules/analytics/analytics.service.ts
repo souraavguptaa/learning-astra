@@ -3,6 +3,11 @@ import { db } from "../../db/client.js";
 import { aiSearchQueries, assessmentResults, assessments, certificates, npsResponses, supportTickets, users } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
 
+// Franchise owners/operators run their own store ("franchise partners"); employees are
+// SastaSundar's own staff. Everything segment/trainer/training-wise below only counts these
+// three — super_admin/admin/trainer accounts aren't learners.
+const LEARNER_ROLES = sql`('franchise_owner', 'operator', 'employee')`;
+
 // Expands training_assignments (which target a user, a whole role, or a whole franchise) into
 // concrete (training_id, user_id) pairs — the actual set of people a published training is
 // mandatory/assigned for, whether or not they've ever opened it. Counting completion against
@@ -177,4 +182,251 @@ export async function getUserLearningProgress(userId: string) {
     assessments: assessmentRows,
     certificates: certRows,
   };
+}
+
+export interface TrendPoint {
+  period: string;
+  completions: number;
+  quizPasses: number;
+  activeLearners: number;
+}
+
+/** Date/month-wise trend for the dashboard chart. Three independent grouped queries merged by
+ * period rather than one join — content_progress, training_progress, and assessment_results are
+ * all one-to-many off a user, so joining them together in a single query would fan out and
+ * over-count instead of giving three clean per-period counts. */
+export async function getTrends(params: { from?: Date; to?: Date; granularity?: "day" | "month" }): Promise<TrendPoint[]> {
+  // Plain string, not sql`` — date_trunc's first argument is a text literal, not a column
+  // identifier, so it needs to be bound as a parameter rather than interpolated as raw SQL.
+  const granularity = params.granularity === "month" ? "month" : "day";
+  const range = (column: ReturnType<typeof sql>) => {
+    const conditions = [sql`${column} IS NOT NULL`];
+    if (params.from) conditions.push(sql`${column} >= ${params.from}`);
+    if (params.to) conditions.push(sql`${column} <= ${params.to}`);
+    return sql.join(conditions, sql` AND `);
+  };
+
+  const completionsResult = await db.execute(sql`
+    SELECT date_trunc(${granularity}, tp.completed_at) AS period, count(*)::int AS count
+    FROM training_progress tp
+    WHERE ${range(sql`tp.completed_at`)}
+    GROUP BY period
+  `);
+  const quizPassesResult = await db.execute(sql`
+    SELECT date_trunc(${granularity}, ar.passed_at) AS period, count(*)::int AS count
+    FROM assessment_results ar
+    WHERE ${range(sql`ar.passed_at`)}
+    GROUP BY period
+  `);
+  const activeLearnersResult = await db.execute(sql`
+    SELECT date_trunc(${granularity}, cp.last_ping_server_at) AS period, count(DISTINCT cp.user_id)::int AS count
+    FROM content_progress cp
+    WHERE ${range(sql`cp.last_ping_server_at`)}
+    GROUP BY period
+  `);
+
+  const byPeriod = new Map<string, TrendPoint>();
+  function key(period: unknown): string {
+    return new Date(period as string).toISOString();
+  }
+  function get(period: unknown): TrendPoint {
+    const k = key(period);
+    let point = byPeriod.get(k);
+    if (!point) {
+      point = { period: k, completions: 0, quizPasses: 0, activeLearners: 0 };
+      byPeriod.set(k, point);
+    }
+    return point;
+  }
+  for (const row of completionsResult.rows as { period: unknown; count: number }[]) get(row.period).completions = row.count;
+  for (const row of quizPassesResult.rows as { period: unknown; count: number }[]) get(row.period).quizPasses = row.count;
+  for (const row of activeLearnersResult.rows as { period: unknown; count: number }[]) get(row.period).activeLearners = row.count;
+
+  return [...byPeriod.values()].sort((a, b) => a.period.localeCompare(b.period));
+}
+
+export interface SegmentRow {
+  role: "franchise_owner" | "operator" | "employee";
+  learnerCount: number;
+  totalWatchHours: number;
+  completionRate: number | null;
+  quizPassRate: number | null;
+}
+
+/** Time spent, completion rate, and quiz pass rate broken down by "franchise partner"
+ * (franchise_owner/operator) vs "employee" — three independent grouped queries merged by role,
+ * same fan-out reasoning as getTrends. */
+export async function getSegments(): Promise<SegmentRow[]> {
+  const roles = ["franchise_owner", "operator", "employee"] as const;
+  const byRole = new Map<string, SegmentRow>(
+    roles.map((role) => [role, { role, learnerCount: 0, totalWatchHours: 0, completionRate: null, quizPassRate: null }]),
+  );
+
+  const learnerCounts = await db.execute(sql`
+    SELECT role, count(*)::int AS count FROM users WHERE role IN ${LEARNER_ROLES} GROUP BY role
+  `);
+  for (const row of learnerCounts.rows as { role: string; count: number }[]) {
+    const seg = byRole.get(row.role);
+    if (seg) seg.learnerCount = row.count;
+  }
+
+  const watchTime = await db.execute(sql`
+    SELECT u.role, coalesce(sum(cp.valid_watched_seconds), 0)::float AS seconds
+    FROM users u
+    LEFT JOIN content_progress cp ON cp.user_id = u.id
+    WHERE u.role IN ${LEARNER_ROLES}
+    GROUP BY u.role
+  `);
+  for (const row of watchTime.rows as { role: string; seconds: number }[]) {
+    const seg = byRole.get(row.role);
+    if (seg) seg.totalWatchHours = Math.round((row.seconds / 3600) * 10) / 10;
+  }
+
+  const completion = await db.execute(sql`
+    WITH ${ASSIGNED_PAIRS_CTE}
+    SELECT u.role, count(*)::int AS total, count(*) FILTER (WHERE tp.completed)::int AS completed
+    FROM assigned_pairs ap
+    JOIN trainings t ON t.id = ap.training_id AND t.status = 'published'
+    JOIN users u ON u.id = ap.user_id AND u.role IN ${LEARNER_ROLES}
+    LEFT JOIN training_progress tp ON tp.training_id = ap.training_id AND tp.user_id = ap.user_id
+    GROUP BY u.role
+  `);
+  for (const row of completion.rows as { role: string; total: number; completed: number }[]) {
+    const seg = byRole.get(row.role);
+    if (seg) seg.completionRate = row.total > 0 ? Math.round((row.completed / row.total) * 100) : null;
+  }
+
+  const passRate = await db.execute(sql`
+    SELECT u.role, count(*)::int AS attempts, count(*) FILTER (WHERE ar.passed)::int AS passed
+    FROM assessment_results ar
+    JOIN users u ON u.id = ar.user_id AND u.role IN ${LEARNER_ROLES}
+    GROUP BY u.role
+  `);
+  for (const row of passRate.rows as { role: string; attempts: number; passed: number }[]) {
+    const seg = byRole.get(row.role);
+    if (seg) seg.quizPassRate = row.attempts > 0 ? Math.round((row.passed / row.attempts) * 100) : null;
+  }
+
+  return roles.map((r) => byRole.get(r)!);
+}
+
+export interface TrainerPerformanceRow {
+  trainerId: string;
+  trainerName: string;
+  trainingsCreated: number;
+  totalAssigned: number;
+  totalCompleted: number;
+  completionRate: number | null;
+  quizPassRate: number | null;
+}
+
+export async function getTrainerPerformance(): Promise<TrainerPerformanceRow[]> {
+  const result = await db.execute(sql`
+    WITH ${ASSIGNED_PAIRS_CTE}
+    SELECT
+      trn.id AS "trainerId",
+      trn.name AS "trainerName",
+      count(DISTINCT t.id)::int AS "trainingsCreated",
+      count(ap.user_id)::int AS "totalAssigned",
+      count(*) FILTER (WHERE tp.completed)::int AS "totalCompleted"
+    FROM users trn
+    JOIN trainings t ON t.trainer_id = trn.id AND t.status = 'published'
+    LEFT JOIN assigned_pairs ap ON ap.training_id = t.id
+    LEFT JOIN training_progress tp ON tp.training_id = ap.training_id AND tp.user_id = ap.user_id
+    GROUP BY trn.id, trn.name
+    ORDER BY trn.name
+  `);
+
+  const passRates = await db.execute(sql`
+    SELECT t.trainer_id AS "trainerId", count(*)::int AS attempts, count(*) FILTER (WHERE ar.passed)::int AS passed
+    FROM assessment_results ar
+    JOIN assessments a ON a.id = ar.assessment_id
+    JOIN trainings t ON t.id = a.training_id
+    GROUP BY t.trainer_id
+  `);
+  const passByTrainer = new Map(
+    (passRates.rows as { trainerId: string; attempts: number; passed: number }[]).map((r) => [r.trainerId, r]),
+  );
+
+  return (
+    result.rows as { trainerId: string; trainerName: string; trainingsCreated: number; totalAssigned: number; totalCompleted: number }[]
+  ).map((row) => {
+    const pr = passByTrainer.get(row.trainerId);
+    return {
+      ...row,
+      completionRate: row.totalAssigned > 0 ? Math.round((row.totalCompleted / row.totalAssigned) * 100) : null,
+      quizPassRate: pr && pr.attempts > 0 ? Math.round((pr.passed / pr.attempts) * 100) : null,
+    };
+  });
+}
+
+export interface TrainingPerformanceRow {
+  trainingId: string;
+  title: string;
+  trainerName: string;
+  assignedCount: number;
+  startedCount: number;
+  completedCount: number;
+  completionRate: number | null;
+  quizAttemptedCount: number;
+  quizAttemptRate: number | null;
+  quizPassedCount: number;
+  quizPassRate: number | null;
+}
+
+/** The "trainer made an onboarding training — how many took it, quiz completion rate, pass rate"
+ * view. Funnel: assigned -> started -> quiz attempted -> quiz passed. */
+export async function getTrainingPerformance(): Promise<TrainingPerformanceRow[]> {
+  const result = await db.execute(sql`
+    WITH ${ASSIGNED_PAIRS_CTE}
+    SELECT
+      t.id AS "trainingId",
+      t.title AS "title",
+      trn.name AS "trainerName",
+      count(ap.user_id)::int AS "assignedCount",
+      count(*) FILTER (WHERE tp.id IS NOT NULL)::int AS "startedCount",
+      count(*) FILTER (WHERE tp.completed)::int AS "completedCount"
+    FROM trainings t
+    JOIN users trn ON trn.id = t.trainer_id
+    LEFT JOIN assigned_pairs ap ON ap.training_id = t.id
+    LEFT JOIN training_progress tp ON tp.training_id = ap.training_id AND tp.user_id = ap.user_id
+    WHERE t.status = 'published'
+    GROUP BY t.id, t.title, trn.name
+    ORDER BY t.title
+  `);
+
+  const quizStats = await db.execute(sql`
+    SELECT a.training_id AS "trainingId",
+      count(DISTINCT ar.user_id)::int AS attempted,
+      count(DISTINCT ar.user_id) FILTER (WHERE ar.passed)::int AS passed
+    FROM assessment_results ar
+    JOIN assessments a ON a.id = ar.assessment_id
+    GROUP BY a.training_id
+  `);
+  const quizByTraining = new Map(
+    (quizStats.rows as { trainingId: string; attempted: number; passed: number }[]).map((r) => [r.trainingId, r]),
+  );
+
+  return (
+    result.rows as {
+      trainingId: string;
+      title: string;
+      trainerName: string;
+      assignedCount: number;
+      startedCount: number;
+      completedCount: number;
+    }[]
+  ).map((row) => {
+    const q = quizByTraining.get(row.trainingId);
+    const attempted = q?.attempted ?? 0;
+    const passed = q?.passed ?? 0;
+    return {
+      ...row,
+      completionRate: row.assignedCount > 0 ? Math.round((row.completedCount / row.assignedCount) * 100) : null,
+      quizAttemptedCount: attempted,
+      quizAttemptRate: row.startedCount > 0 ? Math.round((attempted / row.startedCount) * 100) : null,
+      quizPassedCount: passed,
+      quizPassRate: attempted > 0 ? Math.round((passed / attempted) * 100) : null,
+    };
+  });
 }

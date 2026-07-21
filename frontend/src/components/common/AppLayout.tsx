@@ -86,6 +86,7 @@ const NAV_BY_ROLE: Record<string, NavSection[]> = {
         { label: "Partner Videos", path: "/videos", icon: Video },
       ],
     },
+    { heading: "Insights", items: [{ label: "Reports", path: "/reports", icon: BarChart3 }] },
   ],
   trainer: [
     { items: [{ label: "Overview", path: "/", icon: LayoutDashboard }] },
