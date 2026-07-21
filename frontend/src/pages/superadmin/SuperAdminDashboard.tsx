@@ -37,8 +37,14 @@ const HEADLINE_TILES: Tile[] = [
 const SECONDARY_TILES: Tile[] = [
   { key: "assessmentPassRate", label: "Assessment Pass Rate", icon: Target, suffix: "%" },
   { key: "averageNps", label: "Average NPS", icon: MessageSquare },
-  { key: "aiSupportQueries", label: "AI Support Queries", icon: Bot },
-  { key: "unansweredQueries", label: "Unanswered Queries", icon: HelpCircle, attentionWhenPositive: true },
+  { key: "aiSupportQueries", label: "AI Support Queries", icon: Bot, to: "/ai-queries" },
+  {
+    key: "unansweredQueries",
+    label: "Unanswered Queries",
+    icon: HelpCircle,
+    attentionWhenPositive: true,
+    to: "/ai-queries?filter=unanswered",
+  },
 ];
 
 const CTA_TILE: Tile = { key: "openTickets", label: "Open Tickets", icon: Ticket, to: "/tickets", attentionWhenPositive: true };

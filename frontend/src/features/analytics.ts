@@ -130,3 +130,21 @@ export function useTrainingPerformance() {
     queryFn: async () => (await api.get<TrainingPerformanceRow[]>("/analytics/trainings")).data,
   });
 }
+
+export interface AiQueryRow {
+  id: string;
+  queryText: string;
+  answerText: string | null;
+  hadConfidentMatch: boolean;
+  similarityScore: string | null;
+  userName: string;
+  createdAt: string;
+}
+
+export function useAiQueries(answered?: boolean) {
+  return useQuery({
+    queryKey: ["analytics-ai-queries", answered],
+    queryFn: async () =>
+      (await api.get<AiQueryRow[]>("/analytics/ai-queries", { params: answered === undefined ? {} : { answered } })).data,
+  });
+}

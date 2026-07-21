@@ -59,6 +59,15 @@ analyticsRouter.get(
 );
 
 analyticsRouter.get(
+  "/ai-queries",
+  authorize("super_admin", "admin"),
+  asyncHandler(async (req, res) => {
+    const answered = req.query.answered === "true" ? true : req.query.answered === "false" ? false : undefined;
+    res.json(await analyticsService.getAiQueries({ answered }));
+  }),
+);
+
+analyticsRouter.get(
   "/training-completion",
   authorize("super_admin", "admin", "trainer"),
   asyncHandler(async (req, res) => {

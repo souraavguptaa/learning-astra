@@ -1,4 +1,4 @@
-import { desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import { aiSearchQueries, assessmentResults, assessments, certificates, npsResponses, supportTickets, users } from "../../db/schema/index.js";
 import { ApiError } from "../../middleware/errorHandler.js";
@@ -429,4 +429,38 @@ export async function getTrainingPerformance(): Promise<TrainingPerformanceRow[]
       quizPassRate: attempted > 0 ? Math.round((passed / attempted) * 100) : null,
     };
   });
+}
+
+export interface AiQueryRow {
+  id: string;
+  queryText: string;
+  answerText: string | null;
+  hadConfidentMatch: boolean;
+  similarityScore: string | null;
+  userName: string;
+  createdAt: Date;
+}
+
+/** The actual questions behind the "AI Support Queries" / "Unanswered Queries" dashboard tiles —
+ * those numbers are meaningless to an admin without being able to see what people are asking. */
+export async function getAiQueries(params: { answered?: boolean }): Promise<AiQueryRow[]> {
+  const conditions = [];
+  if (params.answered === true) conditions.push(eq(aiSearchQueries.hadConfidentMatch, true));
+  if (params.answered === false) conditions.push(eq(aiSearchQueries.hadConfidentMatch, false));
+
+  return db
+    .select({
+      id: aiSearchQueries.id,
+      queryText: aiSearchQueries.queryText,
+      answerText: aiSearchQueries.answerText,
+      hadConfidentMatch: aiSearchQueries.hadConfidentMatch,
+      similarityScore: aiSearchQueries.similarityScore,
+      userName: users.name,
+      createdAt: aiSearchQueries.createdAt,
+    })
+    .from(aiSearchQueries)
+    .innerJoin(users, eq(users.id, aiSearchQueries.userId))
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(desc(aiSearchQueries.createdAt))
+    .limit(500);
 }

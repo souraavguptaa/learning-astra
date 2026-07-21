@@ -5,6 +5,7 @@ import { useAssignedTrainings } from "../features/training.js";
 import { AuthProvider, useAuth } from "../lib/authContext.js";
 import { AdminDashboard } from "../pages/admin/AdminDashboard.js";
 import { AdsManagementPage } from "../pages/ads/AdsManagementPage.js";
+import { AiQueriesPage } from "../pages/aiqueries/AiQueriesPage.js";
 import { AnnouncementsPage } from "../pages/announcements/AnnouncementsPage.js";
 import { LoginPage } from "../pages/auth/LoginPage.js";
 import { CertificatesPage } from "../pages/certificates/CertificatesPage.js";
@@ -160,6 +161,14 @@ export function App() {
             element={
               <ProtectedRoute roles={["super_admin", "admin"]}>
                 <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ai-queries"
+            element={
+              <ProtectedRoute roles={["super_admin", "admin"]}>
+                <AiQueriesPage />
               </ProtectedRoute>
             }
           />
