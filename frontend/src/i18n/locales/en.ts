@@ -48,4 +48,18 @@ export default {
     error: "Invalid email or password.",
     noSignup: "Accounts are created by an Admin — there is no self-signup.",
   },
+  dashboard: {
+    welcome: "Welcome, {{name}}",
+    pointsEarned: "points earned",
+    firstBadge: "Complete a training to earn your first badge.",
+    loadingTrainings: "Loading your trainings…",
+    continueLearning: "Continue Learning",
+    assignedTrainings: "Assigned Trainings",
+    nothingAssigned: "Nothing new assigned right now.",
+    completed: "Completed",
+    mandatory: "Mandatory",
+    optional: "Optional",
+    overdue: "Overdue — was due",
+    due: "Due",
+  },
 } as const;

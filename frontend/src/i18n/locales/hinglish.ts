@@ -48,4 +48,18 @@ export default {
     error: "Email ya password galat hai.",
     noSignup: "Accounts ek Admin dwara banaye jaate hain — khud se signup ki suvidha nahi hai.",
   },
+  dashboard: {
+    welcome: "Welcome, {{name}}",
+    pointsEarned: "points earned",
+    firstBadge: "Apna pehla badge paane ke liye ek training complete karein.",
+    loadingTrainings: "Aapki trainings load ho rahi hain…",
+    continueLearning: "Learning Jaari Rakhein",
+    assignedTrainings: "Assigned Trainings",
+    nothingAssigned: "Abhi kuch naya assign nahi hua hai.",
+    completed: "Complete",
+    mandatory: "Mandatory",
+    optional: "Optional",
+    overdue: "Overdue — due tha",
+    due: "Due",
+  },
 } as const;

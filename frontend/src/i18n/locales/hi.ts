@@ -48,4 +48,18 @@ export default {
     error: "ईमेल या पासवर्ड गलत है।",
     noSignup: "खाते एक एडमिन द्वारा बनाए जाते हैं — स्वयं पंजीकरण की सुविधा नहीं है।",
   },
+  dashboard: {
+    welcome: "स्वागत है, {{name}}",
+    pointsEarned: "अंक अर्जित किए",
+    firstBadge: "अपना पहला बैज पाने के लिए एक प्रशिक्षण पूरा करें।",
+    loadingTrainings: "आपके प्रशिक्षण लोड हो रहे हैं…",
+    continueLearning: "लर्निंग जारी रखें",
+    assignedTrainings: "सौंपे गए प्रशिक्षण",
+    nothingAssigned: "अभी कुछ नया सौंपा नहीं गया है।",
+    completed: "पूर्ण",
+    mandatory: "अनिवार्य",
+    optional: "वैकल्पिक",
+    overdue: "समय सीमा बीत गई — नियत तिथि थी",
+    due: "नियत तिथि",
+  },
 } as const;
