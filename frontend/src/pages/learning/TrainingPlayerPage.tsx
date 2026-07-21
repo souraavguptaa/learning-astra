@@ -57,11 +57,10 @@ export function TrainingPlayerPage() {
           return (
             <button
               key={item.id}
-              disabled={!unlocked}
               onClick={() => setActiveItemId(item.id)}
               className={`w-full text-left px-3 py-2 rounded text-sm border flex items-center gap-2 ${
                 activeItemId === item.id ? "border-astra bg-blue-50" : "border-slate-200 bg-white"
-              } ${!unlocked ? "opacity-50 cursor-not-allowed" : ""}`}
+              } ${!unlocked ? "opacity-50" : ""}`}
             >
               <span>
                 {complete ? (
@@ -86,7 +85,22 @@ export function TrainingPlayerPage() {
         )}
         {data.items.length > 0 && !activeEntry && <p className="text-slate-400">Select an item to begin.</p>}
         {activeEntry && !activeEntry.unlocked && (
-          <p className="text-slate-400">Complete the previous item to unlock this one.</p>
+          <div className="bg-white rounded-lg shadow-clay p-4 flex items-start gap-3">
+            <Lock className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-slate-700">This item is locked</p>
+              <p className="text-slate-500 text-sm mt-0.5">
+                {(() => {
+                  const idx = data.items.findIndex((i) => i.item.id === activeEntry.item.id);
+                  const prev = idx > 0 ? data.items[idx - 1] : null;
+                  const prevTitle = prev ? (prev.item.itemType === "assessment" ? (prev.assessment?.title ?? "the previous quiz") : (prev.content?.title ?? "the previous item")) : null;
+                  return prevTitle
+                    ? `Complete "${prevTitle}" first to unlock this.`
+                    : "Complete the previous item to unlock this one.";
+                })()}
+              </p>
+            </div>
+          </div>
         )}
         {activeEntry?.unlocked && isAssessmentItem && activeEntry.assessment && (
           <div className="bg-white rounded-lg shadow-clay p-4">
