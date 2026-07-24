@@ -1,4 +1,4 @@
-import { Bell, X } from "lucide-react";
+import { Bell, GraduationCap, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +39,10 @@ export function NotificationBell() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState<Notification | null>(null);
+  // A brand-new assignment gets its own prominent, non-auto-dismissing modal instead of the small
+  // corner toast — mandatory compliance training is easy to miss in an 8-second popup, and the
+  // whole point is landing directly on the assigned item without going through the bell dropdown.
+  const [assignmentAlert, setAssignmentAlert] = useState<Notification | null>(null);
 
   const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
 
@@ -59,16 +63,20 @@ export function NotificationBell() {
     if (fresh.length > 0) {
       if (fresh.some((n) => n.type === "ticket_created")) playTicketAlert();
       else playPing();
-      setToast(fresh[0]);
       for (const n of fresh) seenIds.current.add(n.id);
       localStorage.setItem(storageKey, JSON.stringify([...seenIds.current]));
+
+      const freshAssignment = fresh.find((n) => n.type === "training_assigned");
+      const freshOther = fresh.find((n) => n.type !== "training_assigned");
+      if (freshAssignment) setAssignmentAlert(freshAssignment);
+      if (freshOther) setToast(freshOther);
 
       // A new assignment used to only appear once the notification's own 15s poll happened to
       // land — a learner staring at "My Learning" saw nothing change until they clicked into the
       // notification (which navigates away and forces a fresh fetch on remount). Tying the
       // dashboard's refetch directly to notification arrival makes it show up the moment the app
       // learns about it, not on a second, unrelated timer.
-      if (fresh.some((n) => n.type === "training_assigned")) {
+      if (freshAssignment) {
         qc.invalidateQueries({ queryKey: ["assigned-trainings"] });
       }
     }
@@ -85,6 +93,13 @@ export function NotificationBell() {
     setOpen(false);
     setToast(null);
     if (deepLink) navigate(deepLink);
+  }
+
+  function handleAssignmentAction() {
+    if (!assignmentAlert) return;
+    markRead.mutate(assignmentAlert.id);
+    if (assignmentAlert.deepLink) navigate(assignmentAlert.deepLink);
+    setAssignmentAlert(null);
   }
 
   return (
@@ -140,6 +155,31 @@ export function NotificationBell() {
             </button>
             <button onClick={() => setToast(null)} className="text-slate-400 hover:text-slate-600 shrink-0">
               <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {assignmentAlert && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 p-4">
+          <div className="modal-panel w-full max-w-sm bg-white rounded-xl shadow-2xl p-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-astra-soft text-astra-dark flex items-center justify-center mx-auto mb-4">
+              <GraduationCap className="w-7 h-7" />
+            </div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-astra mb-1">New assignment</div>
+            <h2 className="text-lg font-bold text-slate-800 mb-1">{assignmentAlert.title}</h2>
+            <p className="text-sm text-slate-500 mb-5">{assignmentAlert.message}</p>
+            <button
+              onClick={handleAssignmentAction}
+              className="w-full rounded-md bg-astra hover:bg-astra-dark text-white py-2.5 font-medium mb-2"
+            >
+              Open now
+            </button>
+            <button
+              onClick={() => setAssignmentAlert(null)}
+              className="w-full rounded-md text-slate-500 hover:text-slate-700 py-1.5 text-sm"
+            >
+              Remind me later
             </button>
           </div>
         </div>
