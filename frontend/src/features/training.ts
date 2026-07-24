@@ -240,7 +240,7 @@ export function useAssignedTrainings() {
           "/trainings/assigned",
         )
       ).data,
-    refetchInterval: 15000, // so a newly-assigned training shows up without navigating away and back
+    refetchInterval: 10000, // also force-refreshed the moment a training_assigned notification lands, see NotificationBell
   });
 }
 

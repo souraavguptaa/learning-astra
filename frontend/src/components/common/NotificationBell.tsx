@@ -1,5 +1,6 @@
 import { Bell, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../lib/authContext.js";
 import {
@@ -35,6 +36,7 @@ export function NotificationBell() {
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState<Notification | null>(null);
 
@@ -60,8 +62,17 @@ export function NotificationBell() {
       setToast(fresh[0]);
       for (const n of fresh) seenIds.current.add(n.id);
       localStorage.setItem(storageKey, JSON.stringify([...seenIds.current]));
+
+      // A new assignment used to only appear once the notification's own 15s poll happened to
+      // land — a learner staring at "My Learning" saw nothing change until they clicked into the
+      // notification (which navigates away and forces a fresh fetch on remount). Tying the
+      // dashboard's refetch directly to notification arrival makes it show up the moment the app
+      // learns about it, not on a second, unrelated timer.
+      if (fresh.some((n) => n.type === "training_assigned")) {
+        qc.invalidateQueries({ queryKey: ["assigned-trainings"] });
+      }
     }
-  }, [notifications, user]);
+  }, [notifications, user, qc]);
 
   useEffect(() => {
     if (!toast) return;
