@@ -14,6 +14,7 @@ export interface OrgUser {
   id: string;
   name: string;
   email: string;
+  employeeCode: string | null;
   role: UserRole;
   franchiseId: string | null;
   location: string | null;
@@ -49,6 +50,7 @@ export function useCreateUser() {
     mutationFn: async (input: {
       name: string;
       email: string;
+      employeeCode?: string;
       role: UserRole;
       franchiseId?: string;
       location?: string;

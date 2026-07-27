@@ -65,6 +65,7 @@ export const trainingAssignments = pgTable(
     franchiseId: uuid("franchise_id").references(() => franchises.id, { onDelete: "cascade" }),
     dueAt: timestamp("due_at", { withTimezone: true }),
     isMandatory: boolean("is_mandatory").default(true).notNull(),
+    assignedBy: uuid("assigned_by").references(() => users.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [

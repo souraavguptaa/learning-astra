@@ -55,6 +55,8 @@ export default {
     loadingTrainings: "আপোনাৰ প্ৰশিক্ষণসমূহ ল'ড হৈ আছে…",
     continueLearning: "লাৰ্নিং অব্যাহত ৰাখক",
     assignedTrainings: "নিযুক্ত প্ৰশিক্ষণ",
+    assignedAssessments: "নিযুক্ত মূল্যায়ন",
+    assignedBy: "{{name}} দ্বাৰা নিযুক্ত",
     nothingAssigned: "এতিয়া নতুন একো নিযুক্ত কৰা হোৱা নাই।",
     completed: "সম্পূৰ্ণ",
     mandatory: "বাধ্যতামূলক",

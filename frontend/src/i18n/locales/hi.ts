@@ -55,6 +55,8 @@ export default {
     loadingTrainings: "आपके प्रशिक्षण लोड हो रहे हैं…",
     continueLearning: "लर्निंग जारी रखें",
     assignedTrainings: "सौंपे गए प्रशिक्षण",
+    assignedAssessments: "सौंपे गए मूल्यांकन",
+    assignedBy: "{{name}} द्वारा सौंपा गया",
     nothingAssigned: "अभी कुछ नया सौंपा नहीं गया है।",
     completed: "पूर्ण",
     mandatory: "अनिवार्य",

@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle2, Play, Trophy } from "lucide-react";
+import { BookOpen, CheckCircle2, ClipboardCheck, Play, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useMyGamification } from "../../features/gamification.js";
@@ -24,17 +24,23 @@ function TrainingRow({
   isMandatory,
   dueAt,
   href,
-  icon: Icon,
-  iconClassName,
+  isAssessment,
+  started,
+  assignedByName,
 }: {
   title: string;
   isMandatory: boolean;
   dueAt?: string | null;
   href: string;
-  icon: typeof Play;
-  iconClassName: string;
+  isAssessment: boolean;
+  started: boolean;
+  assignedByName?: string | null;
 }) {
   const { t } = useTranslation();
+  // Assessments always get the same clipboard icon/color regardless of progress — trainings use
+  // Play once started, BookOpen before — so an assessment never reads as "just another training".
+  const Icon = isAssessment ? ClipboardCheck : started ? Play : BookOpen;
+  const iconClassName = isAssessment ? "bg-purple-50 text-purple-700" : started ? "bg-astra-soft text-astra-dark" : "bg-slate-100 text-slate-500";
   return (
     <Link to={href} className="hover-lift flex items-center justify-between gap-3 bg-white shadow-clay-sm rounded-lg p-4">
       <div className="flex items-center gap-3 min-w-0">
@@ -43,13 +49,16 @@ function TrainingRow({
         </span>
         <div className="min-w-0">
           <div className="font-medium truncate">{title}</div>
-          <span
-            className={`inline-block mt-1 rounded-pill px-2 py-0.5 text-[11px] font-medium ${
-              isMandatory ? "bg-astra-soft text-astra-dark" : "bg-slate-100 text-slate-500"
-            }`}
-          >
-            {isMandatory ? t("dashboard.mandatory") : t("dashboard.optional")}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap mt-1">
+            <span
+              className={`inline-block rounded-pill px-2 py-0.5 text-[11px] font-medium ${
+                isMandatory ? "bg-astra-soft text-astra-dark" : "bg-slate-100 text-slate-500"
+              }`}
+            >
+              {isMandatory ? t("dashboard.mandatory") : t("dashboard.optional")}
+            </span>
+            {assignedByName && <span className="text-[11px] text-slate-400">{t("dashboard.assignedBy", { name: assignedByName })}</span>}
+          </div>
         </div>
       </div>
       {dueAt !== undefined && <DueBadge dueAt={dueAt} />}
@@ -66,6 +75,9 @@ export function UserDashboard() {
   const inProgress = assigned?.filter((a) => a.progress && !a.progress.completed) ?? [];
   const notStarted = assigned?.filter((a) => !a.progress) ?? [];
   const completed = assigned?.filter((a) => a.progress?.completed) ?? [];
+
+  const notStartedTrainings = notStarted.filter((a) => !a.training.isStandaloneAssessment);
+  const notStartedAssessments = notStarted.filter((a) => a.training.isStandaloneAssessment);
 
   return (
     <div className="space-y-8">
@@ -109,43 +121,75 @@ export function UserDashboard() {
       {isLoading && <p className="text-slate-400">{t("dashboard.loadingTrainings")}</p>}
 
       {/* Continue Learning + Assigned are the two actionable lists — placed side by side on wide
-          screens instead of stacked full-width, so both are visible without scrolling. */}
+          screens instead of stacked full-width, so both are visible without scrolling. Assigned
+          items are further split by training vs. assessment so a new assessment never reads as
+          "just another training" on the one screen learners actually check. */}
       {(inProgress.length > 0 || notStarted.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {inProgress.length > 0 && (
             <section>
               <h2 className="font-semibold text-slate-700 mb-2">{t("dashboard.continueLearning")}</h2>
               <div className="space-y-2">
-                {inProgress.map(({ training, isMandatory, dueAt }) => (
+                {inProgress.map(({ training, isMandatory, dueAt, assignedByName }) => (
                   <TrainingRow
                     key={training.id}
                     title={training.title}
                     isMandatory={isMandatory}
                     dueAt={dueAt}
                     href={`/learning/${training.id}`}
-                    icon={Play}
-                    iconClassName="bg-astra-soft text-astra-dark"
+                    isAssessment={training.isStandaloneAssessment}
+                    started
+                    assignedByName={assignedByName}
                   />
                 ))}
               </div>
             </section>
           )}
-          <section>
-            <h2 className="font-semibold text-slate-700 mb-2">{t("dashboard.assignedTrainings")}</h2>
-            {!isLoading && notStarted.length === 0 && <p className="text-slate-400 text-sm">{t("dashboard.nothingAssigned")}</p>}
-            <div className="space-y-2">
-              {notStarted.map(({ training, isMandatory, dueAt }) => (
-                <TrainingRow
-                  key={training.id}
-                  title={training.title}
-                  isMandatory={isMandatory}
-                  dueAt={dueAt}
-                  href={`/learning/${training.id}`}
-                  icon={BookOpen}
-                  iconClassName="bg-slate-100 text-slate-500"
-                />
-              ))}
-            </div>
+          <section className="space-y-4">
+            {!isLoading && notStarted.length === 0 && (
+              <div>
+                <h2 className="font-semibold text-slate-700 mb-2">{t("dashboard.assignedTrainings")}</h2>
+                <p className="text-slate-400 text-sm">{t("dashboard.nothingAssigned")}</p>
+              </div>
+            )}
+            {notStartedTrainings.length > 0 && (
+              <div>
+                <h2 className="font-semibold text-slate-700 mb-2">{t("dashboard.assignedTrainings")}</h2>
+                <div className="space-y-2">
+                  {notStartedTrainings.map(({ training, isMandatory, dueAt, assignedByName }) => (
+                    <TrainingRow
+                      key={training.id}
+                      title={training.title}
+                      isMandatory={isMandatory}
+                      dueAt={dueAt}
+                      href={`/learning/${training.id}`}
+                      isAssessment={false}
+                      started={false}
+                      assignedByName={assignedByName}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            {notStartedAssessments.length > 0 && (
+              <div>
+                <h2 className="font-semibold text-slate-700 mb-2">{t("dashboard.assignedAssessments")}</h2>
+                <div className="space-y-2">
+                  {notStartedAssessments.map(({ training, isMandatory, dueAt, assignedByName }) => (
+                    <TrainingRow
+                      key={training.id}
+                      title={training.title}
+                      isMandatory={isMandatory}
+                      dueAt={dueAt}
+                      href={`/learning/${training.id}`}
+                      isAssessment
+                      started={false}
+                      assignedByName={assignedByName}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
         </div>
       )}
@@ -162,7 +206,11 @@ export function UserDashboard() {
                 to={`/learning/${training.id}`}
                 className="hover-lift flex items-center gap-3 bg-white shadow-clay-sm rounded-lg px-4 py-2.5 opacity-70"
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                {training.isStandaloneAssessment ? (
+                  <ClipboardCheck className="w-4 h-4 text-purple-600 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                )}
                 <div className="font-medium text-sm truncate">{training.title}</div>
               </Link>
             ))}

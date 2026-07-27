@@ -48,6 +48,7 @@ orgRouter.get(
 const createUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
+  employeeCode: z.string().optional(),
   role: z.enum(userRoleValues),
   franchiseId: z.string().uuid().optional(),
   location: z.string().optional(),

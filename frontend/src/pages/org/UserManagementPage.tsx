@@ -46,6 +46,7 @@ export function UserManagementPage({
   const [form, setForm] = useState({
     name: "",
     email: "",
+    employeeCode: "",
     role: creatableRoles[0],
     franchiseId: "",
     location: "",
@@ -61,7 +62,7 @@ export function UserManagementPage({
     const q = search.trim().toLowerCase();
     return (users ?? [])
       .filter((u) => (statusFilter === "all" ? true : statusFilter === "active" ? u.isActive : !u.isActive))
-      .filter((u) => !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+      .filter((u) => !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.employeeCode?.toLowerCase().includes(q))
       .sort((a, b) => (sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)));
   }, [users, search, statusFilter, sortAsc]);
 
@@ -70,12 +71,13 @@ export function UserManagementPage({
     const result = await createUser.mutateAsync({
       name: form.name,
       email: form.email,
+      employeeCode: form.employeeCode || undefined,
       role: form.role,
       franchiseId: form.franchiseId || undefined,
       location: form.location || undefined,
     });
     setLastCreated({ email: result.user.email, tempPassword: result.tempPassword });
-    setForm({ name: "", email: "", role: creatableRoles[0], franchiseId: "", location: "" });
+    setForm({ name: "", email: "", employeeCode: "", role: creatableRoles[0], franchiseId: "", location: "" });
   }
 
   async function handleCreateFranchise(e: React.FormEvent) {
@@ -220,6 +222,16 @@ export function UserManagementPage({
               />
             </label>
             <label className="block">
+              <span className="block text-xs font-medium text-slate-600 mb-1">
+                Employee code <span className="font-normal text-slate-400">(optional)</span>
+              </span>
+              <input
+                value={form.employeeCode}
+                onChange={(e) => setForm((f) => ({ ...f, employeeCode: e.target.value }))}
+                className="w-full rounded-md shadow-clay-inset px-3 h-11 text-sm"
+              />
+            </label>
+            <label className="block">
               <span className="block text-xs font-medium text-slate-600 mb-1">Role</span>
               <select
                 value={form.role}
@@ -281,7 +293,7 @@ export function UserManagementPage({
         <div className="relative mb-3">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            placeholder="Search by name or email…"
+            placeholder="Search by name, email, or employee code…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-md shadow-clay-inset pl-9 pr-3 py-1.5 text-sm"
@@ -312,6 +324,7 @@ export function UserManagementPage({
                   </button>
                 </th>
                 <th className="py-2 px-3 font-medium">Email</th>
+                <th className="py-2 px-3 font-medium">Employee code</th>
                 <th className="py-2 px-3 font-medium">Role</th>
                 <th className="py-2 px-3 font-medium">Franchise</th>
                 <th className="py-2 px-3 font-medium">Status</th>
@@ -321,7 +334,7 @@ export function UserManagementPage({
             <tbody className="divide-y divide-slate-100">
               {usersLoading && (
                 <tr>
-                  <td colSpan={6} className="py-3 px-3 text-slate-400">
+                  <td colSpan={7} className="py-3 px-3 text-slate-400">
                     Loading…
                   </td>
                 </tr>
@@ -339,6 +352,7 @@ export function UserManagementPage({
                 >
                   <td className="py-2 px-3 whitespace-nowrap max-w-[200px] truncate">{u.name}</td>
                   <td className="py-2 px-3 whitespace-nowrap max-w-[220px] truncate">{u.email}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">{u.employeeCode ?? "—"}</td>
                   <td className="py-2 px-3 whitespace-nowrap">{ROLE_LABELS[u.role]}</td>
                   <td className="py-2 px-3 whitespace-nowrap">
                     {FRANCHISE_LINKED_ROLES.includes(u.role) ? (

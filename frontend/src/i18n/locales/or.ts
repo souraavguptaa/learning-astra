@@ -55,6 +55,8 @@ export default {
     loadingTrainings: "ଆପଣଙ୍କର ତାଲିମ ଲୋଡ୍ ହେଉଛି…",
     continueLearning: "ଲର୍ନିଂ ଜାରି ରଖନ୍ତୁ",
     assignedTrainings: "ନ୍ୟସ୍ତ ତାଲିମ",
+    assignedAssessments: "ନ୍ୟସ୍ତ ମୂଲ୍ୟାଙ୍କନ",
+    assignedBy: "{{name}} ଙ୍କ ଦ୍ୱାରା ନ୍ୟସ୍ତ",
     nothingAssigned: "ବର୍ତ୍ତମାନ କିଛି ନୂଆ ନ୍ୟସ୍ତ ହୋଇନାହିଁ।",
     completed: "ସମ୍ପୂର୍ଣ୍ଣ",
     mandatory: "ବାଧ୍ୟତାମୂଳକ",

@@ -35,6 +35,7 @@ export const users = pgTable(
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
+    employeeCode: text("employee_code"),
     passwordHash: text("password_hash").notNull(),
     role: userRoleEnum("role").notNull(),
     franchiseId: uuid("franchise_id").references((): any => franchises.id, { onDelete: "set null" }),

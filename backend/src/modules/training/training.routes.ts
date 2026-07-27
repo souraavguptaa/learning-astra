@@ -167,7 +167,7 @@ trainingRouter.post(
   authorize(...MANAGERS),
   validateBody(assignSchema),
   asyncHandler(async (req, res) => {
-    res.status(201).json(await trainingService.assignTraining(req.params.id, req.body));
+    res.status(201).json(await trainingService.assignTraining(req.params.id, req.user!.sub, req.body));
   }),
 );
 

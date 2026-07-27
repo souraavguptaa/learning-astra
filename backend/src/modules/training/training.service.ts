@@ -211,6 +211,7 @@ export async function bumpVersion(trainingId: string, changedBy: string, changeT
 
 export async function assignTraining(
   trainingId: string,
+  assignedBy: string,
   input: {
     assigneeType: "user" | "role" | "franchise";
     userId?: string;
@@ -230,14 +231,18 @@ export async function assignTraining(
       franchiseId: input.franchiseId ?? null,
       dueAt: input.dueAt ? new Date(input.dueAt) : null,
       isMandatory: input.isMandatory ?? true,
+      assignedBy,
     })
     .returning();
 
   const [training] = await db.select().from(trainings).where(eq(trainings.id, trainingId)).limit(1);
-  const title = "New Training Assigned";
+  const [assigner] = await db.select({ name: users.name }).from(users).where(eq(users.id, assignedBy)).limit(1);
+  const kind = training?.isStandaloneAssessment ? "assessment" : "training";
+  const title = training?.isStandaloneAssessment ? "New Assessment Assigned" : "New Training Assigned";
+  const who = assigner?.name ? ` by ${assigner.name}` : "";
   const message = input.dueAt
-    ? `"${training?.title ?? "A training"}" has been assigned to you — complete by ${new Date(input.dueAt).toLocaleString("en-IN")}.`
-    : `"${training?.title ?? "A training"}" has been assigned to you.`;
+    ? `"${training?.title ?? "A " + kind}" has been assigned to you${who} — complete by ${new Date(input.dueAt).toLocaleString("en-IN")}.`
+    : `"${training?.title ?? "A " + kind}" has been assigned to you${who}.`;
   const deepLink = `/learning/${trainingId}`;
 
   let recipients: { id: string }[] = [];
@@ -304,8 +309,14 @@ export async function removeAssignment(trainingId: string, assignmentId: string)
 }
 
 export async function listAssignedTrainings(user: { id: string; role: UserRole; franchiseId: string | null }) {
+  const cols = {
+    trainingId: trainingAssignments.trainingId,
+    isMandatory: trainingAssignments.isMandatory,
+    dueAt: trainingAssignments.dueAt,
+    assignedBy: trainingAssignments.assignedBy,
+  };
   const assignmentRows = await db
-    .select({ trainingId: trainingAssignments.trainingId, isMandatory: trainingAssignments.isMandatory, dueAt: trainingAssignments.dueAt })
+    .select(cols)
     .from(trainingAssignments)
     .where(
       and(
@@ -315,13 +326,13 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
     );
 
   const roleRows = await db
-    .select({ trainingId: trainingAssignments.trainingId, isMandatory: trainingAssignments.isMandatory, dueAt: trainingAssignments.dueAt })
+    .select(cols)
     .from(trainingAssignments)
     .where(and(eq(trainingAssignments.assigneeType, "role"), eq(trainingAssignments.role, user.role)));
 
   const franchiseRows = user.franchiseId
     ? await db
-        .select({ trainingId: trainingAssignments.trainingId, isMandatory: trainingAssignments.isMandatory, dueAt: trainingAssignments.dueAt })
+        .select(cols)
         .from(trainingAssignments)
         .where(
           and(eq(trainingAssignments.assigneeType, "franchise"), eq(trainingAssignments.franchiseId, user.franchiseId)),
@@ -333,17 +344,17 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
   if (trainingIds.length === 0) return [];
 
   // A training can match more than one assignment (e.g. assigned to the user's role AND directly);
-  // the effective mandatory flag is "mandatory if any matching assignment says so", and the
-  // effective due date is the earliest one set, since that's the binding deadline.
-  const effectiveByTraining = new Map<string, { isMandatory: boolean; dueAt: Date | null }>();
+  // the effective mandatory flag is "mandatory if any matching assignment says so", the effective
+  // due date is the earliest one set (the binding deadline), and "assigned by" rides along with
+  // whichever assignment currently sets the due date, falling back to the first assigner seen.
+  const effectiveByTraining = new Map<string, { isMandatory: boolean; dueAt: Date | null; assignedBy: string | null }>();
   for (const a of allAssignments) {
     const existing = effectiveByTraining.get(a.trainingId);
     const isMandatory = existing ? existing.isMandatory || a.isMandatory : a.isMandatory;
-    const dueAt =
-      existing?.dueAt && a.dueAt
-        ? (existing.dueAt < a.dueAt ? existing.dueAt : a.dueAt)
-        : (existing?.dueAt ?? a.dueAt ?? null);
-    effectiveByTraining.set(a.trainingId, { isMandatory, dueAt });
+    const dueAtWins = existing?.dueAt && a.dueAt ? existing.dueAt < a.dueAt : !existing?.dueAt && !!a.dueAt;
+    const dueAt = existing?.dueAt && a.dueAt ? (dueAtWins ? existing.dueAt : a.dueAt) : (existing?.dueAt ?? a.dueAt ?? null);
+    const assignedBy = existing ? (dueAtWins ? existing.assignedBy : a.assignedBy ?? existing.assignedBy) : a.assignedBy;
+    effectiveByTraining.set(a.trainingId, { isMandatory, dueAt, assignedBy });
   }
 
   const rows = await db
@@ -356,6 +367,11 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
     .from(trainingProgress)
     .where(and(inArray(trainingProgress.trainingId, trainingIds), eq(trainingProgress.userId, user.id)));
 
+  const assignerIds = [...new Set([...effectiveByTraining.values()].map((e) => e.assignedBy).filter((id): id is string => !!id))];
+  const assigners = assignerIds.length
+    ? await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, assignerIds))
+    : [];
+
   return rows.map((training) => {
     const effective = effectiveByTraining.get(training.id)!;
     return {
@@ -363,6 +379,7 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
       progress: progressRows.find((p) => p.trainingId === training.id) ?? null,
       isMandatory: effective.isMandatory,
       dueAt: effective.dueAt,
+      assignedByName: assigners.find((a) => a.id === effective.assignedBy)?.name ?? null,
     };
   });
 }

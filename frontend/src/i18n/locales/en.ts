@@ -55,6 +55,8 @@ export default {
     loadingTrainings: "Loading your trainings…",
     continueLearning: "Continue Learning",
     assignedTrainings: "Assigned Trainings",
+    assignedAssessments: "Assigned Assessments",
+    assignedBy: "Assigned by {{name}}",
     nothingAssigned: "Nothing new assigned right now.",
     completed: "Completed",
     mandatory: "Mandatory",

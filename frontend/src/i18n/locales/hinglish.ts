@@ -55,6 +55,8 @@ export default {
     loadingTrainings: "Aapki trainings load ho rahi hain…",
     continueLearning: "Learning Jaari Rakhein",
     assignedTrainings: "Assigned Trainings",
+    assignedAssessments: "Assigned Assessments",
+    assignedBy: "{{name}} ne assign kiya",
     nothingAssigned: "Abhi kuch naya assign nahi hua hai.",
     completed: "Complete",
     mandatory: "Mandatory",

@@ -44,7 +44,7 @@ export async function listUsers(filter: { role?: UserRole; franchiseId?: string 
 
 export async function createUser(
   creator: { id: string; role: UserRole },
-  input: { name: string; email: string; role: UserRole; franchiseId?: string; location?: string },
+  input: { name: string; email: string; employeeCode?: string; role: UserRole; franchiseId?: string; location?: string },
 ) {
   assertCanCreateRole(creator.role, input.role);
 
@@ -57,6 +57,7 @@ export async function createUser(
     .values({
       name: input.name,
       email: input.email,
+      employeeCode: input.employeeCode || null,
       role: input.role,
       franchiseId: input.franchiseId ?? null,
       location: input.location,

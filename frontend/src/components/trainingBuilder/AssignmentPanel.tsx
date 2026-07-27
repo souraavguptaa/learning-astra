@@ -29,7 +29,10 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
   const [userSearch, setUserSearch] = useState("");
 
   const endUsers = allUsers?.filter((u) => ["franchise_owner", "operator", "employee"].includes(u.role)) ?? [];
-  const filteredEndUsers = endUsers.filter((u) => u.name.toLowerCase().includes(userSearch.toLowerCase()));
+  const q = userSearch.trim().toLowerCase();
+  const filteredEndUsers = endUsers.filter(
+    (u) => !q || u.name.toLowerCase().includes(q) || u.employeeCode?.toLowerCase().includes(q),
+  );
 
   async function handleAssign(e: React.FormEvent) {
     e.preventDefault();
@@ -134,7 +137,7 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
         {assignForm.assigneeType === "users" && (
           <>
             <input
-              placeholder="Search people…"
+              placeholder="Search by name or employee code…"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               className="w-full rounded-md shadow-clay-inset px-3 py-1.5 text-sm"
@@ -145,6 +148,7 @@ export function AssignmentPanel({ trainingId }: { trainingId: string }) {
                 <label key={u.id} className="flex items-center gap-1 text-xs bg-slate-50 px-2 py-1 rounded">
                   <input type="checkbox" checked={assignForm.userIds.includes(u.id)} onChange={() => toggleAssignUser(u.id)} />
                   {u.name}
+                  {u.employeeCode && <span className="text-slate-400">({u.employeeCode})</span>}
                 </label>
               ))}
             </div>

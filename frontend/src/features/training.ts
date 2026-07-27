@@ -43,6 +43,7 @@ export interface TrainingAssignment {
   franchiseId: string | null;
   dueAt: string | null;
   isMandatory: boolean;
+  assignedBy: string | null;
 }
 
 export interface TrainingProgress {
@@ -236,9 +237,9 @@ export function useAssignedTrainings() {
     queryKey: ["assigned-trainings"],
     queryFn: async () =>
       (
-        await api.get<{ training: Training; progress: TrainingProgress | null; isMandatory: boolean; dueAt: string | null }[]>(
-          "/trainings/assigned",
-        )
+        await api.get<
+          { training: Training; progress: TrainingProgress | null; isMandatory: boolean; dueAt: string | null; assignedByName: string | null }[]
+        >("/trainings/assigned")
       ).data,
     refetchInterval: 10000, // also force-refreshed the moment a training_assigned notification lands, see NotificationBell
   });

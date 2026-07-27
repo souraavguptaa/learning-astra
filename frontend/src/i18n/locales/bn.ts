@@ -55,6 +55,8 @@ export default {
     loadingTrainings: "আপনার প্রশিক্ষণ লোড হচ্ছে…",
     continueLearning: "লার্নিং চালিয়ে যান",
     assignedTrainings: "বরাদ্দকৃত প্রশিক্ষণ",
+    assignedAssessments: "বরাদ্দকৃত মূল্যায়ন",
+    assignedBy: "{{name}} দ্বারা বরাদ্দকৃত",
     nothingAssigned: "এই মুহূর্তে নতুন কিছু বরাদ্দ করা হয়নি।",
     completed: "সম্পন্ন",
     mandatory: "বাধ্যতামূলক",
