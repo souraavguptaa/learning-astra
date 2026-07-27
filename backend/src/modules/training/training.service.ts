@@ -147,6 +147,13 @@ export async function reorderItems(trainingId: string, orderedItemIds: string[])
 }
 
 export async function removeItem(trainingId: string, itemId: string) {
+  const [training] = await db.select({ status: trainings.status }).from(trainings).where(eq(trainings.id, trainingId)).limit(1);
+  if (training?.status === "published") {
+    const itemCount = await db.select({ id: trainingItems.id }).from(trainingItems).where(eq(trainingItems.trainingId, trainingId));
+    if (itemCount.length <= 1) {
+      throw new ApiError(400, "Can't remove the last item from a published training — assigned learners would be left with nothing to complete. Unpublish it first if you need to clear it out.");
+    }
+  }
   await db.delete(trainingItems).where(and(eq(trainingItems.id, itemId), eq(trainingItems.trainingId, trainingId)));
 }
 
@@ -362,6 +369,12 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
     .from(trainings)
     .where(and(inArray(trainings.id, trainingIds), eq(trainings.status, "published")));
 
+  const itemRows = await db
+    .select({ trainingId: trainingItems.trainingId })
+    .from(trainingItems)
+    .where(inArray(trainingItems.trainingId, trainingIds));
+  const trainingIdsWithItems = new Set(itemRows.map((r) => r.trainingId));
+
   const progressRows = await db
     .select()
     .from(trainingProgress)
@@ -380,6 +393,7 @@ export async function listAssignedTrainings(user: { id: string; role: UserRole; 
       isMandatory: effective.isMandatory,
       dueAt: effective.dueAt,
       assignedByName: assigners.find((a) => a.id === effective.assignedBy)?.name ?? null,
+      hasItems: trainingIdsWithItems.has(training.id),
     };
   });
 }

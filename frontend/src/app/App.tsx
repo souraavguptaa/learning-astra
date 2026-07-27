@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/common/AppLayout.js";
 import { ProtectedRoute } from "../components/common/ProtectedRoute.js";
-import { useAssignedTrainings } from "../features/training.js";
 import { AuthProvider, useAuth } from "../lib/authContext.js";
 import { AdminDashboard } from "../pages/admin/AdminDashboard.js";
 import { AdsManagementPage } from "../pages/ads/AdsManagementPage.js";
@@ -24,13 +23,6 @@ import { TicketQueuePage } from "../pages/tickets/TicketQueuePage.js";
 import { UserDashboard } from "../pages/user/UserDashboard.js";
 import { PartnerVideosPage } from "../pages/videos/PartnerVideosPage.js";
 
-function EndUserHome() {
-  const { data: assigned } = useAssignedTrainings();
-  const blocking = assigned?.find((a) => a.isMandatory && !a.progress?.completed);
-  if (blocking) return <Navigate to={`/learning/${blocking.training.id}`} replace />;
-  return <UserDashboard />;
-}
-
 function HomeRoute() {
   const { user } = useAuth();
   if (!user) return null;
@@ -42,7 +34,7 @@ function HomeRoute() {
     case "trainer":
       return <TrainerDashboard />;
     default:
-      return <EndUserHome />;
+      return <UserDashboard />;
   }
 }
 

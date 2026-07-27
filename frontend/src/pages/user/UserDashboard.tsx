@@ -69,8 +69,12 @@ function TrainingRow({
 export function UserDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: assigned, isLoading } = useAssignedTrainings();
+  const { data: assignedRaw, isLoading } = useAssignedTrainings();
   const { data: gamification } = useMyGamification();
+
+  // Trainings with no content items yet are nothing a learner can act on — leave them off the
+  // list instead of giving them a dead-end click.
+  const assigned = assignedRaw?.filter((a) => a.hasItems);
 
   const inProgress = assigned?.filter((a) => a.progress && !a.progress.completed) ?? [];
   const notStarted = assigned?.filter((a) => !a.progress) ?? [];

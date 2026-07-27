@@ -238,7 +238,14 @@ export function useAssignedTrainings() {
     queryFn: async () =>
       (
         await api.get<
-          { training: Training; progress: TrainingProgress | null; isMandatory: boolean; dueAt: string | null; assignedByName: string | null }[]
+          {
+            training: Training;
+            progress: TrainingProgress | null;
+            isMandatory: boolean;
+            dueAt: string | null;
+            assignedByName: string | null;
+            hasItems: boolean;
+          }[]
         >("/trainings/assigned")
       ).data,
     refetchInterval: 10000, // also force-refreshed the moment a training_assigned notification lands, see NotificationBell
