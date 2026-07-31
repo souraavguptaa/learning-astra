@@ -19,9 +19,9 @@ export const trainings = pgTable("trainings", {
   versionMajor: integer("version_major").default(1).notNull(),
   versionMinor: integer("version_minor").default(0).notNull(),
   npsEnabled: boolean("nps_enabled").default(false).notNull(),
-  trainerId: uuid("trainer_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "set null" }),
+  // Nullable so a training survives its trainer's account being deleted (onDelete: set null) —
+  // must NOT be .notNull(), or that delete fails with a not-null-constraint violation.
+  trainerId: uuid("trainer_id").references(() => users.id, { onDelete: "set null" }),
   publishedAt: timestamp("published_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -82,9 +82,7 @@ export const trainingVersions = pgTable("training_versions", {
   versionMajor: integer("version_major").notNull(),
   versionMinor: integer("version_minor").notNull(),
   changeType: versionChangeTypeEnum("change_type").notNull(),
-  changedBy: uuid("changed_by")
-    .notNull()
-    .references(() => users.id, { onDelete: "set null" }),
+  changedBy: uuid("changed_by").references(() => users.id, { onDelete: "set null" }),
   changedAt: timestamp("changed_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

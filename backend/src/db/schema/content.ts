@@ -26,9 +26,7 @@ export const contentItems = pgTable("content_items", {
   mimeType: text("mime_type").notNull(),
   durationSeconds: numeric("duration_seconds"),
   status: contentStatusEnum("status").default("processing").notNull(),
-  uploadedBy: uuid("uploaded_by")
-    .notNull()
-    .references(() => users.id, { onDelete: "set null" }),
+  uploadedBy: uuid("uploaded_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

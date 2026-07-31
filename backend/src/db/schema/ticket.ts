@@ -52,9 +52,7 @@ export const kbSubmissions = pgTable("kb_submissions", {
   ticketId: uuid("ticket_id")
     .notNull()
     .references(() => supportTickets.id, { onDelete: "cascade" }),
-  trainerId: uuid("trainer_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "set null" }),
+  trainerId: uuid("trainer_id").references(() => users.id, { onDelete: "set null" }),
   proposedContent: jsonb("proposed_content")
     .$type<{ title: string; description: string; topic: string; language: string }>()
     .notNull(),

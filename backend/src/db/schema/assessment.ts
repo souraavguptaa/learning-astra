@@ -15,9 +15,7 @@ export const assessments = pgTable("assessments", {
   linkedContentId: uuid("linked_content_id").references(() => contentItems.id, { onDelete: "set null" }),
   passPercentage: integer("pass_percentage").default(70).notNull(),
   maxAttempts: integer("max_attempts").default(3).notNull(),
-  createdBy: uuid("created_by")
-    .notNull()
-    .references(() => users.id, { onDelete: "set null" }),
+  createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

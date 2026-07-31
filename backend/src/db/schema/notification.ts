@@ -30,9 +30,7 @@ export const announcements = pgTable("announcements", {
   targetType: announcementTargetTypeEnum("target_type").notNull(),
   targetRole: userRoleEnum("target_role"),
   targetFranchiseId: uuid("target_franchise_id").references(() => franchises.id, { onDelete: "cascade" }),
-  createdBy: uuid("created_by")
-    .notNull()
-    .references(() => users.id, { onDelete: "set null" }),
+  createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

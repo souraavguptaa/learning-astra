@@ -141,6 +141,13 @@
       "when": 1785138495442,
       "tag": "0019_rainy_shadowcat",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1785482642610,
+      "tag": "0020_classy_iron_monger",
+      "breakpoints": true
     }
   ]
 }
